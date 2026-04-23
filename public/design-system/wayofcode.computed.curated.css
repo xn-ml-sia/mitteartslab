@@ -1,0 +1,84 @@
+/* Curated computed-style capture from https://wayofcode.com/#78 */
+/* Safe overrides only: no fixed viewport widths/heights from snapshot except intended section sizing */
+
+:root {
+  --rubin-cyan: #44A6E4;
+  --mobile-nav-width: 62px;
+  --tone: #F5F2EC;
+  --rubin-ivory-dark: #E8E6DC;
+  --letter-spacing-base: 0.02em;
+  --font-size-base: 22px;
+  --artwork-size: 450px;
+  --line-height-base: 1.5;
+  --poem-padding-left: 100px;
+  --rubin-dark-gray: #5E5D59;
+  --rubin-clay: #D97757;
+  --poem-padding: 0px 100px;
+  --rubin-slate: #1F1E1D;
+  --artwork-font-size: 7.45px;
+  --nav-width: 40px;
+  --rubin-ivory: rgb(250, 249, 246);
+  --mobile-menu-height: 48px;
+  --breakpoint-tablet: 768px;
+  --font-family-base: goudy-old-style, serif;
+  --font-family-code: Courier Prime, Courier, monospace;
+  --background-color: #FAF9F5;
+  --rubin-ivory-med: #F0EEE6;
+  --rubin-riso: #5E7EDF;
+  --rubin-gray: #87867F;
+  --poem-padding-top: 0px;
+  --text-color: rgba(0, 0, 0, 0.85);
+}
+
+body {
+  background-color: rgb(250, 249, 245);
+  color: rgb(0, 0, 0);
+  font-family: goudy-old-style, serif;
+}
+
+.poem-section {
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  gap: 120px;
+  padding: 0px 100px;
+  max-width: 1440px;
+}
+
+.column-1 {
+  width: 560px;
+  text-align: left;
+  font-size: 22px;
+}
+
+.poem {
+  display: flex;
+  align-items: baseline;
+  gap: 32px;
+}
+
+.poem .poem-text {
+  white-space: pre-line;
+}
+
+.poem .poem-number {
+  white-space: pre-line;
+}
+
+.poem .poem-text p {
+  margin: 0px 0px 24.2px;
+  margin-bottom: 24.2px;
+  line-height: 30.8px;
+}
+
+.poem .poem-number p {
+  margin: 0px;
+  margin-bottom: 0px;
+}
+
+.artwork-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
