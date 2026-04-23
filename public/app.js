@@ -298,16 +298,12 @@ const initChapterFlow = () => {
   const container = document.querySelector('.chapter78-main');
   const sections = Array.from(document.querySelectorAll('.chapter-observe'));
   const links = Array.from(document.querySelectorAll('.chapter-link'));
-  const dots = Array.from(document.querySelectorAll('.chapter-dot'));
   if (!container || sections.length === 0) return null;
 
   const setActive = (id) => {
     links.forEach((link) => {
       const active = link.dataset.target === id;
       link.setAttribute('aria-current', active ? 'true' : 'false');
-    });
-    dots.forEach((dot) => {
-      dot.classList.toggle('active', dot.dataset.dot === id);
     });
   };
 
