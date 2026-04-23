@@ -214,7 +214,7 @@ body,
   min-height: calc(100vh - 60px);
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  gap: 64px;
+  gap: 40px;
   padding-left: 72px;
   padding-right: 72px;
 }
@@ -232,10 +232,19 @@ body,
   transform: translateY(0);
 }
 
+.chapter78-poem-section .poem {
+  gap: 18px;
+}
+
 .chapter78-poem-section .poem-text p,
 .chapter78-poem-section .poem-number p {
   line-height: var(--line-height-base);
   letter-spacing: var(--letter-spacing-base);
+}
+
+.chapter78-poem-section .poem-text,
+.chapter78-poem-section .poem-text p {
+  font-weight: 300;
 }
 
 .chapter78-poem-section .poem-number {
@@ -295,14 +304,14 @@ body,
   align-items: stretch;
   gap: 6px;
   padding: 10px;
-  background: rgba(250, 249, 245, 0.92);
+  background: color-mix(in oklab, var(--background-color) 92%, transparent);
   border: 1px solid var(--rubin-ivory-dark);
   backdrop-filter: blur(4px);
 }
 
 .chapter-link {
   border: 1px solid var(--rubin-ivory-dark);
-  background: rgba(255, 255, 255, 0.5);
+  background: color-mix(in oklab, var(--rubin-ivory) 56%, transparent);
   color: var(--rubin-dark-gray);
   font-family: var(--font-family-code);
   font-size: 11px;
@@ -313,7 +322,7 @@ body,
 
 .chapter-link[aria-current="true"] {
   background: var(--rubin-slate);
-  color: var(--rubin-ivory);
+  color: var(--rubin-ivory-med);
   border-color: var(--rubin-slate);
 }
 
@@ -348,10 +357,108 @@ body,
     width: 100%;
   }
 
+  .chapter78-poem-section .poem {
+    gap: 14px;
+  }
+
   .chapter78-artwork {
     width: 100%;
     max-width: 520px;
     height: auto;
     aspect-ratio: 1;
   }
+}
+
+/* RYBitten Japanese schoolbook swatches: reference + semantic mapping */
+:root {
+  --kingcrimson-50: #d2c7ab;
+  --kingcrimson-100: #d2c4a8;
+  --kingcrimson-200: #d0b99f;
+  --kingcrimson-300: #cca28c;
+  --kingcrimson-400: #ca7b6e;
+  --kingcrimson-500: #c84847;
+  --kingcrimson-600: #c81722;
+  --kingcrimson-700: #be151f;
+  --kingcrimson-800: #a32126;
+  --kingcrimson-900: #6f2527;
+  --kingcrimson-950: #381f20;
+  --jackpot-50: #d2c8aa;
+  --jackpot-100: #d2c6a6;
+  --jackpot-200: #d0bf9a;
+  --jackpot-300: #ceb282;
+  --jackpot-400: #cda05d;
+  --jackpot-500: #ce8d35;
+  --jackpot-600: #d37f17;
+  --jackpot-700: #bc6918;
+  --jackpot-800: #8e4e1d;
+  --jackpot-900: #59341f;
+  --jackpot-950: #2f221d;
+  --amazon-50: #d0c8ab;
+  --amazon-100: #cdc6a8;
+  --amazon-200: #c3bf9f;
+  --amazon-300: #acb28e;
+  --amazon-400: #849e76;
+  --amazon-500: #4c865d;
+  --amazon-600: #15724a;
+  --amazon-700: #0c623e;
+  --amazon-800: #104c32;
+  --amazon-900: #173527;
+  --amazon-950: #1d221f;
+  --rum-50: #d0c7ab;
+  --rum-100: #cdc4a9;
+  --rum-200: #c3b9a2;
+  --rum-300: #ada394;
+  --rum-400: #8d8382;
+  --rum-500: #6d5f70;
+  --rum-600: #604363;
+  --rum-700: #603553;
+  --rum-800: #532a40;
+  --rum-900: #3d222e;
+  --rum-950: #281d21;
+  --autumnfire-50: #d0c8ac;
+  --autumnfire-100: #cdc6a8;
+  --autumnfire-200: #cec39e;
+  --autumnfire-300: #ceb081;
+  --autumnfire-400: #cc7d55;
+  --autumnfire-500: #c84847;
+  --autumnfire-600: #8f2644;
+  --autumnfire-700: #4e445f;
+  --autumnfire-800: #20514d;
+  --autumnfire-900: #163426;
+  --autumnfire-950: #27251f;
+  --underclover-50: #d2c7aa;
+  --underclover-100: #d2c4a8;
+  --underclover-200: #c7b69e;
+  --underclover-300: #ada998;
+  --underclover-400: #84a393;
+  --underclover-500: #4c844f;
+  --underclover-600: #a8991c;
+  --underclover-700: #bc6419;
+  --underclover-800: #94351f;
+  --underclover-900: #6f2527;
+  --underclover-950: #2a1c20;
+
+  /* semantic aliases consumed by page and modules */
+  --background-color: var(--kingcrimson-50);
+  --tone: var(--jackpot-100);
+  --rubin-ivory: var(--kingcrimson-100);
+  --rubin-ivory-med: var(--jackpot-200);
+  --rubin-ivory-dark: var(--jackpot-300);
+  --text-color: var(--rum-950);
+  --rubin-slate: var(--autumnfire-950);
+  --rubin-dark-gray: var(--rum-700);
+  --rubin-gray: var(--rum-500);
+  --rubin-clay: var(--autumnfire-500);
+  --rubin-riso: var(--rum-500);
+  --rubin-cyan: var(--amazon-500);
+
+  /* interactive module ink colors */
+  --module-ink-rgb: 56, 31, 32;
+  --module-ink-drift-rgb: 111, 37, 39;
+  --module-ink-soft-rgb: 96, 53, 83;
+  --module-ink-soft-drift-rgb: 96, 67, 99;
+  --module-accent-rgb: 200, 72, 71;
+  --module-accent-drift-rgb: 143, 38, 68;
+  --module-alt-rgb: 21, 114, 74;
+  --module-alt-drift-rgb: 32, 81, 77;
 }

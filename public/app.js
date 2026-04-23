@@ -2,6 +2,29 @@ const density = '.·•○●';
 const asciiWidth = 80;
 const asciiHeight = 44;
 
+/** Slow oscillation between two RGB triplets from CSS (`r, g, b` comma strings). */
+const MODULE_DRIFT_SPEED = 0.0001;
+
+const parseRgbTriplet = (csv, fallback) => {
+  const parts = csv.split(',').map((n) => parseInt(n.trim(), 10));
+  if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return fallback;
+  return parts;
+};
+
+const smoothstep01 = (t) => {
+  const x = Math.min(1, Math.max(0, t));
+  return x * x * (3 - 2 * x);
+};
+
+const driftRgbCsv = (a, b, ms, speed, phase = 0) => {
+  const wave = (Math.sin(ms * speed + phase) + 1) * 0.5;
+  const u = smoothstep01(wave);
+  const r = Math.round(a[0] + (b[0] - a[0]) * u);
+  const g = Math.round(a[1] + (b[1] - a[1]) * u);
+  const bl = Math.round(a[2] + (b[2] - a[2]) * u);
+  return `${r}, ${g}, ${bl}`;
+};
+
 const getCharForIntensity = (intensity, isCenter = false) => {
   if (intensity < 0.1) return ' ';
   const index = Math.min(Math.floor(intensity * density.length), density.length - 1);
@@ -106,6 +129,31 @@ const initAsciiMandala = () => {
   const canvas = document.getElementById('ascii-canvas');
   if (!canvas) return null;
   const ctx = canvas.getContext('2d', { alpha: true });
+  const rootStyles = getComputedStyle(document.documentElement);
+  const inkA = parseRgbTriplet(
+    rootStyles.getPropertyValue('--module-ink-rgb').trim(),
+    [56, 31, 32],
+  );
+  const inkB = parseRgbTriplet(
+    rootStyles.getPropertyValue('--module-ink-drift-rgb').trim() || rootStyles.getPropertyValue('--module-ink-rgb').trim(),
+    inkA,
+  );
+  const accentA = parseRgbTriplet(
+    rootStyles.getPropertyValue('--module-accent-rgb').trim(),
+    [200, 72, 71],
+  );
+  const accentB = parseRgbTriplet(
+    rootStyles.getPropertyValue('--module-accent-drift-rgb').trim() || rootStyles.getPropertyValue('--module-accent-rgb').trim(),
+    accentA,
+  );
+  const altA = parseRgbTriplet(
+    rootStyles.getPropertyValue('--module-alt-rgb').trim(),
+    [21, 114, 74],
+  );
+  const altB = parseRgbTriplet(
+    rootStyles.getPropertyValue('--module-alt-drift-rgb').trim() || rootStyles.getPropertyValue('--module-alt-rgb').trim(),
+    altA,
+  );
   let frame = 0;
   let raf = 0;
   let lastTs = 0;
@@ -140,12 +188,22 @@ const initAsciiMandala = () => {
     const fontPx = Math.max(8, Math.floor(charH * 0.82));
     ctx.font = `${fontPx}px "Courier Prime", "IBM Plex Mono", monospace`;
 
+    const inkRgb = driftRgbCsv(inkA, inkB, ts, MODULE_DRIFT_SPEED, 0);
+    const accentRgb = driftRgbCsv(accentA, accentB, ts, MODULE_DRIFT_SPEED, 1.15);
+    const altRgb = driftRgbCsv(altA, altB, ts, MODULE_DRIFT_SPEED, 2.05);
+
     for (let y = 0; y < asciiHeight; y += 1) {
       for (let x = 0; x < asciiWidth; x += 1) {
         const char = grid[y][x];
         const alpha = charToOpacity(char);
         if (alpha <= 0) continue;
-        ctx.fillStyle = `rgba(50, 50, 50, ${alpha})`;
+        let rgb = inkRgb;
+        if (char === '●' || char === '○') {
+          rgb = accentRgb;
+        } else if (char === '|') {
+          rgb = altRgb;
+        }
+        ctx.fillStyle = `rgba(${rgb}, ${alpha})`;
         ctx.fillText(char, x * charW, y * charH);
       }
     }
@@ -167,6 +225,23 @@ const initMetamorphosis = () => {
   const canvas = document.getElementById('metamorphosis-canvas');
   if (!canvas) return null;
   const ctx = canvas.getContext('2d');
+  const rootStyles = getComputedStyle(document.documentElement);
+  const inkSoftA = parseRgbTriplet(
+    rootStyles.getPropertyValue('--module-ink-soft-rgb').trim(),
+    [96, 53, 83],
+  );
+  const inkSoftB = parseRgbTriplet(
+    rootStyles.getPropertyValue('--module-ink-soft-drift-rgb').trim() || rootStyles.getPropertyValue('--module-ink-soft-rgb').trim(),
+    inkSoftA,
+  );
+  const accentA = parseRgbTriplet(
+    rootStyles.getPropertyValue('--module-accent-rgb').trim(),
+    [200, 72, 71],
+  );
+  const accentB = parseRgbTriplet(
+    rootStyles.getPropertyValue('--module-accent-drift-rgb').trim() || rootStyles.getPropertyValue('--module-accent-rgb').trim(),
+    accentA,
+  );
   let raf = 0;
 
   const width = canvas.width;
@@ -240,11 +315,11 @@ const initMetamorphosis = () => {
     return interpolateForms(forms[idx], forms[next], u, v, blend);
   };
 
-  const drawSet = (uMode) => {
+  const drawSet = (uMode, strokeRgb) => {
     const lines = uMode ? numLines * 0.3 : numLines;
     const segments = uMode ? lineSegments * 0.5 : lineSegments;
     ctx.beginPath();
-    ctx.strokeStyle = `rgba(51, 51, 51, ${uMode ? lineAlpha * 0.7 : lineAlpha})`;
+    ctx.strokeStyle = `rgba(${strokeRgb}, ${uMode ? lineAlpha * 0.75 : lineAlpha})`;
     ctx.lineWidth = uMode ? lineWidth * 0.7 : lineWidth;
 
     for (let i = 0; i < lines; i += 1) {
@@ -279,10 +354,12 @@ const initMetamorphosis = () => {
     ctx.stroke();
   };
 
-  const animate = () => {
+  const animate = (now = performance.now()) => {
     ctx.clearRect(0, 0, width, height);
-    drawSet(false);
-    drawSet(true);
+    const primaryRgb = driftRgbCsv(inkSoftA, inkSoftB, now, MODULE_DRIFT_SPEED, 0.4);
+    const accentRgb = driftRgbCsv(accentA, accentB, now, MODULE_DRIFT_SPEED, 1.6);
+    drawSet(false, primaryRgb);
+    drawSet(true, accentRgb);
     time += 0.5;
     raf = requestAnimationFrame(animate);
   };
