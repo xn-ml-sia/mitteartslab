@@ -59,7 +59,7 @@ body {
 }
 
 .column-1 {
-  width: 560px;
+  width: 660px;
   text-align: left;
   font-size: 22px;
 }
@@ -98,7 +98,7 @@ body {
 
 /* Minimal patch layer: adapt our single-chapter canvas to rendered class system */
 :root {
-  --font-family-base: "Newsreader", goudy-old-style, serif;
+  --font-family-base: "IBM Plex Mono", "Courier Prime", Courier, monospace;
   --font-family-code: "IBM Plex Mono", "Courier Prime", Courier, monospace;
 }
 
@@ -108,6 +108,24 @@ html, body {
   background: var(--background-color);
   color: var(--text-color);
   font-family: var(--font-family-base);
+}
+
+/* Enforce single-font system across all rendered chapter surfaces */
+body,
+.galleryPage,
+.header,
+.main,
+.poem-section,
+.column-1,
+.poem,
+.poem .poem-text,
+.poem .poem-number,
+.poem .poem-text p,
+.poem .poem-number p,
+.chapter-link,
+.mal-header-left,
+.mal-header-right {
+  font-family: var(--font-family-code) !important;
 }
 
 .chapter78-page {
@@ -196,10 +214,14 @@ html, body {
   min-height: calc(100vh - 60px);
   scroll-snap-align: start;
   scroll-snap-stop: always;
+  gap: 64px;
+  padding-left: 72px;
+  padding-right: 72px;
 }
 
 .chapter78-poem-section .column-1 {
   color: var(--text-color);
+  width: 100%;
   opacity: 0;
   transform: translateY(18px);
   transition: opacity 760ms ease, transform 760ms ease;
