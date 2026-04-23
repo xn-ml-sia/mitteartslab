@@ -27,6 +27,57 @@ html, body {
   font-family: var(--font-family-code);
   letter-spacing: 0.08em;
   font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mal-header-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mal-header-right {
+  margin-left: auto;
+  text-align: right;
+}
+
+.mal-logo {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+}
+
+.mal-logo-ring {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--rubin-dark-gray);
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+.mal-logo-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--rubin-slate);
+  left: 50%;
+  top: 50%;
+  transform-origin: -6px -6px;
+  animation: mal-orbit 2.4s linear infinite;
+}
+
+@keyframes mal-orbit {
+  from {
+    transform: rotate(0deg) translate(6px, 0);
+  }
+  to {
+    transform: rotate(360deg) translate(6px, 0);
+  }
 }
 
 .chapter78-main {
@@ -91,23 +142,30 @@ html, body {
 }
 
 .chapter78-artwork {
-  width: min(88vw, var(--artwork-size));
-  height: min(88vw, var(--artwork-size));
+  width: min(94vw, 620px);
+  height: min(94vw, 620px);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--rubin-ivory-dark);
-  background: #F0EEE6;
+  border: none;
+  background: transparent;
   overflow: hidden;
   padding: 10px;
   border-radius: 8px;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+  box-shadow: none;
+}
+
+.chapter12-artwork {
+  width: min(94vw, 620px);
+  height: min(94vw, 620px);
 }
 
 .chapter78-ascii-canvas {
   width: 100%;
   height: 100%;
   display: block;
+  border: none;
+  background: transparent;
 }
 
 .chapter78-hint {

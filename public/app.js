@@ -261,9 +261,9 @@ const initMetamorphosis = () => {
         const rotatedY = point.x * Math.sin(rotateZ) + point.y * Math.cos(rotateZ);
         const rotatedZ = point.z;
 
-        const scale = 1.5 + rotatedZ * 0.001;
+        const scale = 1.35 + rotatedZ * 0.001;
         const x = width / 2 + rotatedX * scale;
-        const y = height / 2 + rotatedY * scale;
+        const y = height / 2 + 18 + rotatedY * scale;
         const visible = rotatedZ > -50;
 
         if (j === 0) {
@@ -281,8 +281,6 @@ const initMetamorphosis = () => {
 
   const animate = () => {
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = '#F0EEE6';
-    ctx.fillRect(0, 0, width, height);
     drawSet(false);
     drawSet(true);
     time += 0.5;
