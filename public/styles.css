@@ -1,0 +1,219 @@
+@import "./design-system/wayofcode.rendered.full.css";
+@import "./design-system/wayofcode.computed.curated.css";
+
+/* Minimal patch layer: adapt our single-chapter canvas to rendered class system */
+:root {
+  --font-family-base: "Newsreader", goudy-old-style, serif;
+  --font-family-code: "IBM Plex Mono", "Courier Prime", Courier, monospace;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--background-color);
+  color: var(--text-color);
+  font-family: var(--font-family-base);
+}
+
+.chapter78-page {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.chapter78-header {
+  border-bottom: none;
+  box-shadow: none;
+  background-color: transparent;
+  font-family: var(--font-family-code);
+  letter-spacing: 0.08em;
+  font-size: 12px;
+}
+
+.chapter78-main {
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.chapter78-main::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.chapter78-poem-section {
+  border-top: 1px solid var(--rubin-ivory-dark);
+  min-height: calc(100vh - 60px);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.chapter78-poem-section .column-1 {
+  color: var(--text-color);
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 760ms ease, transform 760ms ease;
+}
+
+.chapter78-poem-section.in-view .column-1 {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.chapter78-poem-section .poem-text p,
+.chapter78-poem-section .poem-number p {
+  line-height: var(--line-height-base);
+  letter-spacing: var(--letter-spacing-base);
+}
+
+.chapter78-poem-section .poem-number {
+  font-family: var(--font-family-code);
+  font-size: 0.72em;
+  opacity: 0.85;
+}
+
+.chapter78-poem-section .artwork-container {
+  opacity: 0;
+  transform: translateY(18px) scale(0.985);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 900ms ease 180ms, transform 900ms ease 180ms;
+}
+
+.chapter78-poem-section.in-view .artwork-container {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.chapter78-artwork {
+  width: min(88vw, var(--artwork-size));
+  height: min(88vw, var(--artwork-size));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--rubin-ivory-dark);
+  background: #F0EEE6;
+  overflow: hidden;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+}
+
+.chapter78-ascii-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.chapter78-hint {
+  margin: 0;
+  padding: 10px var(--poem-padding-left);
+  border-top: 1px solid var(--rubin-ivory-dark);
+  font-family: var(--font-family-code);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rubin-dark-gray);
+}
+
+.chapter-bar {
+  position: fixed;
+  right: max(14px, calc((100vw - 1400px) / 2 + 14px));
+  top: 96px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 10px;
+  background: rgba(250, 249, 245, 0.92);
+  border: 1px solid var(--rubin-ivory-dark);
+  backdrop-filter: blur(4px);
+}
+
+.chapter-link {
+  border: 1px solid var(--rubin-ivory-dark);
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--rubin-dark-gray);
+  font-family: var(--font-family-code);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.chapter-link[aria-current="true"] {
+  background: var(--rubin-slate);
+  color: var(--rubin-ivory);
+  border-color: var(--rubin-slate);
+}
+
+.chapter-progress {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.chapter-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--rubin-ivory-dark);
+  transition: transform 220ms ease, background-color 220ms ease;
+}
+
+.chapter-dot.active {
+  background: var(--rubin-slate);
+  transform: scale(1.4);
+}
+
+@media (max-width: 1024px) {
+  .chapter-bar {
+    position: sticky;
+    top: 0;
+    right: auto;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px var(--poem-padding-left);
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+
+  .chapter-progress {
+    margin-left: auto;
+    margin-top: 0;
+  }
+
+  .chapter78-main {
+    height: auto;
+    min-height: calc(100vh - 60px);
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  .chapter78-poem-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: calc(var(--mobile-menu-height) + 16px) var(--poem-padding-left) 0;
+  }
+
+  .chapter78-poem-section .column-1 {
+    width: 100%;
+  }
+
+  .chapter78-artwork {
+    width: 100%;
+    max-width: 520px;
+    height: auto;
+    aspect-ratio: 1;
+  }
+}

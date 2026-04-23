@@ -1,0 +1,67 @@
+/* Extracted from wayofcode production CSS bundle (chapter-era build).
+   Purpose: reusable design tokens for typography, color, sizing, spacing.
+*/
+
+:root {
+  /* Color system */
+  --woc-background-color: #FAF9F5;
+  --woc-rubin-gray: #87867F;
+  --woc-rubin-ivory: rgb(250, 249, 246);
+  --woc-rubin-slate: #1F1E1D;
+  --woc-rubin-riso: #5E7EDF;
+  --woc-rubin-cyan: #44A6E4;
+  --woc-rubin-clay: #D97757;
+  --woc-text-color: rgba(0, 0, 0, 0.85);
+  --woc-tone: #F5F2EC;
+  --woc-rubin-dark-gray: #5E5D59;
+  --woc-rubin-ivory-med: #F0EEE6;
+  --woc-rubin-ivory-dark: #E8E6DC;
+
+  /* Typography */
+  --woc-font-family-base: goudy-old-style, serif;
+  --woc-font-family-code: "Courier Prime", Courier, monospace;
+  --woc-font-size-base: 18px;
+  --woc-line-height-base: 1.4;
+  --woc-letter-spacing-base: 0.02em;
+  --woc-artwork-font-size: 6px;
+
+  /* Layout + spacing */
+  --woc-poem-padding-top: 20px;
+  --woc-poem-padding-left: 24px;
+  --woc-poem-padding: 0 100px;
+  --woc-artwork-size: 322px;
+
+  /* Navigation */
+  --woc-nav-width: 40px;
+  --woc-mobile-nav-width: 62px;
+  --woc-mobile-menu-height: 48px;
+
+  /* Breakpoints */
+  --woc-breakpoint-tablet: 768px;
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  :root {
+    --woc-font-size-base: 22px;
+    --woc-line-height-base: 0.9;
+    --woc-letter-spacing-base: 0.04em;
+    --woc-artwork-size: 450px;
+    --woc-artwork-font-size: 7.5px;
+    --woc-poem-padding-top: 20px;
+    --woc-poem-padding-left: 50px;
+    --woc-poem-padding: 0 100px;
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --woc-font-size-base: 22px;
+    --woc-line-height-base: 1.5;
+    --woc-letter-spacing-base: 0.02em;
+    --woc-artwork-size: 450px;
+    --woc-artwork-font-size: 7.45px;
+    --woc-poem-padding-top: 0;
+    --woc-poem-padding-left: 100px;
+    --woc-poem-padding: 0 100px;
+  }
+}
