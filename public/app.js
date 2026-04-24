@@ -1,7 +1,3 @@
-const density = '.·•○●';
-const asciiWidth = 80;
-const asciiHeight = 44;
-
 /** Slow oscillation between two RGB triplets from CSS (`r, g, b` comma strings). */
 const MODULE_DRIFT_SPEED = 0.0001;
 
@@ -25,190 +21,113 @@ const driftRgbCsv = (a, b, ms, speed, phase = 0) => {
   return `${r}, ${g}, ${bl}`;
 };
 
-const getCharForIntensity = (intensity, isCenter = false) => {
-  if (intensity < 0.1) return ' ';
-  const index = Math.min(Math.floor(intensity * density.length), density.length - 1);
-  return isCenter ? density[Math.max(index, 2)] : density[index];
-};
-
-const drawCirclePattern = (grid, centerX, centerY, f) => {
-  const centerIntensity = (Math.sin(f * 0.025) + 1) / 2;
-  grid[centerY][centerX] = getCharForIntensity(centerIntensity, true);
-
-  for (let r = 0; r < 3; r += 1) {
-    const radius = 2 + r * 2;
-    const points = 8 + r * 4;
-    for (let i = 0; i < points; i += 1) {
-      const angle = (i / points) * Math.PI * 2;
-      const breathingFactor = 0.2 * Math.sin(f * 0.025 + r + i * 0.1);
-      const x = Math.round(centerX + Math.cos(angle) * (radius + breathingFactor));
-      const y = Math.round(centerY + Math.sin(angle) * (radius + breathingFactor));
-      if (x >= 0 && x < asciiWidth && y >= 0 && y < asciiHeight) {
-        const intensityPhase = (Math.sin(f * 0.02 + r * 0.3 + i * 0.2) + 1) / 2;
-        grid[y][x] = getCharForIntensity(intensityPhase, true);
-      }
-    }
-  }
-};
-
-const drawMandala = (grid, f) => {
-  const centerX = Math.floor(asciiWidth / 2);
-  const centerY = Math.floor(asciiHeight / 2);
-
-  for (let y = 1; y < asciiHeight - 1; y += 1) {
-    const lineOpacity = 0.3 + Math.sin(f * 0.005 + y * 0.1) * 0.1;
-    if (lineOpacity > 0.2) grid[y][centerX] = '|';
-  }
-
-  drawCirclePattern(grid, centerX, centerY, f);
-
-  const numPatterns = 6;
-  for (let i = 0; i < numPatterns; i += 1) {
-    const radius = 5 + i * 3;
-    const points = 6 + i * 2;
-    for (let j = 0; j < points; j += 1) {
-      const angle = (j / points) * Math.PI * 2;
-      const breathingFactor = 0.2 * Math.sin(f * 0.025 + i * 0.5 + j * 0.2);
-      const x = Math.round(centerX + Math.cos(angle) * (radius + breathingFactor * radius));
-      const y = Math.round(centerY + Math.sin(angle) * (radius + breathingFactor * radius));
-      if (x >= 0 && x < asciiWidth && y >= 0 && y < asciiHeight) {
-        const intensityPhase = (Math.sin(f * 0.015 + i * 0.4 + j * 0.8) + 1) / 2;
-        const char = getCharForIntensity(intensityPhase);
-        grid[y][x] = char;
-        const mirrorX = 2 * centerX - x;
-        if (mirrorX >= 0 && mirrorX < asciiWidth) grid[y][mirrorX] = char;
-      }
-
-      if (i > 0 && j % 2 === 0) {
-        const secondaryRadius = radius * 0.7;
-        const x2 = Math.round(centerX + Math.cos(angle + 0.2) * secondaryRadius);
-        const y2 = Math.round(centerY + Math.sin(angle + 0.2) * secondaryRadius);
-        if (x2 >= 0 && x2 < asciiWidth && y2 >= 0 && y2 < asciiHeight) {
-          const intensityPhase = (Math.sin(f * 0.025 + i * 0.3 + j) + 1) / 2;
-          const char = getCharForIntensity(intensityPhase * 0.8);
-          grid[y2][x2] = char;
-          const mirrorX2 = 2 * centerX - x2;
-          if (mirrorX2 >= 0 && mirrorX2 < asciiWidth) grid[y2][mirrorX2] = char;
-        }
-      }
-    }
-  }
-
-  for (let i = 0; i < 40; i += 1) {
-    const angle = (i / 40) * Math.PI;
-    const radius = 10 + (i % 5) * 3;
-    const x = Math.round(centerX + Math.cos(angle) * radius);
-    const y = Math.round(centerY + Math.sin(angle) * radius);
-    if (x >= 0 && x < asciiWidth && y >= 0 && y < asciiHeight && grid[y][x] === ' ') {
-      const intensityPhase = (Math.sin(f * 0.02 + i * 0.2) + 1) / 3;
-      const char = getCharForIntensity(intensityPhase);
-      if (char !== ' ') {
-        grid[y][x] = char;
-        const mirrorX = 2 * centerX - x;
-        if (mirrorX >= 0 && mirrorX < asciiWidth && grid[y][mirrorX] === ' ') {
-          grid[y][mirrorX] = char;
-        }
-      }
-    }
-  }
-};
-
-const charToOpacity = (char) => {
-  switch (char) {
-    case '●': return 0.9;
-    case '○': return 0.7;
-    case '•': return 0.6;
-    case '·': return 0.5;
-    case '.': return 0.4;
-    case '|': return 0.3;
-    default: return 0;
-  }
-};
-
 const initAsciiMandala = () => {
   const canvas = document.getElementById('ascii-canvas');
   if (!canvas) return null;
   const ctx = canvas.getContext('2d', { alpha: true });
   const rootStyles = getComputedStyle(document.documentElement);
-  const inkA = parseRgbTriplet(
-    rootStyles.getPropertyValue('--module-ink-rgb').trim(),
-    [56, 31, 32],
-  );
+  const inkA = parseRgbTriplet(rootStyles.getPropertyValue('--module-ink-rgb').trim(), [56, 31, 32]);
   const inkB = parseRgbTriplet(
     rootStyles.getPropertyValue('--module-ink-drift-rgb').trim() || rootStyles.getPropertyValue('--module-ink-rgb').trim(),
     inkA,
   );
-  const accentA = parseRgbTriplet(
-    rootStyles.getPropertyValue('--module-accent-rgb').trim(),
-    [200, 72, 71],
-  );
+  const accentA = parseRgbTriplet(rootStyles.getPropertyValue('--module-accent-rgb').trim(), [200, 72, 71]);
   const accentB = parseRgbTriplet(
     rootStyles.getPropertyValue('--module-accent-drift-rgb').trim() || rootStyles.getPropertyValue('--module-accent-rgb').trim(),
     accentA,
   );
-  const altA = parseRgbTriplet(
-    rootStyles.getPropertyValue('--module-alt-rgb').trim(),
-    [21, 114, 74],
-  );
-  const altB = parseRgbTriplet(
-    rootStyles.getPropertyValue('--module-alt-drift-rgb').trim() || rootStyles.getPropertyValue('--module-alt-rgb').trim(),
-    altA,
-  );
-  let frame = 0;
+  let time = 0;
   let raf = 0;
   let lastTs = 0;
-  const targetFrameMs = 1000 / 30;
+  const fps = 10;
+  const frameDuration = 1000 / fps;
+  const quantizationStep = 3;
 
   const resize = () => {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const rect = canvas.getBoundingClientRect();
-    canvas.width = Math.floor(rect.width * dpr);
-    canvas.height = Math.floor(rect.height * dpr);
+    canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+    canvas.height = Math.max(1, Math.floor(rect.height * dpr));
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.textBaseline = 'top';
-    ctx.textAlign = 'left';
   };
 
   const render = (ts = 0) => {
-    if (ts - lastTs < targetFrameMs) {
+    if (ts - lastTs < frameDuration) {
       raf = requestAnimationFrame(render);
       return;
     }
     lastTs = ts;
+    time += 0.05;
 
-    const grid = Array.from({ length: asciiHeight }, () => Array(asciiWidth).fill(' '));
-    drawMandala(grid, frame);
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const maxRadius = width * 0.35;
+    const numRings = 22;
+    const ringSpacing = maxRadius / numRings;
+    const crumbleFactor = (Math.sin(time * 0.24) + 1) / 2;
 
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    ctx.clearRect(0, 0, w, h);
+    // transparent bg
+    ctx.clearRect(0, 0, width, height);
 
-    const charW = w / asciiWidth;
-    const charH = h / asciiHeight;
-    const fontPx = Math.max(8, Math.floor(charH * 0.82));
-    ctx.font = `${fontPx}px "Courier Prime", "IBM Plex Mono", monospace`;
+    const inkRgb = driftRgbCsv(inkA, inkB, ts, MODULE_DRIFT_SPEED, 0.15);
+    const accentRgb = driftRgbCsv(accentA, accentB, ts, MODULE_DRIFT_SPEED, 1.25);
 
-    const inkRgb = driftRgbCsv(inkA, inkB, ts, MODULE_DRIFT_SPEED, 0);
-    const accentRgb = driftRgbCsv(accentA, accentB, ts, MODULE_DRIFT_SPEED, 1.15);
-    const altRgb = driftRgbCsv(altA, altB, ts, MODULE_DRIFT_SPEED, 2.05);
+    const noise = (angle, radius, t) => {
+      const n = Math.sin(angle * 3 + t) * Math.cos(radius * 0.02 - t * 0.5);
+      return (n + 1) / 2;
+    };
 
-    for (let y = 0; y < asciiHeight; y += 1) {
-      for (let x = 0; x < asciiWidth; x += 1) {
-        const char = grid[y][x];
-        const alpha = charToOpacity(char);
-        if (alpha <= 0) continue;
+    for (let i = 1; i <= numRings; i += 1) {
+      const baseRadius = i * ringSpacing;
+      const driftedRadius = baseRadius * (1 + crumbleFactor * 0.2);
+      const circumference = 2 * Math.PI * baseRadius;
+      const steps = Math.max(10, Math.floor(circumference / 10));
+
+      for (let j = 0; j < steps; j += 1) {
+        const baseAngle = (j / steps) * Math.PI * 2;
+        const noiseVal = noise(baseAngle, baseRadius, time);
+        if (noiseVal <= 0.6) continue;
+
+        const intensity = (noiseVal - 0.6) / 0.4;
+        const orbitOffset = time * 0.1 * (1 + i * 0.03);
+        const finalAngle = baseAngle + orbitOffset;
+        const fallStrength = Math.pow(crumbleFactor, 3) * 98 * intensity;
+        const jitterX = (Math.random() - 0.5) * 2;
+        const jitterY = (Math.random() - 0.5) * 2;
+
+        let px = centerX + Math.cos(finalAngle) * driftedRadius + jitterX;
+        let py = centerY + Math.sin(finalAngle) * driftedRadius + jitterY;
+        py += fallStrength;
+        px += Math.sin(time + i) * fallStrength * 0.2;
+
+        px = Math.round(px / quantizationStep) * quantizationStep;
+        py = Math.round(py / quantizationStep) * quantizationStep;
+
+        const dotSize = Math.round((1 + intensity * 2.5) * (1 - crumbleFactor * 0.4));
+        if (dotSize < 1) continue;
+
+        const palettePhase = (i + j) % 7;
         let rgb = inkRgb;
-        if (char === '●' || char === '○') {
-          rgb = accentRgb;
-        } else if (char === '|') {
-          rgb = altRgb;
+        if (palettePhase <= 2) rgb = accentRgb;
+
+        ctx.beginPath();
+        ctx.arc(px, py, dotSize, 0, Math.PI * 2);
+
+        const styleThresh = crumbleFactor > 0.7 ? 3 : 6;
+        const isOutline = (i + j) % styleThresh === 0;
+        if (isOutline) {
+          ctx.strokeStyle = `rgba(${rgb}, ${0.18 + intensity * 0.34})`;
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = `rgba(${rgb}, ${0.12 + intensity * 0.42})`;
+          ctx.fill();
         }
-        ctx.fillStyle = `rgba(${rgb}, ${alpha})`;
-        ctx.fillText(char, x * charW, y * charH);
       }
     }
 
-    frame += 1;
     raf = requestAnimationFrame(render);
   };
 
@@ -226,141 +145,111 @@ const initMetamorphosis = () => {
   if (!canvas) return null;
   const ctx = canvas.getContext('2d');
   const rootStyles = getComputedStyle(document.documentElement);
-  const inkSoftA = parseRgbTriplet(
+  const strokeRgb = parseRgbTriplet(
     rootStyles.getPropertyValue('--module-ink-soft-rgb').trim(),
-    [96, 53, 83],
+    [83, 81, 70],
   );
-  const inkSoftB = parseRgbTriplet(
-    rootStyles.getPropertyValue('--module-ink-soft-drift-rgb').trim() || rootStyles.getPropertyValue('--module-ink-soft-rgb').trim(),
-    inkSoftA,
-  );
-  const accentA = parseRgbTriplet(
+  const accentRgb = parseRgbTriplet(
     rootStyles.getPropertyValue('--module-accent-rgb').trim(),
     [200, 72, 71],
   );
-  const accentB = parseRgbTriplet(
-    rootStyles.getPropertyValue('--module-accent-drift-rgb').trim() || rootStyles.getPropertyValue('--module-accent-rgb').trim(),
-    accentA,
+  const altRgb = parseRgbTriplet(
+    rootStyles.getPropertyValue('--module-alt-rgb').trim(),
+    [21, 114, 74],
   );
-  let raf = 0;
+  const clayRgb = parseRgbTriplet(
+    rootStyles.getPropertyValue('--rubin-clay').trim(),
+    [201, 125, 85],
+  );
+  const cyanRgb = parseRgbTriplet(
+    rootStyles.getPropertyValue('--rubin-cyan').trim(),
+    [68, 166, 228],
+  );
+  const risoRgb = parseRgbTriplet(
+    rootStyles.getPropertyValue('--rubin-riso').trim(),
+    [94, 126, 223],
+  );
+
+  canvas.width = 550;
+  canvas.height = 550;
 
   const width = canvas.width;
   const height = canvas.height;
-  const numLines = 120;
-  const lineSegments = 180;
-  const lineAlpha = 0.5;
-  const lineWidth = 0.6;
-  const rotateSpeed = 0.00025;
-  let time = 2000;
+  const phi = (1 + Math.sqrt(5)) / 2;
+  let raf = 0;
+  let time = 0;
 
-  const forms = [
-    (u, v) => {
-      const theta = u * Math.PI * 2;
-      const phi = v * Math.PI;
-      let r = 120 + 30 * Math.sin(phi * 4 + theta * 2);
-      r += 20 * Math.sin(phi * 6) * Math.cos(theta * 3);
-      return {
-        x: r * Math.sin(phi) * Math.cos(theta),
-        y: r * Math.sin(phi) * Math.sin(theta),
-        z: r * Math.cos(phi) + 20 * Math.sin(theta * 5 + phi * 3),
-      };
-    },
-    (u, v) => {
-      const theta = u * Math.PI * 2;
-      const phi = v * Math.PI;
-      let r = 150 + 20 * Math.cos(phi * 8);
-      r *= 0.8 + 0.2 * Math.abs(Math.cos(theta * 2));
-      return {
-        x: r * Math.sin(phi) * Math.cos(theta),
-        y: r * Math.sin(phi) * Math.sin(theta),
-        z: r * Math.cos(phi) * (0.8 + 0.3 * Math.sin(theta * 4)),
-      };
-    },
-    (u, v) => {
-      const theta = u * Math.PI * 2;
-      const phi = v * Math.PI;
-      let r = 120;
-      r += 50 * Math.sin(phi * 3) * Math.sin(theta * 2.5);
-      r += 30 * Math.cos(phi * 5 + theta);
-      const hollow = Math.max(0, Math.sin(phi * 2 + theta * 3) - 0.7);
-      r *= 1 - hollow * 0.8;
-      return {
-        x: r * Math.sin(phi) * Math.cos(theta),
-        y: r * Math.sin(phi) * Math.sin(theta),
-        z: r * Math.cos(phi),
-      };
-    },
-  ];
+  const animate = () => {
+    const now = performance.now();
+    const maxRectangles = Math.min(60, Math.floor((time * 0.02) % 80));
 
-  const interpolateForms = (a, b, u, v, blend) => {
-    const pa = a(u, v);
-    const pb = b(u, v);
-    return {
-      x: pa.x * (1 - blend) + pb.x * blend,
-      y: pa.y * (1 - blend) + pb.y * blend,
-      z: pa.z * (1 - blend) + pb.z * blend,
-    };
-  };
-
-  const getCurrentForm = (u, v, t) => {
-    const total = forms.length;
-    const cycleTime = 600;
-    const position = (t % (cycleTime * total)) / cycleTime;
-    const idx = Math.floor(position);
-    const next = (idx + 1) % total;
-    const rawBlend = position - idx;
-    const blend = rawBlend < 0.5
-      ? 4 * rawBlend * rawBlend * rawBlend
-      : 1 - Math.pow(-2 * rawBlend + 2, 3) / 2;
-    return interpolateForms(forms[idx], forms[next], u, v, blend);
-  };
-
-  const drawSet = (uMode, strokeRgb) => {
-    const lines = uMode ? numLines * 0.3 : numLines;
-    const segments = uMode ? lineSegments * 0.5 : lineSegments;
-    ctx.beginPath();
-    ctx.strokeStyle = `rgba(${strokeRgb}, ${uMode ? lineAlpha * 0.75 : lineAlpha})`;
-    ctx.lineWidth = uMode ? lineWidth * 0.7 : lineWidth;
-
-    for (let i = 0; i < lines; i += 1) {
-      const fixed = i / (lines - 1);
-      let lastVisible = false;
-      for (let j = 0; j <= segments; j += 1) {
-        const moving = j / segments;
-        const u = uMode ? fixed : moving;
-        const v = uMode ? moving : fixed;
-        const point = getCurrentForm(u, v, time);
-
-        const rotateZ = time * rotateSpeed * 0.1;
-        const rotatedX = point.x * Math.cos(rotateZ) - point.y * Math.sin(rotateZ);
-        const rotatedY = point.x * Math.sin(rotateZ) + point.y * Math.cos(rotateZ);
-        const rotatedZ = point.z;
-
-        const scale = 1.35 + rotatedZ * 0.001;
-        const x = width / 2 + rotatedX * scale;
-        const y = height / 2 + 18 + rotatedY * scale;
-        const visible = rotatedZ > -50;
-
-        if (j === 0) {
-          if (visible) ctx.moveTo(x, y);
-        } else if (visible && lastVisible) {
-          ctx.lineTo(x, y);
-        } else if (visible && !lastVisible) {
-          ctx.moveTo(x, y);
-        }
-        lastVisible = visible;
-      }
-    }
-    ctx.stroke();
-  };
-
-  const animate = (now = performance.now()) => {
     ctx.clearRect(0, 0, width, height);
-    const primaryRgb = driftRgbCsv(inkSoftA, inkSoftB, now, MODULE_DRIFT_SPEED, 0.4);
-    const accentRgb = driftRgbCsv(accentA, accentB, now, MODULE_DRIFT_SPEED, 1.6);
-    drawSet(false, primaryRgb);
-    drawSet(true, accentRgb);
-    time += 0.5;
+
+    ctx.save();
+    ctx.translate(width / 2, height / 2);
+
+    let rectWidth = 300;
+    let rectHeight = rectWidth / phi;
+    let scale = 1;
+    const angle = time * 0.00025;
+
+    for (let i = 0; i < maxRectangles; i += 1) {
+      ctx.save();
+
+      const spiralAngle = i * 0.174533;
+      const radius = scale * 100;
+      const x = Math.cos(spiralAngle) * radius;
+      const y = Math.sin(spiralAngle) * radius;
+
+      ctx.translate(x, y);
+      ctx.rotate(spiralAngle + angle);
+
+      const alpha = Math.max(0, 0.5 - i * 0.01);
+      const paletteWave = (Math.sin(now * MODULE_DRIFT_SPEED + i * 0.13) + 1) * 0.5;
+      let rgb = strokeRgb;
+      if (paletteWave > 0.8) rgb = accentRgb;
+      else if (paletteWave > 0.6) rgb = clayRgb;
+      else if (paletteWave > 0.4) rgb = altRgb;
+      else if (paletteWave > 0.2) rgb = cyanRgb;
+      else rgb = risoRgb;
+      ctx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`;
+      ctx.lineWidth = 0.8;
+      ctx.strokeRect(-rectWidth / 2, -rectHeight / 2, rectWidth, rectHeight);
+
+      if (i % 3 === 0) {
+        ctx.beginPath();
+        ctx.moveTo(-rectWidth / 2, -rectHeight / 2);
+        ctx.lineTo(rectWidth / 2, rectHeight / 2);
+        ctx.moveTo(rectWidth / 2, -rectHeight / 2);
+        ctx.lineTo(-rectWidth / 2, rectHeight / 2);
+        ctx.strokeStyle = `rgba(${altRgb[0]}, ${altRgb[1]}, ${altRgb[2]}, ${alpha * 0.28})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+
+      ctx.restore();
+
+      rectWidth *= 0.95;
+      rectHeight *= 0.95;
+      scale *= 0.98;
+    }
+
+    ctx.beginPath();
+    for (let i = 0; i <= maxRectangles; i += 1) {
+      const spiralAngle = i * 0.174533;
+      const radius = Math.pow(0.98, i) * 100;
+      const x = Math.cos(spiralAngle) * radius;
+      const y = Math.sin(spiralAngle) * radius;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = `rgba(${risoRgb[0]}, ${risoRgb[1]}, ${risoRgb[2]}, 0.28)`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.restore();
+
+    time += 0.75;
     raf = requestAnimationFrame(animate);
   };
 
