@@ -292,57 +292,18 @@ body,
   display: block;
   border: none;
   background: transparent;
-}
-
-.chapter-bar {
-  position: fixed;
-  right: max(14px, calc((100vw - 1400px) / 2 + 14px));
-  top: 96px;
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 6px;
-  padding: 10px;
-  background: color-mix(in oklab, var(--background-color) 92%, transparent);
-  border: 1px solid var(--rubin-ivory-dark);
-  backdrop-filter: blur(4px);
-}
-
-.chapter-link {
-  border: 1px solid var(--rubin-ivory-dark);
-  background: color-mix(in oklab, var(--rubin-ivory) 56%, transparent);
-  color: var(--rubin-dark-gray);
-  font-family: var(--font-family-code);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-.chapter-link[aria-current="true"] {
-  background: var(--rubin-slate);
-  color: var(--rubin-ivory-med);
-  border-color: var(--rubin-slate);
+  touch-action: pan-y;
+  pointer-events: none;
 }
 
 @media (max-width: 1024px) {
-  .chapter-bar {
-    position: sticky;
-    top: 0;
-    right: auto;
-    flex-direction: row;
-    align-items: center;
-    padding: 10px var(--poem-padding-left);
-    border-left: none;
-    border-right: none;
-    border-top: none;
-  }
-
   .chapter78-main {
-    height: auto;
-    min-height: calc(100vh - 60px);
-    overflow: visible;
+    height: calc(100dvh - 60px);
+    min-height: calc(100dvh - 60px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
     scroll-snap-type: none;
   }
 
@@ -350,7 +311,7 @@ body,
     display: grid;
     grid-template-columns: 1fr;
     gap: 18px;
-    padding: calc(var(--mobile-menu-height) + 16px) var(--poem-padding-left) 0;
+    padding: 16px var(--poem-padding-left) 0;
   }
 
   .chapter78-poem-section .column-1 {

@@ -263,34 +263,13 @@ const initMetamorphosis = () => {
 const initChapterFlow = () => {
   const container = document.querySelector('.chapter78-main');
   const sections = Array.from(document.querySelectorAll('.chapter-observe'));
-  const links = Array.from(document.querySelectorAll('.chapter-link'));
   if (!container || sections.length === 0) return null;
-
-  const setActive = (id) => {
-    links.forEach((link) => {
-      const active = link.dataset.target === id;
-      link.setAttribute('aria-current', active ? 'true' : 'false');
-    });
-  };
-
-  const scrollToSection = (id) => {
-    const target = document.getElementById(id);
-    if (!target) return;
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  const clickHandlers = links.map((link) => {
-    const fn = () => scrollToSection(link.dataset.target);
-    link.addEventListener('click', fn);
-    return { link, fn };
-  });
 
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           entry.target.classList.add('in-view');
-          setActive(entry.target.id);
         } else {
           entry.target.classList.remove('in-view');
         }
@@ -325,15 +304,12 @@ const initChapterFlow = () => {
     const next = Math.max(0, Math.min(sections.length - 1, current + delta));
     wheelAccum = 0;
     wheelLocked = true;
-    scrollToSection(sections[next].id);
+    sections[next].scrollIntoView({ behavior: 'smooth', block: 'start' });
     window.setTimeout(() => { wheelLocked = false; }, 520);
   };
   container.addEventListener('wheel', onWheel, { passive: false });
 
   const getCurrentIndex = () => {
-    const activeId = links.find((l) => l.getAttribute('aria-current') === 'true')?.dataset.target;
-    const byActive = sections.findIndex((s) => s.id === activeId);
-    if (byActive >= 0) return byActive;
     const top = container.getBoundingClientRect().top;
     let best = 0;
     let bestDist = Infinity;
@@ -355,13 +331,12 @@ const initChapterFlow = () => {
     const current = getCurrentIndex();
     const delta = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
     const next = Math.max(0, Math.min(sections.length - 1, current + delta));
-    scrollToSection(sections[next].id);
+    sections[next].scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   window.addEventListener('keydown', onKey);
 
   return () => {
-    clickHandlers.forEach(({ link, fn }) => link.removeEventListener('click', fn));
     observer.disconnect();
     window.removeEventListener('keydown', onKey);
     container.removeEventListener('wheel', onWheel);
