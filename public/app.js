@@ -261,6 +261,7 @@ const initMetamorphosis = () => {
 };
 
 const initChapterFlow = () => {
+  if (window.matchMedia('(max-width: 1024px)').matches) return null;
   const container = document.querySelector('.chapter78-main');
   const sections = Array.from(document.querySelectorAll('.chapter-observe'));
   if (!container || sections.length === 0) return null;
