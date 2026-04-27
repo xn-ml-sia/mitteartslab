@@ -1123,13 +1123,17 @@ const initSingleShaderDeck = (section) => {
   // Unify monochrome family with per-shader value balancing.
   const monochromeFilterByShader = {
     // Section 2 deck
+    sec2_goo: 'grayscale(1) contrast(1.12) brightness(0.90)',
+    sec2_rock: 'grayscale(1) contrast(1.08) brightness(0.94)',
     ftcyzn: 'grayscale(1) contrast(1.10) brightness(0.92)',
     ldSSzV: 'grayscale(1) contrast(1.06) brightness(0.96)',
     ldyXRw: 'grayscale(1) contrast(1.06) brightness(0.96)',
     // Section 4 deck
     s4a: 'grayscale(1) contrast(1.16) brightness(0.90)',
     s4b: 'grayscale(1) contrast(1.14) brightness(0.92)',
-    s4c: 'grayscale(1) contrast(1.18) brightness(0.88)',
+    // Keep shader A/B in color for Section 4.
+    s4c: 'none',
+    s4d: 'none',
   };
 
   entries.forEach((entry) => {
