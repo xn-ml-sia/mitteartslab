@@ -276,10 +276,11 @@ if (viewport && container && title && mediaItems.length > 0) {
   const recenterCamera = () => {
     const cx = parseFloat(title.style.left || '0') || state.canvasWidth * 0.5;
     const cy = parseFloat(title.style.top || '0') || state.canvasHeight * 0.5;
-    const viewportCx = window.innerWidth * 0.5;
-    const viewportCy = window.innerHeight * 0.5;
-    const startX = viewportCx - cx * state.zoom;
-    const startY = viewportCy - cy * state.zoom;
+    // Art direction: start with the title near the top-left quadrant.
+    const targetScreenX = window.innerWidth * (state.isMobile ? 0.3 : 0.22);
+    const targetScreenY = window.innerHeight * (state.isMobile ? 0.24 : 0.2);
+    const startX = targetScreenX - cx * state.zoom;
+    const startY = targetScreenY - cy * state.zoom;
     const bounded = applyBounds(startX, startY);
     state.targetX = bounded.x;
     state.targetY = bounded.y;

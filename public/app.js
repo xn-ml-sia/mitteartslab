@@ -53,7 +53,13 @@ const debugOverlay = (() => {
     'pointer-events:none',
     'white-space:pre-wrap',
   ].join(';');
+  let renderQueued = false;
+  let lastRenderAt = 0;
+  let lastText = '';
+  const RENDER_MIN_MS = 220;
   const render = () => {
+    renderQueued = false;
+    lastRenderAt = Date.now();
     const lines = [];
     lines.push(`app: ${state.app.phase}`);
     lines.push(`page: ${state.lifecycle.active ? 'active' : 'paused'} | vis:${state.lifecycle.visible ? '1' : '0'} foc:${state.lifecycle.focused ? '1' : '0'}`);
@@ -64,14 +70,24 @@ const debugOverlay = (() => {
         `${name}: ${moduleState.running ? 'run' : 'stop'} vis:${moduleState.visible ? '1' : '0'} state:${moduleState.renderState || '-'} frame:${ageText}`,
       );
     });
-    panel.textContent = lines.join('\n');
+    const nextText = lines.join('\n');
+    if (nextText === lastText) return;
+    lastText = nextText;
+    panel.textContent = nextText;
   };
   const ensureMounted = () => {
     if (!document.body.contains(panel)) document.body.appendChild(panel);
   };
   const schedule = () => {
     ensureMounted();
-    render();
+    if (renderQueued) return;
+    const wait = Math.max(0, RENDER_MIN_MS - (Date.now() - lastRenderAt));
+    renderQueued = true;
+    if (wait === 0) {
+      requestAnimationFrame(render);
+      return;
+    }
+    window.setTimeout(() => requestAnimationFrame(render), wait);
   };
   const setApp = (patch) => {
     state.app = { ...state.app, ...patch };
@@ -1671,7 +1687,8 @@ const initSingleShaderDeck = (section) => {
   const sectionTracker = createSectionVisibilityTracker(section, 0.15);
   let visible = sectionTracker.isVisible();
   let pageActive = pageLifecycle.isActive();
-  const debug = createDebugModuleProbe('shaderDeck');
+  const sectionLabel = section.id ? `shaderDeck:${section.id}` : 'shaderDeck:unknown';
+  const debug = createDebugModuleProbe(sectionLabel);
   debug?.set({ running: false, visible, renderState: 'init' });
 
   const ro = new ResizeObserver(resizeAll);

@@ -2679,21 +2679,18 @@ void glitchTime(vec2 p, inout float inoutTime) {
 
 void glitchColor(vec2 p, inout vec3 color) {
     vec2 groupSize = vec2(.75,.125) * glitchScale;
-    vec2 subGrid = vec2(0,6);
+    vec2 subGrid = vec2(6.0, 6.0);
     float speed = 5.;
     GlitchSeed seed = glitchSeed(glitchCoord(p, groupSize), speed);
     seed.prob *= .3;
     if (shouldApply(seed) == 1.) {
         vec2 co = mod(p, groupSize) / groupSize;
         co *= subGrid;
-        float a = max(co.x, co.y);
-        //color.rgb *= vec3(
-        //  min(floor(mod(a - 0., 3.)), 1.),
-        //    min(floor(mod(a - 1., 3.)), 1.),
-        //    min(floor(mod(a - 2., 3.)), 1.)
-        //);
-
-        color *= min(floor(mod(a, 2.)), 1.) * 10.;
+        float stripe = step(0.5, fract(co.y * 0.5 + rand(seed.seed)));
+        float pulse = 0.45 + 0.55 * sin(time * 35.0 + co.x * 1.2);
+        float redMask = stripe * pulse;
+        vec3 glitchRed = vec3(0.92, 0.08, 0.1);
+        color = mix(color, glitchRed, redMask * 0.9);
     }
 }
 
@@ -2720,6 +2717,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
         Hit hit = raymarchPixel(p, false);
         color = render(hit);
+        // Section 4 shader 2 art direction: monochrome base.
+        float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
+        color = vec3(luma);
 
         #ifndef NO_GLITCH
             glitchColor(p, color);
