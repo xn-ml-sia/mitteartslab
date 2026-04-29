@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll/bundled/locomotive-scroll.css" />
+    <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll/bundled/locomotive-scroll.min.js"></script>
     <link rel="stylesheet" href="./public/styles.css" />
   </head>
   <body>
@@ -20,10 +22,16 @@
           </span>
           <span>mitte arts lab</span>
         </div>
-        <div class="mal-header-right">soft media agent</div>
+        <div class="mal-header-right">
+          <span>soft media agent</span>
+          <span class="mal-header-sep" aria-hidden="true">·</span>
+          <a class="gallery-nav-link chapter-link" href="./gallery.html">Gallery</a>
+        </div>
       </header>
 
-      <main class="main chapter-main">
+      <div id="locomotive-wrapper">
+        <div id="locomotive-content" data-scroll-container>
+          <main class="main chapter-main">
         <section id="chapter-1" class="poem-section chapter-poem-section chapter-observe">
           <div class="column-1">
             <div class="poem">
@@ -47,11 +55,11 @@
           <ol class="shader-deck" role="list">
             <li class="shader-card" data-shader="sec2_goo" data-pos="0" tabindex="0" aria-label="Card 1 of 2, goo shader. Tap to send to back on a small screen.">
               <canvas class="shader-canvas" width="1" height="1" aria-label=""></canvas>
-              <span class="shader-caption" aria-hidden="true">i. goo</span>
+              <span class="shader-caption" aria-hidden="true">i. ទឹក។</span>
             </li>
             <li class="shader-card" data-shader="sec2_rock" data-pos="1" tabindex="0" aria-label="Card 2 of 2, rock shader. Tap to send to back on a small screen.">
               <canvas class="shader-canvas" width="1" height="1" aria-label=""></canvas>
-              <span class="shader-caption" aria-hidden="true">ii. rock</span>
+              <span class="shader-caption" aria-hidden="true">ii. ថ្ម</span>
             </li>
           </ol>
         </section>
@@ -78,11 +86,11 @@
           <ol class="shader-deck" role="list">
             <li class="shader-card" data-shader="s4c" data-pos="0" tabindex="0" aria-label="Card 1 of 2, section 4 earth shader. Tap to cycle on a small screen.">
               <canvas class="shader-canvas" width="1" height="1" aria-label=""></canvas>
-              <span class="shader-caption" aria-hidden="true">i. bubble</span>
+              <span class="shader-caption" aria-hidden="true">i. បបុហ</span>
             </li>
-            <li class="shader-card" data-shader="s4d" data-pos="1" tabindex="0" aria-label="Card 2 of 2, section 4 crater shader. Tap to cycle on a small screen.">
+            <li class="shader-card" data-shader="s4f" data-pos="1" tabindex="0" aria-label="Card 2 of 2, section 4 glitch poly shader. Tap to cycle on a small screen.">
               <canvas class="shader-canvas" width="1" height="1" aria-label=""></canvas>
-              <span class="shader-caption" aria-hidden="true">ii. earth</span>
+              <span class="shader-caption" aria-hidden="true">ii. glitch poly</span>
             </li>
           </ol>
         </section>
@@ -105,7 +113,9 @@
           </div>
         </section>
         
-      </main>
+          </main>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="./public/app.js"></script>

@@ -4,6 +4,175 @@ import { SHADER_SOURCES } from './shader-deck-shaders.js';
 const MODULE_DRIFT_SPEED = 0.0001;
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+let locomotiveScroll = null;
+
+const RenderState = Object.freeze({
+  REDUCED_MOTION: 'reduced_motion',
+  FOCUSED: 'focused',
+  VISIBLE_NOT_FOCUSED: 'visible_not_focused',
+  OFFSCREEN: 'offscreen',
+});
+
+const RENDER_POLICY = Object.freeze({
+  chapterFpsFocused: 11,
+  chapterFpsVisibleNotFocused: 6,
+  shaderFpsFocused: 23,
+  shaderFpsVisibleNotFocused: 1,
+  shaderFpsOffscreen: 0,
+});
+
+const RUNTIME_QUALITY_MEMORY = {
+  shaderPerfLevel: 0,
+};
+
+const pageLifecycle = (() => {
+  let isDocVisible = document.visibilityState === 'visible';
+  let isWinFocused = document.hasFocus();
+  const subs = new Set();
+
+  const emit = () => {
+    subs.forEach((fn) => fn({ isDocVisible, isWinFocused, isActive: isDocVisible && isWinFocused }));
+  };
+
+  const onVisibility = () => {
+    isDocVisible = document.visibilityState === 'visible';
+    emit();
+  };
+  const onFocus = () => {
+    isWinFocused = true;
+    emit();
+  };
+  const onBlur = () => {
+    isWinFocused = false;
+    emit();
+  };
+
+  document.addEventListener('visibilitychange', onVisibility);
+  window.addEventListener('focus', onFocus, { passive: true });
+  window.addEventListener('blur', onBlur, { passive: true });
+
+  return {
+    subscribe(fn) {
+      subs.add(fn);
+      fn({ isDocVisible, isWinFocused, isActive: isDocVisible && isWinFocused });
+      return () => subs.delete(fn);
+    },
+    isActive() {
+      return isDocVisible && isWinFocused;
+    },
+    dispose() {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', onFocus);
+      window.removeEventListener('blur', onBlur);
+      subs.clear();
+    },
+  };
+})();
+
+const resolveRenderState = ({ reducedMotion, sectionVisible, isFocusedSurface }) => {
+  if (reducedMotion) return RenderState.REDUCED_MOTION;
+  if (!sectionVisible || !pageLifecycle.isActive()) return RenderState.OFFSCREEN;
+  if (isFocusedSurface) return RenderState.FOCUSED;
+  return RenderState.VISIBLE_NOT_FOCUSED;
+};
+
+const initLocomotiveScroll = () => {
+  const wrapper = document.getElementById('locomotive-wrapper');
+  if (!wrapper) return null;
+  const content = wrapper.querySelector('[data-scroll-container]');
+  if (!content) return null;
+  if (typeof window.LocomotiveScroll !== 'function') return null;
+
+  const instance = new window.LocomotiveScroll({
+    lenisOptions: {
+      wrapper,
+      content,
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: !prefersReducedMotion,
+      smoothTouch: false,
+      normalizeWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 2,
+      lerp: prefersReducedMotion ? 1 : 0.08,
+      duration: prefersReducedMotion ? 0 : 1.2,
+    },
+  });
+
+  locomotiveScroll = instance;
+
+  const unsubscribeLifecycle = pageLifecycle.subscribe(({ isActive }) => {
+    if (!locomotiveScroll) return;
+    if (!isActive && typeof locomotiveScroll.stop === 'function') locomotiveScroll.stop();
+    if (isActive && typeof locomotiveScroll.start === 'function') locomotiveScroll.start();
+  });
+
+  const onResize = () => {
+    if (!locomotiveScroll) return;
+    if (typeof locomotiveScroll.update === 'function') locomotiveScroll.update();
+  };
+  window.addEventListener('resize', onResize, { passive: true });
+
+  return () => {
+    unsubscribeLifecycle();
+    window.removeEventListener('resize', onResize);
+    if (locomotiveScroll) {
+      try {
+        locomotiveScroll.destroy();
+      } catch {
+        // ignore; we'll also try to stop for safety
+        try {
+          locomotiveScroll.stop();
+        } catch {
+          // ignore
+        }
+      }
+    }
+    locomotiveScroll = null;
+  };
+};
+
+const createSectionVisibilityTracker = (node, threshold = 0.2) => {
+  if (!node) {
+    return {
+      isVisible: () => true,
+      subscribe: (fn) => {
+        if (typeof fn === 'function') fn(true);
+        return () => {};
+      },
+      dispose: () => {},
+    };
+  }
+  let visible = false;
+  const subs = new Set();
+  const io = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0];
+      if (entry) {
+        const nextVisible = entry.isIntersecting;
+        if (nextVisible !== visible) {
+          visible = nextVisible;
+          subs.forEach((fn) => fn(visible));
+        }
+      }
+    },
+    { threshold },
+  );
+  io.observe(node);
+  return {
+    isVisible: () => visible,
+    subscribe(fn) {
+      subs.add(fn);
+      fn(visible);
+      return () => subs.delete(fn);
+    },
+    dispose: () => {
+      io.disconnect();
+      subs.clear();
+    },
+  };
+};
+
 const parseRgbTriplet = (csv, fallback) => {
   const parts = csv.split(',').map((n) => parseInt(n.trim(), 10));
   if (parts.length !== 3 || parts.some((n) => Number.isNaN(n))) return fallback;
@@ -28,6 +197,9 @@ const initCrumblingArtwork = (canvasId) => {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return null;
   const ctx = canvas.getContext('2d', { alpha: true });
+  if (!ctx) return null;
+  const section = canvas.closest('.chapter-observe');
+  const sectionTracker = createSectionVisibilityTracker(section, 0.2);
   const rootStyles = getComputedStyle(document.documentElement);
   const inkA = parseRgbTriplet(rootStyles.getPropertyValue('--module-ink-rgb').trim(), [56, 31, 32]);
   const inkB = parseRgbTriplet(
@@ -42,8 +214,7 @@ const initCrumblingArtwork = (canvasId) => {
   let time = 0;
   let raf = 0;
   let lastTs = 0;
-  const fps = 10;
-  const frameDuration = 1000 / fps;
+  let pageActive = pageLifecycle.isActive();
   const quantizationStep = 3;
   const logicalSize = 550;
 
@@ -53,12 +224,19 @@ const initCrumblingArtwork = (canvasId) => {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 
   const render = (ts = 0) => {
-    if (ts - lastTs < frameDuration) {
-      raf = requestAnimationFrame(render);
-      return;
-    }
+    const state = resolveRenderState({
+      reducedMotion: prefersReducedMotion,
+      sectionVisible: sectionTracker.isVisible(),
+      isFocusedSurface: true,
+    });
+    const fpsCap = state === RenderState.FOCUSED ? RENDER_POLICY.chapterFpsFocused : RENDER_POLICY.chapterFpsVisibleNotFocused;
+    const frameDuration = 1000 / fpsCap;
+    if (state === RenderState.OFFSCREEN) return;
+    if (ts - lastTs < frameDuration) return;
+    const deltaMs = lastTs > 0 ? ts - lastTs : frameDuration;
     lastTs = ts;
-    time += 0.05;
+    // Use real elapsed time so motion stays lively at capped FPS.
+    time += deltaMs * 0.0019;
 
     const width = logicalSize;
     const height = logicalSize;
@@ -130,18 +308,58 @@ const initCrumblingArtwork = (canvasId) => {
       }
     }
 
-    if (!prefersReducedMotion) {
-      raf = requestAnimationFrame(render);
+  };
+
+  const tick = (ts = 0) => {
+    raf = 0;
+    render(ts);
+    if (!prefersReducedMotion && pageActive && sectionTracker.isVisible()) {
+      raf = requestAnimationFrame(tick);
+    }
+  };
+  const ensureLoop = () => {
+    if (prefersReducedMotion || !pageActive || !sectionTracker.isVisible()) return;
+    if (!raf) raf = requestAnimationFrame(tick);
+  };
+  const stopLoop = () => {
+    if (raf) {
+      cancelAnimationFrame(raf);
+      raf = 0;
     }
   };
 
-  if (prefersReducedMotion) {
-    render(0);
-  } else {
-    raf = requestAnimationFrame(render);
-  }
+  const unsubscribeLifecycle = pageLifecycle.subscribe(({ isActive }) => {
+    pageActive = isActive;
+    if (!pageActive) {
+      stopLoop();
+      return;
+    }
+    if (prefersReducedMotion) {
+      render(performance.now());
+      return;
+    }
+    ensureLoop();
+  });
+  const unsubscribeVisibility = sectionTracker.subscribe((isVisible) => {
+    if (!isVisible) {
+      stopLoop();
+      return;
+    }
+    if (prefersReducedMotion) {
+      render(performance.now());
+      return;
+    }
+    ensureLoop();
+  });
+
+  if (prefersReducedMotion) render(0);
+  else ensureLoop();
+
   return () => {
-    if (raf) cancelAnimationFrame(raf);
+    unsubscribeVisibility();
+    unsubscribeLifecycle();
+    stopLoop();
+    sectionTracker.dispose();
     ctx.clearRect(0, 0, logicalSize, logicalSize);
   };
 };
@@ -151,6 +369,9 @@ const initChapterOneArtwork = () => {
   if (!canvas) return null;
   const ctx = canvas.getContext('2d', { alpha: true });
   if (!ctx) return null;
+  const section = canvas.closest('.chapter-observe');
+  const sectionTracker = createSectionVisibilityTracker(section, 0.2);
+  let pageActive = pageLifecycle.isActive();
   const rootStyles = getComputedStyle(document.documentElement);
   const waterDeep = parseRgbTriplet(rootStyles.getPropertyValue('--rum-800').trim(), [83, 42, 64]);
   const waterMid = parseRgbTriplet(rootStyles.getPropertyValue('--rubin-riso').trim(), [94, 126, 223]);
@@ -188,8 +409,21 @@ const initChapterOneArtwork = () => {
 
   let raf = 0;
   let time = 0;
+  let lastTs = 0;
 
-  const animate = () => {
+  const animate = (ts = 0) => {
+    const state = resolveRenderState({
+      reducedMotion: prefersReducedMotion,
+      sectionVisible: sectionTracker.isVisible(),
+      isFocusedSurface: sectionTracker.isVisible(),
+    });
+    if (state === RenderState.OFFSCREEN) return;
+    const fpsCap = state === RenderState.FOCUSED ? RENDER_POLICY.chapterFpsFocused : RENDER_POLICY.chapterFpsVisibleNotFocused;
+    const frameDuration = 1000 / fpsCap;
+    if (ts - lastTs < frameDuration) return;
+    const deltaMs = lastTs > 0 ? ts - lastTs : frameDuration;
+    lastTs = ts;
+
     bctx.clearRect(0, 0, width, height);
 
     for (let i = 0; i < rows; i += 1) {
@@ -261,18 +495,56 @@ const initChapterOneArtwork = () => {
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(buffer, 0, 0);
     time += 0.000625;
-    if (!prefersReducedMotion) {
-      raf = requestAnimationFrame(animate);
+  };
+
+  const tick = (ts = 0) => {
+    raf = 0;
+    animate(ts);
+    if (!prefersReducedMotion && pageActive && sectionTracker.isVisible()) raf = requestAnimationFrame(tick);
+  };
+  const ensureLoop = () => {
+    if (prefersReducedMotion || !pageActive || !sectionTracker.isVisible()) return;
+    if (!raf) raf = requestAnimationFrame(tick);
+  };
+  const stopLoop = () => {
+    if (raf) {
+      cancelAnimationFrame(raf);
+      raf = 0;
     }
   };
 
-  if (prefersReducedMotion) {
-    animate();
-  } else {
-    raf = requestAnimationFrame(animate);
-  }
+  const unsubscribeLifecycle = pageLifecycle.subscribe(({ isActive }) => {
+    pageActive = isActive;
+    if (!pageActive) {
+      stopLoop();
+      return;
+    }
+    if (prefersReducedMotion) {
+      animate(performance.now());
+      return;
+    }
+    ensureLoop();
+  });
+  const unsubscribeVisibility = sectionTracker.subscribe((isVisible) => {
+    if (!isVisible) {
+      stopLoop();
+      return;
+    }
+    if (prefersReducedMotion) {
+      animate(performance.now());
+      return;
+    }
+    ensureLoop();
+  });
+
+  if (prefersReducedMotion) animate();
+  else ensureLoop();
+
   return () => {
-    if (raf) cancelAnimationFrame(raf);
+    unsubscribeVisibility();
+    unsubscribeLifecycle();
+    stopLoop();
+    sectionTracker.dispose();
     bctx.clearRect(0, 0, width, height);
     ctx.clearRect(0, 0, width, height);
   };
@@ -282,6 +554,10 @@ const initChapterTwoArtwork = () => {
   const canvas = document.getElementById('metamorphosis-canvas');
   if (!canvas) return null;
   const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  const section = canvas.closest('.chapter-observe');
+  const sectionTracker = createSectionVisibilityTracker(section, 0.2);
+  let pageActive = pageLifecycle.isActive();
   const rootStyles = getComputedStyle(document.documentElement);
   const strokeRgb = parseRgbTriplet(rootStyles.getPropertyValue('--mono-800').trim(), [26, 26, 26]);
   const midRgb = parseRgbTriplet(rootStyles.getPropertyValue('--mono-600').trim(), [64, 64, 64]);
@@ -295,10 +571,31 @@ const initChapterTwoArtwork = () => {
   const phi = (1 + Math.sqrt(5)) / 2;
   let raf = 0;
   let time = 0;
+  let lastTs = 0;
+  const isActuallyVisible = () => {
+    const node = section || canvas;
+    const rect = node.getBoundingClientRect();
+    return rect.bottom > 0 && rect.top < window.innerHeight;
+  };
+  const isSectionVisible = () => sectionTracker.isVisible() || isActuallyVisible();
 
-  const animate = () => {
+  const animate = (ts = 0) => {
+    const sectionVisible = isSectionVisible();
+    const state = resolveRenderState({
+      reducedMotion: prefersReducedMotion,
+      sectionVisible,
+      isFocusedSurface: sectionVisible,
+    });
+    if (state === RenderState.OFFSCREEN) return;
+    const fpsCap = state === RenderState.FOCUSED ? RENDER_POLICY.chapterFpsFocused : RENDER_POLICY.chapterFpsVisibleNotFocused;
+    const frameDuration = 1000 / fpsCap;
+    if (ts - lastTs < frameDuration) return;
+    const deltaMs = lastTs > 0 ? ts - lastTs : frameDuration;
+    lastTs = ts;
+
     const now = performance.now();
-    const maxRectangles = Math.min(60, Math.floor((time * 0.02) % 80));
+    // Start blank, then quickly build up visible spiral boxes.
+    const maxRectangles = Math.max(0, Math.min(60, Math.floor(time * 0.035 - 2.0)));
 
     ctx.clearRect(0, 0, width, height);
 
@@ -363,19 +660,58 @@ const initChapterTwoArtwork = () => {
 
     ctx.restore();
 
-    time += 0.75;
-    if (!prefersReducedMotion) {
-      raf = requestAnimationFrame(animate);
+    // Very slow stop-motion-like chapter-2 progression.
+    time += deltaMs * 0.035;
+  };
+
+  const tick = (ts = 0) => {
+    raf = 0;
+    animate(ts);
+    if (!prefersReducedMotion && pageActive && isSectionVisible()) raf = requestAnimationFrame(tick);
+  };
+  const ensureLoop = () => {
+    if (prefersReducedMotion || !pageActive || !isSectionVisible()) return;
+    if (!raf) raf = requestAnimationFrame(tick);
+  };
+  const stopLoop = () => {
+    if (raf) {
+      cancelAnimationFrame(raf);
+      raf = 0;
     }
   };
 
-  if (prefersReducedMotion) {
-    animate();
-  } else {
-    raf = requestAnimationFrame(animate);
-  }
+  const unsubscribeLifecycle = pageLifecycle.subscribe(({ isActive }) => {
+    pageActive = isActive;
+    if (!pageActive) {
+      stopLoop();
+      return;
+    }
+    if (prefersReducedMotion) {
+      animate(performance.now());
+      return;
+    }
+    ensureLoop();
+  });
+  const unsubscribeVisibility = sectionTracker.subscribe((isVisible) => {
+    if (!isVisible) {
+      stopLoop();
+      return;
+    }
+    if (prefersReducedMotion) {
+      animate(performance.now());
+      return;
+    }
+    ensureLoop();
+  });
+
+  if (prefersReducedMotion) animate();
+  else ensureLoop();
+
   return () => {
-    if (raf) cancelAnimationFrame(raf);
+    unsubscribeVisibility();
+    unsubscribeLifecycle();
+    stopLoop();
+    sectionTracker.dispose();
     ctx.clearRect(0, 0, width, height);
   };
 };
@@ -842,7 +1178,7 @@ const createShaderToyRunner = (canvas, shaderSpec) => {
     antialias: false,
     alpha: false,
     premultipliedAlpha: false,
-    powerPreference: 'high-performance',
+    powerPreference: 'default',
   });
   if (!gl) {
     console.warn('WebGL2 is not available; shader interlude will be empty.');
@@ -1115,7 +1451,7 @@ const initSingleShaderDeck = (section) => {
       if (!canvas || !body) return null;
       const runner = createShaderToyRunner(canvas, body);
       if (!runner) return null;
-      return { card, canvas, key, runner };
+      return { card, canvas, key, runner, lastDrawMs: 0 };
     })
     .filter(Boolean);
   if (entries.length === 0) return null;
@@ -1133,7 +1469,7 @@ const initSingleShaderDeck = (section) => {
     s4b: 'grayscale(1) contrast(1.14) brightness(0.92)',
     // Keep shader A/B in color for Section 4.
     s4c: 'none',
-    s4d: 'none',
+    s4f: 'none',
   };
 
   entries.forEach((entry) => {
@@ -1149,7 +1485,7 @@ const initSingleShaderDeck = (section) => {
   };
   applyOrder();
 
-  const perf = { quality: 1, throttled: false, sampleMs: [] };
+  const perf = { quality: 1, fpsCap: RENDER_POLICY.shaderFpsFocused, sampleMs: [] };
 
   const getPosScale = (card) => {
     if (!isShaderDeckMobile()) return 1;
@@ -1188,21 +1524,27 @@ const initSingleShaderDeck = (section) => {
   window.addEventListener('pointerup', onUp, { passive: true });
   section.addEventListener('pointermove', onMove, { passive: true });
 
-  const shouldSkipFrame = (card, tick) => {
-    if (card.classList.contains('is-leaving')) return true;
-    if (!isShaderDeckMobile()) return false;
-    const p = card.getAttribute('data-pos');
-    if (p === '0') return false;
-    if (p === '1') return tick % 2 === 0;
-    if (p === '2') return tick % 2 === 1;
-    return false;
+  const markAllPreviewsDirty = () => {
+    entries.forEach((e) => {
+      e.previewDirty = true;
+    });
   };
+  markAllPreviewsDirty();
 
   let visible = false;
+  let pageActive = pageLifecycle.isActive();
   const io = new IntersectionObserver(
     (observed) => {
       const e = observed[0];
-      if (e) visible = e.isIntersecting;
+      if (e) {
+        visible = e.isIntersecting;
+        if (visible) {
+          markAllPreviewsDirty();
+          ensureLoop();
+        } else {
+          stopLoop();
+        }
+      }
     },
     { threshold: 0.15 },
   );
@@ -1210,60 +1552,185 @@ const initSingleShaderDeck = (section) => {
 
   const ro = new ResizeObserver(resizeAll);
   cards.forEach((c) => ro.observe(c));
-  const onWin = () => resizeAll();
+  const onWin = () => {
+    resizeAll();
+    markAllPreviewsDirty();
+  };
   window.addEventListener('resize', onWin, { passive: true });
 
   let raf = 0;
-  let rafTick = 0;
   const tStart = performance.now();
   let lastT = tStart;
   let iFrame = 0;
-  const tick = (now) => {
-    raf = requestAnimationFrame(tick);
-    rafTick += 1;
-    if (prefersReducedMotion) return;
-    if (!visible) {
-      lastT = now;
+  let lastFocusedDrawMs = 0;
+  let lastFrameSec = 0;
+  let perfLevel = Math.max(0, Math.min(3, RUNTIME_QUALITY_MEMORY.shaderPerfLevel || 0));
+
+  const perfLevels = [
+    { quality: 1, fps: RENDER_POLICY.shaderFpsFocused },
+    { quality: 0.9, fps: 18 },
+    { quality: 0.78, fps: 12 },
+    { quality: 0.55, fps: 8 },
+  ];
+
+  const applyPerfLevel = () => {
+    const level = perfLevels[perfLevel] || perfLevels[0];
+    const prevQuality = perf.quality;
+    perf.quality = level.quality;
+    perf.fpsCap = level.fps;
+    if (prevQuality !== perf.quality) resizeAll();
+  };
+  applyPerfLevel();
+
+  const getTopCard = () => cards[order[0]];
+  const getTopEntry = () => {
+    const topCard = getTopCard();
+    return entries.find((e) => e.card === topCard) || null;
+  };
+  const shouldAnimateAllVisible = () => !isShaderDeckMobile();
+
+  const setActiveRenderCardClass = () => {
+    if (!isShaderDeckMobile()) {
+      cards.forEach((card) => card.classList.remove('is-active-render'));
       return;
     }
+    const topCard = getTopCard();
+    cards.forEach((card) => {
+      if (card === topCard) card.classList.add('is-active-render');
+      else card.classList.remove('is-active-render');
+    });
+  };
+  setActiveRenderCardClass();
+
+  const drawEntry = (entry, tSec, dtSec) => {
+    entry.runner.render(tSec, dtSec, iFrame, iMouse);
+    iFrame += 1;
+  };
+
+  const maybeRetunePerformance = (fpsCap) => {
+    if (perf.sampleMs.length < 40) return;
+    const avg = perf.sampleMs.reduce((a, b) => a + b, 0) / perf.sampleMs.length;
+    const budgetMs = 1000 / Math.max(1, fpsCap);
+    const droppedFrameRatio = perf.sampleMs.filter((n) => n > budgetMs * 0.95).length / perf.sampleMs.length;
+    perf.sampleMs.length = 0;
+    if ((avg > budgetMs * 0.78 || droppedFrameRatio > 0.42) && perfLevel < perfLevels.length - 1) {
+      perfLevel += 1;
+      RUNTIME_QUALITY_MEMORY.shaderPerfLevel = perfLevel;
+      applyPerfLevel();
+      markAllPreviewsDirty();
+      return;
+    }
+    if (avg < budgetMs * 0.42 && droppedFrameRatio < 0.12 && perfLevel > 0) {
+      perfLevel -= 1;
+      RUNTIME_QUALITY_MEMORY.shaderPerfLevel = perfLevel;
+      applyPerfLevel();
+      markAllPreviewsDirty();
+    }
+  };
+
+  const getSectionRenderState = () =>
+    resolveRenderState({
+      reducedMotion: prefersReducedMotion,
+      sectionVisible: visible,
+      isFocusedSurface: true,
+    });
+
+  const stopLoop = () => {
+    if (raf) {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    }
+  };
+  const ensureLoop = () => {
+    if (prefersReducedMotion || !visible || !pageActive) return;
+    if (!raf) raf = requestAnimationFrame(tick);
+  };
+
+  const tick = (now) => {
+    raf = 0;
+    if (prefersReducedMotion || !visible || !pageActive) return;
+    raf = requestAnimationFrame(tick);
+
+    const state = getSectionRenderState();
+    if (state === RenderState.OFFSCREEN) return;
 
     const tSec = (now - tStart) * 0.001;
     const dtSec = Math.max(0, (now - lastT) * 0.001);
     lastT = now;
-    const frame = iFrame;
-    iFrame += 1;
+    const focusedFps = perf.fpsCap || RENDER_POLICY.shaderFpsFocused;
+    const focusedFrameDuration = 1000 / focusedFps;
 
     const t0 = performance.now();
-    let didDraw = 0;
-    entries.forEach((e) => {
-      if (shouldSkipFrame(e.card, rafTick)) return;
-      e.runner.render(tSec, dtSec, frame, iMouse);
-      didDraw += 1;
+    let drewFocused = false;
+    const animateAll = shouldAnimateAllVisible();
+    const topEntry = animateAll ? null : getTopEntry();
+    const primaryCard = getTopCard();
+    const topState = resolveRenderState({
+      reducedMotion: prefersReducedMotion,
+      sectionVisible: visible,
+      isFocusedSurface: true,
     });
+    if (topState !== RenderState.OFFSCREEN && now - lastFocusedDrawMs >= focusedFrameDuration) {
+      if (animateAll) {
+        let desktopDrawCount = 0;
+        entries.forEach((e) => {
+          const isPrimary = e.card === primaryCard;
+          // Desktop: keep all cards animated, but render non-primary cards a bit slower.
+          const targetFps = isPrimary ? focusedFps : Math.max(1, focusedFps * 0.78);
+          const frameDuration = 1000 / targetFps;
+          if (now - e.lastDrawMs < frameDuration) return;
+          drawEntry(e, tSec, dtSec);
+          e.lastDrawMs = now;
+          e.previewDirty = false;
+          desktopDrawCount += 1;
+        });
+        drewFocused = desktopDrawCount > 0;
+      } else if (topEntry) {
+        drawEntry(topEntry, tSec, dtSec);
+        topEntry.lastDrawMs = now;
+        topEntry.previewDirty = false;
+        drewFocused = true;
+      }
+      lastFocusedDrawMs = now;
+      lastFrameSec = tSec;
+    }
+
+    if (!animateAll) {
+      entries.forEach((e) => {
+        if (e === topEntry) return;
+        const cardState = resolveRenderState({
+          reducedMotion: prefersReducedMotion,
+          sectionVisible: visible,
+          isFocusedSurface: false,
+        });
+        if (cardState === RenderState.OFFSCREEN || !e.previewDirty) return;
+        drawEntry(e, lastFrameSec || tSec, 0);
+        e.previewDirty = false;
+      });
+    }
 
     const blockMs = performance.now() - t0;
-    if (didDraw > 0) {
+    if (drewFocused) {
       perf.sampleMs.push(blockMs);
-      if (perf.sampleMs.length > 30) perf.sampleMs.shift();
-      if (!perf.throttled && perf.sampleMs.length === 30) {
-        const avg = perf.sampleMs.reduce((a, b) => a + b, 0) / 30;
-        if (avg > 22) {
-          perf.quality = 0.5;
-          perf.throttled = true;
-          resizeAll();
-        }
-      }
+      if (perf.sampleMs.length > 50) perf.sampleMs.shift();
+      maybeRetunePerformance(perf.fpsCap || RENDER_POLICY.shaderFpsFocused);
     }
+  };
+
+  const drawStaticPreviewSet = () => {
+    const t = 2;
+    entries.forEach((e) => {
+      drawEntry(e, t, 0);
+      e.previewDirty = false;
+    });
   };
 
   if (prefersReducedMotion) {
     resizeAll();
-    entries.forEach((e) => {
-      e.runner.render(2, 0, 0, [0, 0, 0, 0]);
-    });
+    drawStaticPreviewSet();
   } else {
     resizeAll();
-    raf = requestAnimationFrame(tick);
+    ensureLoop();
   }
 
   const cycle = () => {
@@ -1273,7 +1740,10 @@ const initSingleShaderDeck = (section) => {
     if (prefersReducedMotion) {
       order.push(order.shift());
       applyOrder();
+      setActiveRenderCardClass();
       resizeAll();
+      markAllPreviewsDirty();
+      drawStaticPreviewSet();
       return;
     }
     top.classList.add('is-leaving');
@@ -1281,7 +1751,10 @@ const initSingleShaderDeck = (section) => {
       top.classList.remove('is-leaving');
       order.push(order.shift());
       applyOrder();
+      setActiveRenderCardClass();
       resizeAll();
+      markAllPreviewsDirty();
+      ensureLoop();
     }, 360);
   };
 
@@ -1302,8 +1775,23 @@ const initSingleShaderDeck = (section) => {
   };
   cards.forEach((c) => c.addEventListener('keydown', onCardKey));
 
+  const unsubscribeLifecycle = pageLifecycle.subscribe(({ isActive }) => {
+    pageActive = isActive;
+    if (!pageActive) {
+      stopLoop();
+      return;
+    }
+    markAllPreviewsDirty();
+    if (prefersReducedMotion) {
+      drawStaticPreviewSet();
+      return;
+    }
+    ensureLoop();
+  });
+
   return () => {
-    if (raf) cancelAnimationFrame(raf);
+    unsubscribeLifecycle();
+    stopLoop();
     io.disconnect();
     ro.disconnect();
     window.removeEventListener('resize', onWin);
@@ -1331,9 +1819,8 @@ const initShaderDeck = () => {
 
 const initChapterFlow = () => {
   if (window.matchMedia('(max-width: 1024px)').matches) return null;
-  const container = document.querySelector('.chapter-main');
   const sections = Array.from(document.querySelectorAll('.chapter-observe'));
-  if (!container || sections.length === 0) return null;
+  if (sections.length === 0) return null;
 
   const observer = new IntersectionObserver(
     (entries) => {
@@ -1344,7 +1831,6 @@ const initChapterFlow = () => {
       });
     },
     {
-      root: container,
       threshold: 0.55,
     },
   );
@@ -1355,15 +1841,21 @@ const initChapterFlow = () => {
   // handle wheel/trackpad momentum. Keep JS only for keyboard step navigation.
   const jumpTo = (next) => {
     if (next < 0 || next >= sections.length) return;
-    sections[next].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const target = sections[next];
+    if (locomotiveScroll && typeof locomotiveScroll.scrollTo === 'function') {
+      locomotiveScroll.scrollTo(target, { duration: prefersReducedMotion ? 0 : 0.9, offset: 0 });
+      return;
+    }
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const getCurrentIndex = () => {
-    const top = container.getBoundingClientRect().top;
+    const header = document.querySelector('.header');
+    const referenceTop = header ? header.getBoundingClientRect().bottom : 60;
     let best = 0;
     let bestDist = Infinity;
     sections.forEach((s, i) => {
-      const d = Math.abs(s.getBoundingClientRect().top - top);
+      const d = Math.abs(s.getBoundingClientRect().top - referenceTop);
       if (d < bestDist) {
         bestDist = d;
         best = i;
@@ -1393,6 +1885,7 @@ const initChapterFlow = () => {
 };
 
 const cleanups = [
+  initLocomotiveScroll(),
   initChapterOneArtwork(),
   initChapterTwoArtwork(),
   initChapterThreeArtwork(),
@@ -1401,4 +1894,5 @@ const cleanups = [
 ].filter(Boolean);
 window.addEventListener('beforeunload', () => {
   cleanups.forEach((cleanup) => cleanup());
+  pageLifecycle.dispose();
 });
