@@ -4,8 +4,6 @@ import { SHADER_SOURCES } from './shader-deck-shaders.js';
 const MODULE_DRIFT_SPEED = 0.0001;
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-let locomotiveScroll = null;
-
 const RenderState = Object.freeze({
   REDUCED_MOTION: 'reduced_motion',
   FOCUSED: 'focused',
@@ -25,13 +23,103 @@ const RUNTIME_QUALITY_MEMORY = {
   shaderPerfLevel: 0,
 };
 
+const DEBUG_OVERLAY_ENABLED =
+  new URLSearchParams(window.location.search).has('debugOverlay') ||
+  window.localStorage.getItem('mal:debugOverlay') === '1';
+
+const debugOverlay = (() => {
+  if (!DEBUG_OVERLAY_ENABLED) return null;
+  const state = {
+    app: { phase: 'booting' },
+    lifecycle: { visible: document.visibilityState === 'visible', focused: document.hasFocus(), active: document.visibilityState === 'visible' },
+    modules: {},
+  };
+  const panel = document.createElement('aside');
+  panel.setAttribute('aria-live', 'polite');
+  panel.style.cssText = [
+    'position:fixed',
+    'right:12px',
+    'bottom:12px',
+    'z-index:99999',
+    'max-width:320px',
+    'min-width:250px',
+    'padding:10px 12px',
+    'background:rgba(0,0,0,0.78)',
+    'color:#fff',
+    'font:12px/1.4 "Courier Prime",monospace',
+    'border:1px solid rgba(255,255,255,0.2)',
+    'border-radius:8px',
+    'backdrop-filter: blur(3px)',
+    'pointer-events:none',
+    'white-space:pre-wrap',
+  ].join(';');
+  const render = () => {
+    const lines = [];
+    lines.push(`app: ${state.app.phase}`);
+    lines.push(`page: ${state.lifecycle.active ? 'active' : 'paused'} | vis:${state.lifecycle.visible ? '1' : '0'} foc:${state.lifecycle.focused ? '1' : '0'}`);
+    Object.entries(state.modules).forEach(([name, moduleState]) => {
+      const ageMs = moduleState.lastFrameMs ? Math.max(0, Date.now() - moduleState.lastFrameMs) : null;
+      const ageText = ageMs == null ? '-' : `${Math.round(ageMs)}ms`;
+      lines.push(
+        `${name}: ${moduleState.running ? 'run' : 'stop'} vis:${moduleState.visible ? '1' : '0'} state:${moduleState.renderState || '-'} frame:${ageText}`,
+      );
+    });
+    panel.textContent = lines.join('\n');
+  };
+  const ensureMounted = () => {
+    if (!document.body.contains(panel)) document.body.appendChild(panel);
+  };
+  const schedule = () => {
+    ensureMounted();
+    render();
+  };
+  const setApp = (patch) => {
+    state.app = { ...state.app, ...patch };
+    schedule();
+  };
+  const setLifecycle = (patch) => {
+    state.lifecycle = { ...state.lifecycle, ...patch };
+    schedule();
+  };
+  const setModule = (name, patch) => {
+    state.modules[name] = { ...(state.modules[name] || {}), ...patch };
+    schedule();
+  };
+  const frame = (name) => {
+    setModule(name, { lastFrameMs: Date.now() });
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', schedule, { once: true });
+  } else {
+    schedule();
+  }
+  return { setApp, setLifecycle, setModule, frame };
+})();
+
+const createDebugModuleProbe = (name) => {
+  if (!debugOverlay) return null;
+  return {
+    set: (patch) => debugOverlay.setModule(name, patch),
+    frame: () => debugOverlay.frame(name),
+  };
+};
+
+const resolveVisibilityNode = (section, fallbackNode) => {
+  if (!section) return fallbackNode || null;
+  const display = window.getComputedStyle(section).display;
+  if (display === 'contents') return fallbackNode || section;
+  return section;
+};
+
 const pageLifecycle = (() => {
   let isDocVisible = document.visibilityState === 'visible';
   let isWinFocused = document.hasFocus();
   const subs = new Set();
+  const computeIsActive = () => isDocVisible;
 
   const emit = () => {
-    subs.forEach((fn) => fn({ isDocVisible, isWinFocused, isActive: isDocVisible && isWinFocused }));
+    subs.forEach((fn) => fn({ isDocVisible, isWinFocused, isActive: computeIsActive() }));
+    debugOverlay?.setLifecycle({ visible: isDocVisible, focused: isWinFocused, active: computeIsActive() });
   };
 
   const onVisibility = () => {
@@ -46,24 +134,42 @@ const pageLifecycle = (() => {
     isWinFocused = false;
     emit();
   };
+  const onPageShow = () => {
+    // Recover correctly when returning via browser back/forward cache.
+    isDocVisible = document.visibilityState === 'visible';
+    isWinFocused = true;
+    emit();
+    requestAnimationFrame(() => {
+      isWinFocused = document.hasFocus();
+      emit();
+    });
+  };
+  const onPageHide = () => {
+    isWinFocused = false;
+    emit();
+  };
 
   document.addEventListener('visibilitychange', onVisibility);
   window.addEventListener('focus', onFocus, { passive: true });
   window.addEventListener('blur', onBlur, { passive: true });
+  window.addEventListener('pageshow', onPageShow, { passive: true });
+  window.addEventListener('pagehide', onPageHide, { passive: true });
 
   return {
     subscribe(fn) {
       subs.add(fn);
-      fn({ isDocVisible, isWinFocused, isActive: isDocVisible && isWinFocused });
+      fn({ isDocVisible, isWinFocused, isActive: computeIsActive() });
       return () => subs.delete(fn);
     },
     isActive() {
-      return isDocVisible && isWinFocused;
+      return computeIsActive();
     },
     dispose() {
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('focus', onFocus);
       window.removeEventListener('blur', onBlur);
+      window.removeEventListener('pageshow', onPageShow);
+      window.removeEventListener('pagehide', onPageHide);
       subs.clear();
     },
   };
@@ -76,60 +182,18 @@ const resolveRenderState = ({ reducedMotion, sectionVisible, isFocusedSurface })
   return RenderState.VISIBLE_NOT_FOCUSED;
 };
 
-const initLocomotiveScroll = () => {
-  const wrapper = document.getElementById('locomotive-wrapper');
-  if (!wrapper) return null;
-  const content = wrapper.querySelector('[data-scroll-container]');
-  if (!content) return null;
-  if (typeof window.LocomotiveScroll !== 'function') return null;
-
-  const instance = new window.LocomotiveScroll({
-    lenisOptions: {
-      wrapper,
-      content,
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: !prefersReducedMotion,
-      smoothTouch: false,
-      normalizeWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 2,
-      lerp: prefersReducedMotion ? 1 : 0.08,
-      duration: prefersReducedMotion ? 0 : 1.2,
-    },
-  });
-
-  locomotiveScroll = instance;
-
-  const unsubscribeLifecycle = pageLifecycle.subscribe(({ isActive }) => {
-    if (!locomotiveScroll) return;
-    if (!isActive && typeof locomotiveScroll.stop === 'function') locomotiveScroll.stop();
-    if (isActive && typeof locomotiveScroll.start === 'function') locomotiveScroll.start();
-  });
-
-  const onResize = () => {
-    if (!locomotiveScroll) return;
-    if (typeof locomotiveScroll.update === 'function') locomotiveScroll.update();
-  };
-  window.addEventListener('resize', onResize, { passive: true });
-
-  return () => {
-    unsubscribeLifecycle();
-    window.removeEventListener('resize', onResize);
-    if (locomotiveScroll) {
-      try {
-        locomotiveScroll.destroy();
-      } catch {
-        // ignore; we'll also try to stop for safety
-        try {
-          locomotiveScroll.stop();
-        } catch {
-          // ignore
-        }
-      }
-    }
-    locomotiveScroll = null;
-  };
+const computeVisibilityRatio = (node) => {
+  if (!node) return 1;
+  const rect = node.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return 0;
+  const vw = window.innerWidth || document.documentElement.clientWidth || 0;
+  const vh = window.innerHeight || document.documentElement.clientHeight || 0;
+  const xOverlap = Math.max(0, Math.min(rect.right, vw) - Math.max(rect.left, 0));
+  const yOverlap = Math.max(0, Math.min(rect.bottom, vh) - Math.max(rect.top, 0));
+  const overlapArea = xOverlap * yOverlap;
+  const area = rect.width * rect.height;
+  if (area <= 0) return 0;
+  return overlapArea / area;
 };
 
 const createSectionVisibilityTracker = (node, threshold = 0.2) => {
@@ -143,30 +207,68 @@ const createSectionVisibilityTracker = (node, threshold = 0.2) => {
       dispose: () => {},
     };
   }
-  let visible = false;
+  let ioVisible = false;
+  let geomVisible = computeVisibilityRatio(node) >= threshold;
+  let visible = ioVisible || geomVisible;
+  let raf = 0;
   const subs = new Set();
+  const emitIfChanged = (nextVisible) => {
+    if (nextVisible === visible) return;
+    visible = nextVisible;
+    subs.forEach((fn) => fn(visible));
+  };
+  const refreshGeometry = () => {
+    geomVisible = computeVisibilityRatio(node) >= threshold;
+    emitIfChanged(ioVisible || geomVisible);
+  };
   const io = new IntersectionObserver(
     (entries) => {
       const entry = entries[0];
       if (entry) {
-        const nextVisible = entry.isIntersecting;
-        if (nextVisible !== visible) {
-          visible = nextVisible;
-          subs.forEach((fn) => fn(visible));
-        }
+        ioVisible = entry.isIntersecting && entry.intersectionRatio >= threshold * 0.6;
+        refreshGeometry();
       }
     },
     { threshold },
   );
   io.observe(node);
+  const tick = () => {
+    raf = 0;
+    refreshGeometry();
+    if (pageLifecycle.isActive()) raf = requestAnimationFrame(tick);
+  };
+  const unsubscribeLifecycle = pageLifecycle.subscribe(({ isActive }) => {
+    if (isActive) {
+      refreshGeometry();
+      if (!raf) raf = requestAnimationFrame(tick);
+      return;
+    }
+    if (raf) {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    }
+  });
+  const onWindow = () => refreshGeometry();
+  window.addEventListener('resize', onWindow, { passive: true });
+  window.addEventListener('scroll', onWindow, { passive: true });
   return {
-    isVisible: () => visible,
+    isVisible: () => {
+      refreshGeometry();
+      return visible;
+    },
     subscribe(fn) {
       subs.add(fn);
       fn(visible);
       return () => subs.delete(fn);
     },
     dispose: () => {
+      unsubscribeLifecycle();
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+      window.removeEventListener('resize', onWindow);
+      window.removeEventListener('scroll', onWindow);
       io.disconnect();
       subs.clear();
     },
@@ -199,7 +301,8 @@ const initCrumblingArtwork = (canvasId) => {
   const ctx = canvas.getContext('2d', { alpha: true });
   if (!ctx) return null;
   const section = canvas.closest('.chapter-observe');
-  const sectionTracker = createSectionVisibilityTracker(section, 0.2);
+  const visibilityNode = resolveVisibilityNode(section, canvas);
+  const sectionTracker = createSectionVisibilityTracker(visibilityNode, 0.2);
   const rootStyles = getComputedStyle(document.documentElement);
   const inkA = parseRgbTriplet(rootStyles.getPropertyValue('--module-ink-rgb').trim(), [56, 31, 32]);
   const inkB = parseRgbTriplet(
@@ -215,6 +318,8 @@ const initCrumblingArtwork = (canvasId) => {
   let raf = 0;
   let lastTs = 0;
   let pageActive = pageLifecycle.isActive();
+  const debug = createDebugModuleProbe(canvasId === 'chapter-3-canvas' ? 'chapter3' : canvasId);
+  debug?.set({ running: false, visible: sectionTracker.isVisible(), renderState: 'init' });
   const quantizationStep = 3;
   const logicalSize = 550;
 
@@ -224,11 +329,13 @@ const initCrumblingArtwork = (canvasId) => {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 
   const render = (ts = 0) => {
+    const sectionVisible = sectionTracker.isVisible();
     const state = resolveRenderState({
       reducedMotion: prefersReducedMotion,
-      sectionVisible: sectionTracker.isVisible(),
+      sectionVisible,
       isFocusedSurface: true,
     });
+    debug?.set({ renderState: state, visible: sectionVisible, running: Boolean(raf) && pageActive });
     const fpsCap = state === RenderState.FOCUSED ? RENDER_POLICY.chapterFpsFocused : RENDER_POLICY.chapterFpsVisibleNotFocused;
     const frameDuration = 1000 / fpsCap;
     if (state === RenderState.OFFSCREEN) return;
@@ -308,6 +415,7 @@ const initCrumblingArtwork = (canvasId) => {
       }
     }
 
+    debug?.frame();
   };
 
   const tick = (ts = 0) => {
@@ -319,12 +427,16 @@ const initCrumblingArtwork = (canvasId) => {
   };
   const ensureLoop = () => {
     if (prefersReducedMotion || !pageActive || !sectionTracker.isVisible()) return;
-    if (!raf) raf = requestAnimationFrame(tick);
+    if (!raf) {
+      raf = requestAnimationFrame(tick);
+      debug?.set({ running: true });
+    }
   };
   const stopLoop = () => {
     if (raf) {
       cancelAnimationFrame(raf);
       raf = 0;
+      debug?.set({ running: false });
     }
   };
 
@@ -341,6 +453,7 @@ const initCrumblingArtwork = (canvasId) => {
     ensureLoop();
   });
   const unsubscribeVisibility = sectionTracker.subscribe((isVisible) => {
+    debug?.set({ visible: isVisible });
     if (!isVisible) {
       stopLoop();
       return;
@@ -361,6 +474,7 @@ const initCrumblingArtwork = (canvasId) => {
     stopLoop();
     sectionTracker.dispose();
     ctx.clearRect(0, 0, logicalSize, logicalSize);
+    debug?.set({ running: false, renderState: 'disposed' });
   };
 };
 
@@ -370,8 +484,11 @@ const initChapterOneArtwork = () => {
   const ctx = canvas.getContext('2d', { alpha: true });
   if (!ctx) return null;
   const section = canvas.closest('.chapter-observe');
-  const sectionTracker = createSectionVisibilityTracker(section, 0.2);
+  const visibilityNode = resolveVisibilityNode(section, canvas);
+  const sectionTracker = createSectionVisibilityTracker(visibilityNode, 0.2);
   let pageActive = pageLifecycle.isActive();
+  const debug = createDebugModuleProbe('chapter1');
+  debug?.set({ running: false, visible: sectionTracker.isVisible(), renderState: 'init' });
   const rootStyles = getComputedStyle(document.documentElement);
   const waterDeep = parseRgbTriplet(rootStyles.getPropertyValue('--rum-800').trim(), [83, 42, 64]);
   const waterMid = parseRgbTriplet(rootStyles.getPropertyValue('--rubin-riso').trim(), [94, 126, 223]);
@@ -412,11 +529,13 @@ const initChapterOneArtwork = () => {
   let lastTs = 0;
 
   const animate = (ts = 0) => {
+    const sectionVisible = sectionTracker.isVisible();
     const state = resolveRenderState({
       reducedMotion: prefersReducedMotion,
-      sectionVisible: sectionTracker.isVisible(),
-      isFocusedSurface: sectionTracker.isVisible(),
+      sectionVisible,
+      isFocusedSurface: sectionVisible,
     });
+    debug?.set({ renderState: state, visible: sectionVisible, running: Boolean(raf) && pageActive });
     if (state === RenderState.OFFSCREEN) return;
     const fpsCap = state === RenderState.FOCUSED ? RENDER_POLICY.chapterFpsFocused : RENDER_POLICY.chapterFpsVisibleNotFocused;
     const frameDuration = 1000 / fpsCap;
@@ -495,6 +614,7 @@ const initChapterOneArtwork = () => {
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(buffer, 0, 0);
     time += 0.000625;
+    debug?.frame();
   };
 
   const tick = (ts = 0) => {
@@ -504,12 +624,16 @@ const initChapterOneArtwork = () => {
   };
   const ensureLoop = () => {
     if (prefersReducedMotion || !pageActive || !sectionTracker.isVisible()) return;
-    if (!raf) raf = requestAnimationFrame(tick);
+    if (!raf) {
+      raf = requestAnimationFrame(tick);
+      debug?.set({ running: true });
+    }
   };
   const stopLoop = () => {
     if (raf) {
       cancelAnimationFrame(raf);
       raf = 0;
+      debug?.set({ running: false });
     }
   };
 
@@ -526,6 +650,7 @@ const initChapterOneArtwork = () => {
     ensureLoop();
   });
   const unsubscribeVisibility = sectionTracker.subscribe((isVisible) => {
+    debug?.set({ visible: isVisible });
     if (!isVisible) {
       stopLoop();
       return;
@@ -547,6 +672,7 @@ const initChapterOneArtwork = () => {
     sectionTracker.dispose();
     bctx.clearRect(0, 0, width, height);
     ctx.clearRect(0, 0, width, height);
+    debug?.set({ running: false, renderState: 'disposed' });
   };
 };
 
@@ -556,8 +682,11 @@ const initChapterTwoArtwork = () => {
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
   const section = canvas.closest('.chapter-observe');
-  const sectionTracker = createSectionVisibilityTracker(section, 0.2);
+  const visibilityNode = resolveVisibilityNode(section, canvas);
+  const sectionTracker = createSectionVisibilityTracker(visibilityNode, 0.2);
   let pageActive = pageLifecycle.isActive();
+  const debug = createDebugModuleProbe('chapter2');
+  debug?.set({ running: false, visible: sectionTracker.isVisible(), renderState: 'init' });
   const rootStyles = getComputedStyle(document.documentElement);
   const strokeRgb = parseRgbTriplet(rootStyles.getPropertyValue('--mono-800').trim(), [26, 26, 26]);
   const midRgb = parseRgbTriplet(rootStyles.getPropertyValue('--mono-600').trim(), [64, 64, 64]);
@@ -573,7 +702,7 @@ const initChapterTwoArtwork = () => {
   let time = 0;
   let lastTs = 0;
   const isActuallyVisible = () => {
-    const node = section || canvas;
+    const node = visibilityNode || canvas;
     const rect = node.getBoundingClientRect();
     return rect.bottom > 0 && rect.top < window.innerHeight;
   };
@@ -586,6 +715,7 @@ const initChapterTwoArtwork = () => {
       sectionVisible,
       isFocusedSurface: sectionVisible,
     });
+    debug?.set({ renderState: state, visible: sectionVisible, running: Boolean(raf) && pageActive });
     if (state === RenderState.OFFSCREEN) return;
     const fpsCap = state === RenderState.FOCUSED ? RENDER_POLICY.chapterFpsFocused : RENDER_POLICY.chapterFpsVisibleNotFocused;
     const frameDuration = 1000 / fpsCap;
@@ -662,6 +792,7 @@ const initChapterTwoArtwork = () => {
 
     // Very slow stop-motion-like chapter-2 progression.
     time += deltaMs * 0.035;
+    debug?.frame();
   };
 
   const tick = (ts = 0) => {
@@ -671,12 +802,16 @@ const initChapterTwoArtwork = () => {
   };
   const ensureLoop = () => {
     if (prefersReducedMotion || !pageActive || !isSectionVisible()) return;
-    if (!raf) raf = requestAnimationFrame(tick);
+    if (!raf) {
+      raf = requestAnimationFrame(tick);
+      debug?.set({ running: true });
+    }
   };
   const stopLoop = () => {
     if (raf) {
       cancelAnimationFrame(raf);
       raf = 0;
+      debug?.set({ running: false });
     }
   };
 
@@ -693,6 +828,7 @@ const initChapterTwoArtwork = () => {
     ensureLoop();
   });
   const unsubscribeVisibility = sectionTracker.subscribe((isVisible) => {
+    debug?.set({ visible: isVisible });
     if (!isVisible) {
       stopLoop();
       return;
@@ -713,6 +849,7 @@ const initChapterTwoArtwork = () => {
     stopLoop();
     sectionTracker.dispose();
     ctx.clearRect(0, 0, width, height);
+    debug?.set({ running: false, renderState: 'disposed' });
   };
 };
 
@@ -1531,24 +1668,11 @@ const initSingleShaderDeck = (section) => {
   };
   markAllPreviewsDirty();
 
-  let visible = false;
+  const sectionTracker = createSectionVisibilityTracker(section, 0.15);
+  let visible = sectionTracker.isVisible();
   let pageActive = pageLifecycle.isActive();
-  const io = new IntersectionObserver(
-    (observed) => {
-      const e = observed[0];
-      if (e) {
-        visible = e.isIntersecting;
-        if (visible) {
-          markAllPreviewsDirty();
-          ensureLoop();
-        } else {
-          stopLoop();
-        }
-      }
-    },
-    { threshold: 0.15 },
-  );
-  io.observe(section);
+  const debug = createDebugModuleProbe('shaderDeck');
+  debug?.set({ running: false, visible, renderState: 'init' });
 
   const ro = new ResizeObserver(resizeAll);
   cards.forEach((c) => ro.observe(c));
@@ -1639,11 +1763,15 @@ const initSingleShaderDeck = (section) => {
     if (raf) {
       cancelAnimationFrame(raf);
       raf = 0;
+      debug?.set({ running: false });
     }
   };
   const ensureLoop = () => {
     if (prefersReducedMotion || !visible || !pageActive) return;
-    if (!raf) raf = requestAnimationFrame(tick);
+    if (!raf) {
+      raf = requestAnimationFrame(tick);
+      debug?.set({ running: true });
+    }
   };
 
   const tick = (now) => {
@@ -1652,6 +1780,7 @@ const initSingleShaderDeck = (section) => {
     raf = requestAnimationFrame(tick);
 
     const state = getSectionRenderState();
+    debug?.set({ renderState: state, visible, running: true });
     if (state === RenderState.OFFSCREEN) return;
 
     const tSec = (now - tStart) * 0.001;
@@ -1715,7 +1844,19 @@ const initSingleShaderDeck = (section) => {
       if (perf.sampleMs.length > 50) perf.sampleMs.shift();
       maybeRetunePerformance(perf.fpsCap || RENDER_POLICY.shaderFpsFocused);
     }
+    debug?.frame();
   };
+
+  const unsubscribeSectionVisibility = sectionTracker.subscribe((isVisible) => {
+    visible = isVisible;
+    debug?.set({ visible });
+    if (visible) {
+      markAllPreviewsDirty();
+      ensureLoop();
+      return;
+    }
+    stopLoop();
+  });
 
   const drawStaticPreviewSet = () => {
     const t = 2;
@@ -1790,9 +1931,10 @@ const initSingleShaderDeck = (section) => {
   });
 
   return () => {
+    unsubscribeSectionVisibility();
+    sectionTracker.dispose();
     unsubscribeLifecycle();
     stopLoop();
-    io.disconnect();
     ro.disconnect();
     window.removeEventListener('resize', onWin);
     window.removeEventListener('pointerup', onUp);
@@ -1804,6 +1946,7 @@ const initSingleShaderDeck = (section) => {
       c.removeEventListener('keydown', onCardKey);
     });
     entries.forEach((e) => e.runner.dispose());
+    debug?.set({ running: false, renderState: 'disposed' });
   };
 };
 
@@ -1819,8 +1962,21 @@ const initShaderDeck = () => {
 
 const initChapterFlow = () => {
   if (window.matchMedia('(max-width: 1024px)').matches) return null;
+  const container = document.querySelector('.chapter-main');
   const sections = Array.from(document.querySelectorAll('.chapter-observe'));
-  if (sections.length === 0) return null;
+  if (!container || sections.length === 0) return null;
+
+  const applyInitialVisibility = () => {
+    let anyVisible = false;
+    sections.forEach((section) => {
+      if (computeVisibilityRatio(section) >= 0.12) {
+        section.classList.add('in-view');
+        anyVisible = true;
+      }
+    });
+    if (!anyVisible && sections[0]) sections[0].classList.add('in-view');
+  };
+  applyInitialVisibility();
 
   const observer = new IntersectionObserver(
     (entries) => {
@@ -1836,26 +1992,21 @@ const initChapterFlow = () => {
   );
 
   sections.forEach((section) => observer.observe(section));
+  const initialVisibilityTick = requestAnimationFrame(applyInitialVisibility);
 
   // Match the smoother original behavior: let native scrolling + CSS snap
   // handle wheel/trackpad momentum. Keep JS only for keyboard step navigation.
   const jumpTo = (next) => {
     if (next < 0 || next >= sections.length) return;
-    const target = sections[next];
-    if (locomotiveScroll && typeof locomotiveScroll.scrollTo === 'function') {
-      locomotiveScroll.scrollTo(target, { duration: prefersReducedMotion ? 0 : 0.9, offset: 0 });
-      return;
-    }
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    sections[next].scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const getCurrentIndex = () => {
-    const header = document.querySelector('.header');
-    const referenceTop = header ? header.getBoundingClientRect().bottom : 60;
+    const top = container.getBoundingClientRect().top;
     let best = 0;
     let bestDist = Infinity;
     sections.forEach((s, i) => {
-      const d = Math.abs(s.getBoundingClientRect().top - referenceTop);
+      const d = Math.abs(s.getBoundingClientRect().top - top);
       if (d < bestDist) {
         bestDist = d;
         best = i;
@@ -1879,20 +2030,88 @@ const initChapterFlow = () => {
   window.addEventListener('keydown', onKey);
 
   return () => {
+    cancelAnimationFrame(initialVisibilityTick);
     observer.disconnect();
     window.removeEventListener('keydown', onKey);
   };
 };
 
-const cleanups = [
-  initLocomotiveScroll(),
-  initChapterOneArtwork(),
-  initChapterTwoArtwork(),
-  initChapterThreeArtwork(),
-  initShaderDeck(),
-  initChapterFlow(),
-].filter(Boolean);
-window.addEventListener('beforeunload', () => {
-  cleanups.forEach((cleanup) => cleanup());
-  pageLifecycle.dispose();
-});
+const createAppRuntimeController = () => {
+  let cleanups = [];
+  let started = false;
+  let destroyed = false;
+
+  const wake = () => {
+    // Kick geometry/observer-driven loops after restores and tab refocus.
+    window.dispatchEvent(new Event('resize'));
+  };
+
+  const start = () => {
+    if (started || destroyed) return;
+    debugOverlay?.setApp({ phase: 'starting' });
+    cleanups = [
+      initChapterOneArtwork(),
+      initChapterTwoArtwork(),
+      initChapterThreeArtwork(),
+      initShaderDeck(),
+      initChapterFlow(),
+    ].filter(Boolean);
+    started = true;
+    debugOverlay?.setApp({ phase: 'running' });
+    wake();
+  };
+
+  const pause = () => {
+    if (!started || destroyed) return;
+    // Module-level lifecycle subscribers already handle pause/resume.
+    debugOverlay?.setApp({ phase: 'paused' });
+  };
+
+  const resume = () => {
+    if (destroyed) return;
+    if (!started) {
+      start();
+      return;
+    }
+    debugOverlay?.setApp({ phase: 'running' });
+    wake();
+  };
+
+  const destroy = () => {
+    if (destroyed) return;
+    destroyed = true;
+    debugOverlay?.setApp({ phase: 'destroyed' });
+    document.removeEventListener('visibilitychange', onVisibility);
+    window.removeEventListener('pageshow', onPageShow);
+    window.removeEventListener('pagehide', onPageHide);
+    cleanups.forEach((cleanup) => cleanup());
+    cleanups = [];
+    pageLifecycle.dispose();
+    delete window.__malAppRuntime;
+  };
+
+  const onVisibility = () => {
+    if (document.visibilityState === 'visible') resume();
+    else pause();
+  };
+
+  const onPageShow = () => resume();
+  const onPageHide = (event) => {
+    // Keep controller alive for bfcache history restores.
+    if (event.persisted) return;
+    destroy();
+  };
+
+  document.addEventListener('visibilitychange', onVisibility, { passive: true });
+  window.addEventListener('pageshow', onPageShow, { passive: true });
+  window.addEventListener('pagehide', onPageHide, { passive: true });
+
+  return { start, pause, resume, destroy };
+};
+
+if (window.__malAppRuntime && typeof window.__malAppRuntime.resume === 'function') {
+  window.__malAppRuntime.resume();
+} else {
+  window.__malAppRuntime = createAppRuntimeController();
+  window.__malAppRuntime.start();
+}

@@ -138,16 +138,6 @@ body,
   margin: 0 auto;
 }
 
-/* Locomotive Scroll: wrapper becomes the scroller, so our chapter main must not be a scroll container. */
-#locomotive-wrapper {
-  height: calc(100vh - 60px);
-  overflow: hidden;
-}
-
-#locomotive-content {
-  min-height: 100%;
-}
-
 .chapter-header {
   border-bottom: none;
   box-shadow: none;
@@ -226,15 +216,13 @@ body,
 }
 
 .chapter-main {
-  height: auto;
-  overflow: visible;
-  scroll-snap-type: none;
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: y proximity;
   scroll-behavior: auto;
-}
-
-.main.chapter-main {
-  height: auto !important;
-  overflow: visible !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .chapter-main::-webkit-scrollbar {
@@ -247,7 +235,7 @@ body,
   border-top: none;
   min-height: calc(100vh - 60px);
   scroll-snap-align: start;
-  scroll-snap-stop: always;
+  scroll-snap-stop: normal;
   gap: 40px;
   padding-left: 72px;
   padding-right: 72px;
@@ -368,7 +356,7 @@ body,
 .shader-deck-section {
   min-height: calc(100vh - 60px);
   scroll-snap-align: start;
-  scroll-snap-stop: always;
+  scroll-snap-stop: normal;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -433,20 +421,14 @@ body,
 }
 
 @media (max-width: 1024px) {
-  #locomotive-wrapper {
-    height: calc(100dvh - 60px);
-  }
-
   .chapter-main {
-    height: auto;
-    min-height: 0;
-    overflow: visible;
-    scroll-snap-type: none;
-  }
-
-  .main.chapter-main {
-    height: auto !important;
-    overflow: visible !important;
+    height: calc(100dvh - 60px);
+    min-height: calc(100dvh - 60px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    scroll-snap-type: y proximity;
   }
 
   .chapter-poem-section {
@@ -459,7 +441,7 @@ body,
     padding: 8px 10px;
     box-sizing: border-box;
     scroll-snap-align: start;
-    scroll-snap-stop: always;
+    scroll-snap-stop: normal;
     display: flex;
     flex-direction: column;
     justify-content: center;
