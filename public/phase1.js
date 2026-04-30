@@ -21,6 +21,11 @@ const refs = {
   generatedGrid: document.getElementById('generated-grid'),
 };
 
+if (document.body.classList.contains('phase1-app')) {
+  document.body.classList.remove('phase1-app');
+}
+document.body.classList.add('gr-app-shell');
+
 const SINGLE_ROCKS = [
   { id: 'single_river_anchor', name: 'River Anchor', emotion: 'steadfast support' },
   { id: 'single_weathered_bridge', name: 'Weathered Bridge', emotion: 'reconciliation' },
@@ -65,6 +70,7 @@ const revealSelectedRock = async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         rockId: appState.selectedRock.id,
+        emotion: appState.selectedRock.emotion,
         tone: 'poetic',
         locale: 'en-US',
       }),
@@ -99,7 +105,10 @@ const pollJob = async (jobId) => {
 
     if (payload.status === 'completed') return payload.result;
     if (payload.status === 'failed' || payload.status === 'blocked') {
-      throw new Error(payload.error || 'Generation failed');
+      const error = new Error(payload.error || 'Generation failed');
+      error.status = payload.status;
+      error.reason = payload.error || '';
+      throw error;
     }
 
     refs.generateStatus.textContent = `Generating... ${payload.progress || 0}%`;
@@ -117,11 +126,12 @@ const renderGeneratedRocks = (rocks) => {
     const card = document.createElement('article');
     card.className = 'gr-generated-card';
     card.innerHTML = `
-      <div class="gr-rock-chip"></div>
+      <img class="gr-rock-image" src="${rock.image}" alt="${rock.title}" />
       <h4>${rock.title}</h4>
       <p><strong>Emotion:</strong> ${rock.emotion}</p>
       <p><strong>Meaning:</strong> ${rock.meaning}</p>
       <p><strong>Short:</strong> ${rock.messageShort}</p>
+      <p><strong>Quality:</strong> ${(rock.qualityScore || 0).toFixed(2)} | <strong>Diversity:</strong> ${(rock.diversityScore || 0).toFixed(2)}</p>
       <p><strong>Occasions:</strong> ${(rock.occasion || []).join(', ') || '-'}</p>
     `;
     refs.generatedGrid.appendChild(card);
@@ -155,12 +165,21 @@ const submitPrompt = async (event) => {
     if (!createRes.ok) throw new Error('Could not start generation job');
     const createPayload = await createRes.json();
 
+    if (createPayload.status === 'blocked') {
+      refs.generateStatus.textContent = `Blocked by moderation: ${createPayload.reason || 'prompt not allowed'}. Try reframing with supportive language.`;
+      return;
+    }
+
     refs.generateStatus.textContent = `Job queued: ${createPayload.jobId}`;
 
     const result = await pollJob(createPayload.jobId);
     renderGeneratedRocks(result.rocks || []);
     refs.generateStatus.textContent = `Completed. Generated ${(result.rocks || []).length} rocks.`;
   } catch (error) {
+    if (error.status === 'blocked') {
+      refs.generateStatus.textContent = `Blocked by moderation: ${error.reason || 'prompt not allowed'}.`;
+      return;
+    }
     refs.generateStatus.textContent = error.message || 'Generation failed.';
   }
 };

@@ -40,6 +40,8 @@ This repository now includes a Phase 1 prototype implementation aligned to the r
   - `POST /api/v1/rocks/reveal` (single reveal response)
   - `POST /api/v1/events` + `GET /api/v1/analytics` (baseline event logging)
   - prompt moderation blocklist and deterministic SVG rock image generation
+  - file-backed persistence for jobs and analytics (`data/generative-rock-state.json`)
+  - generation quality pass with diversity-aware ranking metadata
 - `package.json`: start script for the prototype server
 
 ### Run locally
@@ -54,6 +56,19 @@ This repository now includes a Phase 1 prototype implementation aligned to the r
 ### Environment note
 
 The current cloud environment did not include `node`/`npm`, so runtime execution could not be validated here. The implementation was completed with static code validation and clear run instructions for local verification.
+
+## Phase 1.1 Hardening (Implemented)
+
+The prototype now includes a first hardening pass:
+
+- persistent in-memory state snapshot to disk
+- improved moderation UX with explicit blocked status messaging
+- richer generated card metadata:
+  - quality score
+  - diversity score
+  - rank score
+  - duplicate risk
+- clearer error and empty states in UI
 
 ## Why this exists in the repo
 

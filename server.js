@@ -7,6 +7,10 @@ const crypto = require('crypto');
 const PORT = Number(process.env.PORT || 3000);
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, 'public');
+const DATA_DIR = path.join(ROOT, '.data');
+const JOBS_FILE = path.join(DATA_DIR, 'jobs.json');
+const ANALYTICS_FILE = path.join(DATA_DIR, 'analytics.json');
+const MAX_PERSISTED_JOBS = 300;
 
 const jobs = new Map();
 const analytics = {
@@ -14,6 +18,7 @@ const analytics = {
   generation_completed: 0,
   moderation_blocked: 0,
   reveal_completed: 0,
+  generation_failed: 0,
 };
 
 const MIME_TYPES = {
@@ -39,6 +44,49 @@ const STONE_LIBRARY = [
 
 const BLOCKLIST = ['suicide', 'kill myself', 'self-harm', 'bomb', 'hate crime'];
 
+function ensureDataDir() {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+function loadJsonFile(filePath, fallback) {
+  try {
+    if (!fs.existsSync(filePath)) return fallback;
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch {
+    return fallback;
+  }
+}
+
+function saveJsonFile(filePath, data) {
+  ensureDataDir();
+  fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
+}
+
+function persistState() {
+  const allJobs = Array.from(jobs.values()).sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+  const trimmedJobs = allJobs.slice(0, MAX_PERSISTED_JOBS);
+  saveJsonFile(JOBS_FILE, trimmedJobs);
+  saveJsonFile(ANALYTICS_FILE, analytics);
+}
+
+function hydrateState() {
+  const persistedAnalytics = loadJsonFile(ANALYTICS_FILE, null);
+  if (persistedAnalytics && typeof persistedAnalytics === 'object') {
+    Object.assign(analytics, persistedAnalytics);
+  }
+  const persistedJobs = loadJsonFile(JOBS_FILE, []);
+  if (Array.isArray(persistedJobs)) {
+    persistedJobs.forEach((job) => {
+      if (job && job.id) jobs.set(job.id, job);
+    });
+  }
+}
+
+function setJob(jobId, jobValue) {
+  jobs.set(jobId, jobValue);
+  persistState();
+}
+
 function sendJson(res, code, payload) {
   const body = JSON.stringify(payload);
   res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' });
@@ -61,7 +109,7 @@ function parseBody(req) {
       }
       try {
         resolve(JSON.parse(data));
-      } catch (err) {
+      } catch {
         reject(new Error('Invalid JSON body'));
       }
     });
@@ -80,45 +128,47 @@ function seededRandom(seed) {
   };
 }
 
+function normalizeText(value) {
+  return String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+}
+
+function tokenizePrompt(promptText) {
+  return normalizeText(promptText).split(' ').filter((token) => token.length > 2);
+}
+
+function scoreStoneRelevance(baseStone, tokens) {
+  const haystack = normalizeText(`${baseStone.title} ${baseStone.emotion} ${baseStone.occasion.join(' ')}`);
+  let score = 0;
+  tokens.forEach((token) => {
+    if (haystack.includes(token)) score += 1;
+  });
+  return score;
+}
+
+function scoreStoneDiversity(baseStone, selectedBases) {
+  let diversityPenalty = 0;
+  selectedBases.forEach((selected) => {
+    if (selected.emotion === baseStone.emotion) diversityPenalty += 0.8;
+    const sharedOccasion = selected.occasion.some((occ) => baseStone.occasion.includes(occ));
+    if (sharedOccasion) diversityPenalty += 0.35;
+    if (selected.palette[0] === baseStone.palette[0]) diversityPenalty += 0.2;
+  });
+  return Math.max(0, 1 - diversityPenalty);
+}
+
 function moderatePrompt(promptText) {
-  const lowered = String(promptText || '').toLowerCase();
+  const lowered = normalizeText(promptText);
   const blockedTerm = BLOCKLIST.find((term) => lowered.includes(term));
   if (blockedTerm) {
     analytics.moderation_blocked += 1;
+    persistState();
     return {
       blocked: true,
       reason: `Prompt includes blocked term: ${blockedTerm}`,
+      safeRewrite: 'Try describing a supportive message, apology, gratitude, or remembrance without harmful language.',
     };
   }
   return { blocked: false };
-}
-
-function generateStoneSet(promptText, controls) {
-  const setSize = Math.min(12, Math.max(3, Number(controls?.setSize || 6)));
-  const rand = seededRandom(`${promptText}|${JSON.stringify(controls || {})}`);
-  const used = new Set();
-  const result = [];
-  for (let i = 0; i < setSize; i += 1) {
-    let idx = Math.floor(rand() * STONE_LIBRARY.length);
-    let guard = 0;
-    while (used.has(idx) && guard < 50) {
-      idx = (idx + 1) % STONE_LIBRARY.length;
-      guard += 1;
-    }
-    used.add(idx);
-    const base = STONE_LIBRARY[idx];
-    result.push({
-      id: `rock_${i + 1}`,
-      title: base.title,
-      emotion: base.emotion,
-      occasion: base.occasion,
-      meaning: `This stone carries ${base.emotion} for moments of ${base.occasion.join(' and ')}.`,
-      messageShort: sampleShortMessage(base.emotion),
-      messageLong: sampleLongMessage(base.emotion, promptText),
-      image: createStoneSvgDataUri(base, i),
-    });
-  }
-  return result;
 }
 
 function sampleShortMessage(emotion) {
@@ -166,6 +216,51 @@ function createStoneSvgDataUri(base, index) {
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 }
 
+function generateStoneSet(promptText, controls) {
+  const setSize = Math.min(12, Math.max(3, Number(controls?.setSize || 6)));
+  const tokens = tokenizePrompt(promptText);
+  const rand = seededRandom(`${promptText}|${JSON.stringify(controls || {})}`);
+  const selected = [];
+  const candidates = STONE_LIBRARY.map((stone) => ({
+    stone,
+    relevanceScore: scoreStoneRelevance(stone, tokens),
+  }));
+
+  while (selected.length < setSize && selected.length < STONE_LIBRARY.length) {
+    let best = null;
+    candidates.forEach((candidate) => {
+      if (selected.some((entry) => entry.stone.title === candidate.stone.title)) return;
+      const diversityScore = scoreStoneDiversity(candidate.stone, selected.map((entry) => entry.stone));
+      const jitter = (rand() - 0.5) * 0.15;
+      const compositeScore = candidate.relevanceScore * 0.6 + diversityScore * 0.4 + jitter;
+      if (!best || compositeScore > best.compositeScore) {
+        best = { ...candidate, diversityScore, compositeScore };
+      }
+    });
+    if (!best) break;
+    selected.push(best);
+  }
+
+  return selected.map((entry, index) => {
+    const base = entry.stone;
+    return {
+      id: `rock_${index + 1}`,
+      title: base.title,
+      emotion: base.emotion,
+      occasion: base.occasion,
+      meaning: `This stone carries ${base.emotion} for moments of ${base.occasion.join(' and ')}.`,
+      messageShort: sampleShortMessage(base.emotion),
+      messageLong: sampleLongMessage(base.emotion, promptText),
+      image: createStoneSvgDataUri(base, index),
+      quality: {
+        relevanceScore: Number(entry.relevanceScore.toFixed(2)),
+        diversityScore: Number(entry.diversityScore.toFixed(2)),
+        compositeScore: Number(entry.compositeScore.toFixed(2)),
+      },
+    };
+  });
+}
+
 function serveFile(res, filePath) {
   fs.readFile(filePath, (err, data) => {
     if (err) {
@@ -176,6 +271,56 @@ function serveFile(res, filePath) {
     res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
     res.end(data);
   });
+}
+
+function handleGenerationLifecycle(jobId, promptText, controls) {
+  setTimeout(() => {
+    const current = jobs.get(jobId);
+    if (!current || current.status === 'blocked') return;
+    setJob(jobId, { ...current, status: 'running', progress: 35, stage: 'semantic_generation' });
+  }, 200);
+
+  setTimeout(() => {
+    const current = jobs.get(jobId);
+    if (!current || current.status === 'blocked') return;
+    setJob(jobId, { ...current, status: 'running', progress: 62, stage: 'diversity_scoring' });
+  }, 550);
+
+  setTimeout(() => {
+    const current = jobs.get(jobId);
+    if (!current || current.status === 'blocked') return;
+    try {
+      const rocks = generateStoneSet(promptText, controls || {});
+      const completed = {
+        ...current,
+        status: 'completed',
+        progress: 100,
+        stage: 'completed',
+        result: {
+          prompt: promptText,
+          controls: controls || {},
+          rocks,
+          quality: {
+            strategy: 'relevance_and_diversity_weighted_selection',
+            candidatePoolSize: STONE_LIBRARY.length,
+          },
+        },
+      };
+      setJob(jobId, completed);
+      analytics.generation_completed += 1;
+      persistState();
+    } catch (error) {
+      analytics.generation_failed += 1;
+      setJob(jobId, {
+        ...current,
+        status: 'failed',
+        progress: 100,
+        stage: 'failed',
+        error: error.message || 'Generation failed unexpectedly.',
+      });
+      persistState();
+    }
+  }, 980);
 }
 
 const server = http.createServer(async (req, res) => {
@@ -198,6 +343,7 @@ const server = http.createServer(async (req, res) => {
       const event = String(body.event || '');
       if (event && Object.prototype.hasOwnProperty.call(analytics, event)) {
         analytics[event] += 1;
+        persistState();
       }
       sendJson(res, 202, { accepted: true });
     } catch (err) {
@@ -210,49 +356,38 @@ const server = http.createServer(async (req, res) => {
     try {
       const body = await parseBody(req);
       analytics.prompt_submitted += 1;
+      persistState();
       const promptText = String(body.promptText || '').trim();
       if (promptText.length < 8) {
         sendJson(res, 400, { error: 'Prompt must be at least 8 characters long.' });
         return;
       }
+
       const moderation = moderatePrompt(promptText);
       if (moderation.blocked) {
-        const id = crypto.randomUUID();
-        jobs.set(id, {
-          id,
+        const blockedId = crypto.randomUUID();
+        setJob(blockedId, {
+          id: blockedId,
           status: 'blocked',
           progress: 100,
+          stage: 'moderation_blocked',
           createdAt: Date.now(),
           error: moderation.reason,
+          safeRewrite: moderation.safeRewrite,
         });
-        sendJson(res, 200, { jobId: id, status: 'blocked' });
+        sendJson(res, 200, { jobId: blockedId, status: 'blocked', error: moderation.reason, safeRewrite: moderation.safeRewrite });
         return;
       }
+
       const id = crypto.randomUUID();
-      jobs.set(id, { id, status: 'queued', progress: 5, createdAt: Date.now() });
-      setTimeout(() => {
-        const current = jobs.get(id);
-        if (!current) return;
-        current.status = 'running';
-        current.progress = 45;
-        jobs.set(id, current);
-      }, 220);
-      setTimeout(() => {
-        const current = jobs.get(id);
-        if (!current || current.status === 'blocked') return;
-        const rocks = generateStoneSet(promptText, body.controls || {});
-        jobs.set(id, {
-          ...current,
-          status: 'completed',
-          progress: 100,
-          result: {
-            prompt: promptText,
-            controls: body.controls || {},
-            rocks,
-          },
-        });
-        analytics.generation_completed += 1;
-      }, 980);
+      setJob(id, {
+        id,
+        status: 'queued',
+        progress: 5,
+        stage: 'queued',
+        createdAt: Date.now(),
+      });
+      handleGenerationLifecycle(id, promptText, body.controls || {});
       sendJson(res, 202, { jobId: id, status: 'queued' });
     } catch (err) {
       sendJson(res, 400, { error: err.message });
@@ -281,6 +416,7 @@ const server = http.createServer(async (req, res) => {
         'steadfast support';
       const message = String(body.message || '').trim() || sampleShortMessage(emotionHint);
       analytics.reveal_completed += 1;
+      persistState();
       sendJson(res, 200, {
         rockId,
         emotion: emotionHint,
@@ -316,6 +452,7 @@ const server = http.createServer(async (req, res) => {
   sendJson(res, 404, { error: 'Not found' });
 });
 
+hydrateState();
 server.listen(PORT, () => {
-  console.log(`Generative Rock Phase 1 server running on http://localhost:${PORT}`);
+  console.log(`Generative Rock Phase 1.1 server running on http://localhost:${PORT}`);
 });
