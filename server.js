@@ -10,9 +10,13 @@ const PUBLIC_DIR = path.join(ROOT, 'public');
 const DATA_DIR = path.join(ROOT, '.data');
 const JOBS_FILE = path.join(DATA_DIR, 'jobs.json');
 const ANALYTICS_FILE = path.join(DATA_DIR, 'analytics.json');
+const FAVORITES_FILE = path.join(DATA_DIR, 'favorites.json');
+const EXPORTS_FILE = path.join(DATA_DIR, 'exports.json');
 const MAX_PERSISTED_JOBS = 300;
 
 const jobs = new Map();
+const favorites = new Map();
+const exportsStore = new Map();
 const analytics = {
   prompt_submitted: 0,
   generation_completed: 0,
@@ -67,6 +71,8 @@ function persistState() {
   const trimmedJobs = allJobs.slice(0, MAX_PERSISTED_JOBS);
   saveJsonFile(JOBS_FILE, trimmedJobs);
   saveJsonFile(ANALYTICS_FILE, analytics);
+  saveJsonFile(FAVORITES_FILE, Array.from(favorites.values()));
+  saveJsonFile(EXPORTS_FILE, Array.from(exportsStore.values()).slice(-MAX_PERSISTED_JOBS));
 }
 
 function hydrateState() {
@@ -78,6 +84,18 @@ function hydrateState() {
   if (Array.isArray(persistedJobs)) {
     persistedJobs.forEach((job) => {
       if (job && job.id) jobs.set(job.id, job);
+    });
+  }
+  const persistedFavorites = loadJsonFile(FAVORITES_FILE, []);
+  if (Array.isArray(persistedFavorites)) {
+    persistedFavorites.forEach((favorite) => {
+      if (favorite && favorite.id) favorites.set(favorite.id, favorite);
+    });
+  }
+  const persistedExports = loadJsonFile(EXPORTS_FILE, []);
+  if (Array.isArray(persistedExports)) {
+    persistedExports.forEach((artifact) => {
+      if (artifact && artifact.id) exportsStore.set(artifact.id, artifact);
     });
   }
 }
@@ -261,6 +279,38 @@ function generateStoneSet(promptText, controls) {
   });
 }
 
+function generateSingleRock(promptText, controls, excludedTitles = []) {
+  const tokens = tokenizePrompt(promptText);
+  const rand = seededRandom(`${promptText}|single|${JSON.stringify(controls || {})}|${excludedTitles.join('|')}`);
+  let best = null;
+  STONE_LIBRARY.forEach((stone) => {
+    if (excludedTitles.includes(stone.title)) return;
+    const relevanceScore = scoreStoneRelevance(stone, tokens);
+    const diversityScore = 1;
+    const jitter = (rand() - 0.5) * 0.2;
+    const compositeScore = relevanceScore * 0.7 + diversityScore * 0.3 + jitter;
+    if (!best || compositeScore > best.compositeScore) {
+      best = { stone, relevanceScore, diversityScore, compositeScore };
+    }
+  });
+  if (!best) best = { stone: STONE_LIBRARY[Math.floor(rand() * STONE_LIBRARY.length)], relevanceScore: 0, diversityScore: 1, compositeScore: 0.1 };
+  return {
+    id: `rock_regen_${Date.now()}`,
+    title: best.stone.title,
+    emotion: best.stone.emotion,
+    occasion: best.stone.occasion,
+    meaning: `This stone carries ${best.stone.emotion} for moments of ${best.stone.occasion.join(' and ')}.`,
+    messageShort: sampleShortMessage(best.stone.emotion),
+    messageLong: sampleLongMessage(best.stone.emotion, promptText),
+    image: createStoneSvgDataUri(best.stone, Math.floor(rand() * 1000)),
+    quality: {
+      relevanceScore: Number(best.relevanceScore.toFixed(2)),
+      diversityScore: Number(best.diversityScore.toFixed(2)),
+      compositeScore: Number(best.compositeScore.toFixed(2)),
+    },
+  };
+}
+
 function serveFile(res, filePath) {
   fs.readFile(filePath, (err, data) => {
     if (err) {
@@ -337,6 +387,11 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === '/api/v1/favorites' && req.method === 'GET') {
+    sendJson(res, 200, { favorites: Array.from(favorites.values()) });
+    return;
+  }
+
   if (pathname === '/api/v1/events' && req.method === 'POST') {
     try {
       const body = await parseBody(req);
@@ -395,6 +450,23 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === '/api/v1/rocks/regenerate' && req.method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const promptText = String(body.promptText || '').trim();
+      if (promptText.length < 8) {
+        sendJson(res, 400, { error: 'Prompt must be at least 8 characters long.' });
+        return;
+      }
+      const excludedTitles = Array.isArray(body.excludedTitles) ? body.excludedTitles.map((v) => String(v)) : [];
+      const rock = generateSingleRock(promptText, body.controls || {}, excludedTitles);
+      sendJson(res, 200, { rock });
+    } catch (err) {
+      sendJson(res, 400, { error: err.message });
+    }
+    return;
+  }
+
   if (pathname.startsWith('/api/v1/jobs/') && req.method === 'GET') {
     const id = pathname.split('/').pop();
     const job = jobs.get(id);
@@ -426,6 +498,66 @@ const server = http.createServer(async (req, res) => {
     } catch (err) {
       sendJson(res, 400, { error: err.message });
     }
+    return;
+  }
+
+  if (pathname === '/api/v1/favorites/toggle' && req.method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const rock = body.rock;
+      if (!rock || !rock.id) {
+        sendJson(res, 400, { error: 'rock payload required' });
+        return;
+      }
+      const existing = favorites.get(rock.id);
+      if (existing) favorites.delete(rock.id);
+      else favorites.set(rock.id, { ...rock, favoritedAt: Date.now() });
+      persistState();
+      sendJson(res, 200, { favorited: !existing });
+    } catch (err) {
+      sendJson(res, 400, { error: err.message });
+    }
+    return;
+  }
+
+  if (pathname === '/api/v1/exports' && req.method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const format = String(body.format || 'json');
+      const rocks = Array.isArray(body.rocks) ? body.rocks : [];
+      const id = crypto.randomUUID();
+      const artifact = {
+        id,
+        format,
+        createdAt: Date.now(),
+        count: rocks.length,
+        title: `generative-rock-export-${new Date().toISOString()}`,
+        content: {
+          summary: rocks.map((rock) => ({
+            id: rock.id,
+            title: rock.title,
+            emotion: rock.emotion,
+            messageShort: rock.messageShort,
+          })),
+        },
+      };
+      exportsStore.set(id, artifact);
+      persistState();
+      sendJson(res, 201, { exportId: id, url: `/api/v1/exports/${id}` });
+    } catch (err) {
+      sendJson(res, 400, { error: err.message });
+    }
+    return;
+  }
+
+  if (pathname.startsWith('/api/v1/exports/') && req.method === 'GET') {
+    const id = pathname.split('/').pop();
+    const artifact = exportsStore.get(id);
+    if (!artifact) {
+      sendJson(res, 404, { error: 'Export not found' });
+      return;
+    }
+    sendJson(res, 200, artifact);
     return;
   }
 

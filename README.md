@@ -40,7 +40,7 @@ This repository now includes a Phase 1 prototype implementation aligned to the r
   - `POST /api/v1/rocks/reveal` (single reveal response)
   - `POST /api/v1/events` + `GET /api/v1/analytics` (baseline event logging)
   - prompt moderation blocklist and deterministic SVG rock image generation
-  - file-backed persistence for jobs and analytics (`data/generative-rock-state.json`)
+  - file-backed persistence for jobs and analytics (`.data/jobs.json`, `.data/analytics.json`)
   - generation quality pass with diversity-aware ranking metadata
 - `package.json`: start script for the prototype server
 
@@ -57,18 +57,51 @@ This repository now includes a Phase 1 prototype implementation aligned to the r
 
 The current cloud environment did not include `node`/`npm`, so runtime execution could not be validated here. The implementation was completed with static code validation and clear run instructions for local verification.
 
+## Phase 1.2 Enhancements (Implemented)
+
+The prototype now includes the next iteration features from the roadmap:
+
+- **Single-rock regeneration**
+  - `POST /api/v1/rocks/regenerate`
+  - Regenerates one generated rock while preserving the rest of the set context.
+- **Lock and favorite controls**
+  - Client-side lock/favorite state with visual indicators.
+  - Locked rocks are excluded from "regenerate unlocked" actions.
+- **Export/share artifacts**
+  - `POST /api/v1/exports`
+  - Generates simple text artifact files under `.data/exports/`
+  - Returns downloadable artifact metadata and URL.
+
+### New interactive controls in `phase1.html`
+
+- **Regenerate unlocked**: refreshes only non-locked rocks.
+- **Export current set**: creates a text artifact summarizing the current set.
+- Per-rock actions:
+  - Favorite / Unfavorite
+  - Lock / Unlock
+  - Regenerate
+
+### Additional endpoints
+
+- `POST /api/v1/rocks/regenerate`
+- `POST /api/v1/favorites/toggle`
+- `GET /api/v1/favorites`
+- `POST /api/v1/exports`
+- `GET /api/v1/exports/:id`
+
+These endpoints are implemented in `server.js` and integrated in `public/phase1.js`.
+
 ## Phase 1.1 Hardening (Implemented)
 
-The prototype now includes a first hardening pass:
+The prototype includes:
 
-- persistent in-memory state snapshot to disk
-- improved moderation UX with explicit blocked status messaging
+- persistent state hydration/snapshot for jobs and analytics
+- improved moderation UX with explicit blocked status and safe rewrite hints
 - richer generated card metadata:
   - quality score
   - diversity score
-  - rank score
-  - duplicate risk
-- clearer error and empty states in UI
+  - composite score
+- clearer generation stage/error states in UI
 
 ## Why this exists in the repo
 

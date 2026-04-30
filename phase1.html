@@ -39,6 +39,12 @@
             <button class="gr-button" type="submit">Generate rocks</button>
           </form>
           <p id="generate-status" class="gr-status">Idle</p>
+          <div class="gr-actions">
+            <button class="gr-button" id="regenerate-unlocked-button" type="button" disabled>Regenerate unlocked</button>
+            <button class="gr-button" id="export-json-button" type="button" disabled>Export JSON</button>
+            <button class="gr-button" id="create-share-button" type="button" disabled>Create share link</button>
+          </div>
+          <p id="export-status" class="gr-status">No export yet.</p>
           <div id="generated-grid" class="gr-grid" aria-live="polite"></div>
         </section>
 
