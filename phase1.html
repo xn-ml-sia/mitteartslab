@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generative Rock - Phase 1 Prototype</title>
+    <link rel="stylesheet" href="./public/phase1.css" />
+  </head>
+  <body>
+    <main class="gr-app">
+      <header class="topbar">
+        <h1>Generative Rock</h1>
+        <p>Phase 1 prototype: prompt generation + reveal flow</p>
+      </header>
+
+      <section class="gr-panel">
+        <h2>Use case 2: Prompt -> many rocks</h2>
+        <form id="prompt-form" class="gr-controls">
+          <label>
+            Prompt
+            <textarea id="prompt-input" rows="3" required placeholder="Example: I need to apologize to my father and begin again."></textarea>
+          </label>
+          <label>
+            Set size
+            <select id="set-size">
+              <option value="6">6</option>
+              <option value="9" selected>9</option>
+              <option value="12">12</option>
+            </select>
+          </label>
+          <label>
+            Tone (0 direct - 1 gentle)
+            <input id="tone" type="range" min="0" max="1" step="0.1" value="0.6" />
+          </label>
+          <label>
+            Abstractness (0 literal - 1 poetic)
+            <input id="abstractness" type="range" min="0" max="1" step="0.1" value="0.5" />
+          </label>
+          <button type="submit">Generate rocks</button>
+        </form>
+        <p id="generate-status" class="gr-status">Idle</p>
+        <div id="generated-grid" class="gr-grid" aria-live="polite"></div>
+      </section>
+
+      <section class="gr-panel">
+        <h2>Use case 1: Choose rock -> reveal message</h2>
+        <div id="single-rock-grid" class="gr-grid gr-grid-single"></div>
+        <p class="gr-status">Selected: <span id="selected-rock-name">None</span></p>
+        <button id="reveal-button" disabled>Reveal message</button>
+        <div id="reveal-result" class="gr-reveal" hidden aria-live="polite">
+          <p><strong>Emotion:</strong> <span id="reveal-emotion">-</span></p>
+          <p><strong>Short message:</strong> <span id="reveal-short">-</span></p>
+          <p><strong>Long message:</strong> <span id="reveal-long">-</span></p>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./public/phase1.js"></script>
+  </body>
+</html>

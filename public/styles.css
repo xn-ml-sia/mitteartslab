@@ -877,3 +877,216 @@ body,
     transform: none !important;
   }
 }
+
+/* Phase 1 prototype UI: Generative Rock */
+.gr-body {
+  margin: 0;
+  background: var(--mono-50);
+  color: var(--mono-900);
+  font-family: var(--font-family-code);
+}
+
+.gr-app {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 22px;
+}
+
+.gr-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.gr-top h1 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+}
+
+.gr-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--mono-600);
+}
+
+.gr-nav {
+  font-size: 12px;
+  color: var(--mono-600);
+  text-decoration: none;
+  border-bottom: 1px solid var(--mono-400);
+}
+
+.gr-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 380px) 1fr;
+  gap: 18px;
+}
+
+.gr-panel {
+  background: var(--mono-0);
+  border: 1px solid var(--mono-200);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.gr-controls h2,
+.gr-results h2 {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.gr-label {
+  display: block;
+  font-size: 12px;
+  color: var(--mono-700);
+  margin-bottom: 4px;
+}
+
+.gr-input,
+.gr-textarea,
+.gr-select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--mono-300);
+  background: var(--mono-0);
+  border-radius: 6px;
+  padding: 9px 10px;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.gr-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.gr-field {
+  margin-bottom: 10px;
+}
+
+.gr-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.gr-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.gr-btn {
+  border: 1px solid var(--mono-300);
+  background: var(--mono-0);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.gr-btn-primary {
+  background: var(--mono-800);
+  border-color: var(--mono-800);
+  color: var(--mono-0);
+}
+
+.gr-hint {
+  margin: 10px 0 0;
+  font-size: 11px;
+  color: var(--mono-600);
+}
+
+.gr-job {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--mono-700);
+}
+
+.gr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.gr-card {
+  border: 1px solid var(--mono-200);
+  border-radius: 8px;
+  background: var(--mono-0);
+  overflow: hidden;
+}
+
+.gr-rock-art {
+  aspect-ratio: 1 / 1;
+  border-bottom: 1px solid var(--mono-200);
+}
+
+.gr-card-body {
+  padding: 9px;
+}
+
+.gr-rock-title {
+  margin: 0 0 3px;
+  font-size: 13px;
+}
+
+.gr-rock-meta {
+  margin: 0 0 8px;
+  font-size: 11px;
+  color: var(--mono-600);
+}
+
+.gr-rock-msg {
+  margin: 0 0 8px;
+  font-size: 12px;
+}
+
+.gr-tone {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--mono-600);
+}
+
+.gr-reveal {
+  margin-top: 16px;
+  border-top: 1px solid var(--mono-200);
+  padding-top: 12px;
+}
+
+.gr-reveal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.gr-reveal-rock {
+  border: 1px solid var(--mono-200);
+  background: var(--mono-0);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.gr-reveal-rock button {
+  width: 100%;
+}
+
+.gr-reveal-output {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--mono-200);
+  border-radius: 8px;
+  background: var(--mono-50);
+  min-height: 42px;
+  font-size: 12px;
+}
+
+@media (max-width: 940px) {
+  .gr-layout {
+    grid-template-columns: 1fr;
+  }
+}
