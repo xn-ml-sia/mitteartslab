@@ -5,7 +5,8 @@ const mediaItems = Array.from(document.querySelectorAll('.mediaItem'));
 
 if (viewport && container && title && mediaItems.length > 0) {
   const IMG_SIZE_DESKTOP = 400;
-  const IMG_SIZE_MOBILE = 400;
+  /** Base tile size (px) before per-card variant scale; mobile = 1.5× desktop footprint. */
+  const IMG_SIZE_MOBILE = 600;
   const wheelSpeed = 1.5;
   const captionHeight = 28;
   const minGap = 76;
@@ -14,7 +15,7 @@ if (viewport && container && title && mediaItems.length > 0) {
 
   const state = {
     isMobile: window.innerWidth < 768,
-    zoom: window.innerWidth < 768 ? 0.42 : 0.76,
+    zoom: window.innerWidth < 768 ? 0.56 : 0.76,
     itemWidth: window.innerWidth < 768 ? IMG_SIZE_MOBILE : IMG_SIZE_DESKTOP,
     itemHeight: window.innerWidth < 768 ? IMG_SIZE_MOBILE : IMG_SIZE_DESKTOP,
     canvasWidth: 0,
@@ -115,7 +116,9 @@ if (viewport && container && title && mediaItems.length > 0) {
   };
 
   const createSizeProfile = (i) => {
-    const variants = [0.9, 0.95, 1, 1.05, 1.1, 0.92, 1.08];
+    const variants = state.isMobile
+      ? [0.94, 0.97, 1, 1.03, 1.05, 0.96, 1.04]
+      : [0.9, 0.95, 1, 1.05, 1.1, 0.92, 1.08];
     const s = variants[i % variants.length];
     const w = Math.round(state.itemWidth * s);
     const h = Math.round(state.itemHeight * s);
@@ -125,7 +128,13 @@ if (viewport && container && title && mediaItems.length > 0) {
   const placeByRules = () => {
     const rng = makeRng(hashString('gallery-seed-v4'));
     const viewportWorld = computeWorldViewport();
-    const pad = 120;
+    const { vw: vwW, vh: vhW } = viewportWorld;
+    // Portrait (≈9:16): world frame is taller than wide — oval spiral, more spread on Y, less on X.
+    const isPortrait = state.isMobile && vhW > vwW * 1.02;
+    const ar = isPortrait ? Math.min(Math.max(vhW / vwW, 1.15), 2.25) : 1;
+    const spreadY = isPortrait ? Math.sqrt(ar) : 1;
+    const spreadX = isPortrait ? 1 / spreadY : 1;
+    const pad = state.isMobile ? 40 : 120;
     const bounds = {
       left: pad,
       top: pad,
@@ -136,23 +145,35 @@ if (viewport && container && title && mediaItems.length > 0) {
     const centerY = state.canvasHeight * 0.5;
     const placed = [];
     const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // ~2.399963
+    const placementGap = state.isMobile ? 24 : minGap;
+    const radialScale = state.isMobile ? 0.24 : 1;
+    const jitterScale = state.isMobile ? 0.1 : 0.9;
+    const angleJitter = state.isMobile ? 0.05 : 0.18;
+    const pushStep = state.isMobile ? 0.2 : 0.36;
+    const resolveStep = state.isMobile ? 0.22 : 0.35;
 
     for (let i = 0; i < mediaItems.length; i += 1) {
       const size = createSizeProfile(i);
       let accepted = null;
 
       // Golden-ratio spiral around title center.
-      const theta = i * goldenAngle + (rng() - 0.5) * 0.18;
-      const radialStep = Math.min(viewportWorld.vw, viewportWorld.vh) * 0.092;
+      const theta = i * goldenAngle + (rng() - 0.5) * angleJitter;
+      const radialCoeff = state.isMobile ? 0.05 : 0.092;
+      const radialBasis = state.isMobile ? Math.sqrt(vwW * vhW) : Math.min(vwW, vhW);
+      const portraitRing = isPortrait ? 0.94 : 1;
+      const radialStep = radialBasis * radialCoeff * radialScale * portraitRing;
       const baseRadius = Math.sqrt(i + 1) * radialStep;
-      const seedX = centerX + Math.cos(theta) * baseRadius + (rng() - 0.5) * jitter * 0.9;
-      const seedY = centerY + Math.sin(theta) * baseRadius + (rng() - 0.5) * jitter * 0.9;
+      const jitterPx = state.isMobile ? 14 : jitter;
+      const dirX = Math.cos(theta) * spreadX;
+      const dirY = Math.sin(theta) * spreadY;
+      const seedX = centerX + dirX * baseRadius + (rng() - 0.5) * jitterPx * jitterScale;
+      const seedY = centerY + dirY * baseRadius + (rng() - 0.5) * jitterPx * jitterScale;
 
       // Resolve collisions by pushing outward along same spiral direction.
       for (let attempt = 0; attempt < maxPlacementAttempts; attempt += 1) {
-        const push = attempt * (minGap * 0.36);
-        const x = seedX + Math.cos(theta) * push;
-        const y = seedY + Math.sin(theta) * push;
+        const push = attempt * (placementGap * pushStep);
+        const x = seedX + Math.cos(theta) * push * spreadX;
+        const y = seedY + Math.sin(theta) * push * spreadY;
 
         const candidate = { x, y, w: size.w, h: size.fullH };
         const inBounds =
@@ -162,7 +183,7 @@ if (viewport && container && title && mediaItems.length > 0) {
           candidate.y + candidate.h <= bounds.bottom;
         if (!inBounds) continue;
         // Allow overlap with title area per art direction.
-        if (placed.some((p) => intersects(candidate, p, minGap))) continue;
+        if (placed.some((p) => intersects(candidate, p, placementGap))) continue;
         accepted = candidate;
         break;
       }
@@ -173,7 +194,7 @@ if (viewport && container && title && mediaItems.length > 0) {
           const x = bounds.left + rng() * (bounds.right - bounds.left - size.w);
           const y = bounds.top + rng() * (bounds.bottom - bounds.top - size.fullH);
           const candidate = { x, y, w: size.w, h: size.fullH };
-          if (placed.some((p) => intersects(candidate, p, minGap))) continue;
+          if (placed.some((p) => intersects(candidate, p, placementGap))) continue;
           accepted = candidate;
           break;
         }
@@ -184,21 +205,23 @@ if (viewport && container && title && mediaItems.length > 0) {
       placed.push(accepted);
     }
 
-    // Keep one subtle edge crop on each side only; avoid overlap-prone right stack.
-    if (placed[0]) placed[0].x = viewportWorld.left - placed[0].w * 0.18;
-    if (placed[4]) placed[4].x = viewportWorld.right - placed[4].w * 0.2;
+    // Edge crops pull tiles toward viewport sides; skip on mobile so more stay in first view.
+    if (!state.isMobile) {
+      if (placed[0]) placed[0].x = viewportWorld.left - placed[0].w * 0.18;
+      if (placed[4]) placed[4].x = viewportWorld.right - placed[4].w * 0.2;
+    }
 
     // Final deterministic collision pass (catches edge-case overlaps).
     for (let i = 0; i < placed.length; i += 1) {
       for (let j = i + 1; j < placed.length; j += 1) {
         let guard = 0;
-        while (intersects(placed[i], placed[j], minGap) && guard < 120) {
+        while (intersects(placed[i], placed[j], placementGap) && guard < 160) {
           const centerX = state.canvasWidth * 0.5;
           const centerY = state.canvasHeight * 0.5;
           const dx = placed[j].x + placed[j].w * 0.5 - centerX;
           const dy = placed[j].y + placed[j].h * 0.5 - centerY;
           const len = Math.hypot(dx, dy) || 1;
-          const step = minGap * 0.35;
+          const step = placementGap * resolveStep;
           placed[j].x += (dx / len) * step;
           placed[j].y += (dy / len) * step;
           guard += 1;
@@ -210,8 +233,9 @@ if (viewport && container && title && mediaItems.length > 0) {
   };
 
   const centerTitleAndItems = () => {
-    state.canvasWidth = state.itemWidth * 18;
-    state.canvasHeight = state.itemHeight * 18;
+    const canvasMult = state.isMobile ? 14 : 18;
+    state.canvasWidth = state.itemWidth * canvasMult;
+    state.canvasHeight = state.itemHeight * canvasMult;
 
     const cx = state.canvasWidth * 0.5;
     const cy = state.canvasHeight * 0.5;
@@ -231,7 +255,7 @@ if (viewport && container && title && mediaItems.length > 0) {
       maxY = Math.max(maxY, p.y + p.h);
     });
 
-    const fitPad = 220;
+    const fitPad = state.isMobile ? 56 : 220;
     const shiftX = -minX + fitPad;
     const shiftY = -minY + fitPad;
     state.canvasWidth = Math.ceil(maxX - minX + fitPad * 2);
@@ -277,8 +301,8 @@ if (viewport && container && title && mediaItems.length > 0) {
     const cx = parseFloat(title.style.left || '0') || state.canvasWidth * 0.5;
     const cy = parseFloat(title.style.top || '0') || state.canvasHeight * 0.5;
     // Art direction: start with the title near the top-left quadrant.
-    const targetScreenX = window.innerWidth * (state.isMobile ? 0.3 : 0.22);
-    const targetScreenY = window.innerHeight * (state.isMobile ? 0.24 : 0.2);
+    const targetScreenX = window.innerWidth * (state.isMobile ? 0.42 : 0.22);
+    const targetScreenY = window.innerHeight * (state.isMobile ? 0.3 : 0.2);
     const startX = targetScreenX - cx * state.zoom;
     const startY = targetScreenY - cy * state.zoom;
     const bounded = applyBounds(startX, startY);
@@ -289,7 +313,7 @@ if (viewport && container && title && mediaItems.length > 0) {
 
   const refreshForViewport = () => {
     state.isMobile = window.innerWidth < 768;
-    state.zoom = state.isMobile ? 0.42 : 0.76;
+    state.zoom = state.isMobile ? 0.56 : 0.76;
     state.itemWidth = state.isMobile ? IMG_SIZE_MOBILE : IMG_SIZE_DESKTOP;
     state.itemHeight = state.isMobile ? IMG_SIZE_MOBILE : IMG_SIZE_DESKTOP;
     centerTitleAndItems();

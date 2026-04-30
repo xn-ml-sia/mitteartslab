@@ -3,6 +3,7 @@ import { SHADER_SOURCES } from './shader-deck-shaders.js';
 /** Slow oscillation between two RGB triplets from CSS (`r, g, b` comma strings). */
 const MODULE_DRIFT_SPEED = 0.0001;
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const OUT_OF_VIEW_RESET_DELAY_MS = 500;
 
 const RenderState = Object.freeze({
   REDUCED_MOTION: 'reduced_motion',
@@ -455,6 +456,12 @@ const initCrumblingArtwork = (canvasId) => {
       debug?.set({ running: false });
     }
   };
+  const resetAnimationState = () => {
+    time = 0;
+    lastTs = 0;
+    ctx.clearRect(0, 0, logicalSize, logicalSize);
+  };
+  let hiddenAtMs = 0;
 
   const unsubscribeLifecycle = pageLifecycle.subscribe(({ isActive }) => {
     pageActive = isActive;
@@ -472,8 +479,12 @@ const initCrumblingArtwork = (canvasId) => {
     debug?.set({ visible: isVisible });
     if (!isVisible) {
       stopLoop();
+      if (!hiddenAtMs) hiddenAtMs = performance.now();
       return;
     }
+    const hiddenDurationMs = hiddenAtMs ? performance.now() - hiddenAtMs : 0;
+    hiddenAtMs = 0;
+    if (hiddenDurationMs >= OUT_OF_VIEW_RESET_DELAY_MS) resetAnimationState();
     if (prefersReducedMotion) {
       render(performance.now());
       return;
@@ -517,8 +528,9 @@ const initChapterOneArtwork = () => {
   const cols = Math.floor(width / resolution);
   const centerX = width / 2;
   const centerY = height / 2;
-  const edgeStart = width * 0.26;
-  const edgeEnd = width * 0.37;
+  /** Circular mask: full field inside ~inner, smooth falloff to 0 at outer radius. */
+  const discOuter = Math.min(width, height) * 0.48;
+  const discInner = discOuter * 0.72;
   const field = new Float32Array(rows * cols);
   const buffer = document.createElement('canvas');
   buffer.width = width;
@@ -526,14 +538,15 @@ const initChapterOneArtwork = () => {
   const bctx = buffer.getContext('2d', { alpha: true });
   if (!bctx) return null;
 
-  const sources = [{ x: width / 2, y: height / 2, wl: 60, phase: 0, amp: 1.15 }];
+  // Match wave_interference_flowing.html: center driver + ring of sources.
+  const sources = [{ x: width / 2, y: height / 2, wl: 60, phase: 0, amp: 1.5 }];
   const n = 6;
-  const radius = 95;
+  const ringRadius = 150;
   for (let i = 0; i < n; i += 1) {
     const a = (i / n) * Math.PI * 2;
     sources.push({
-      x: width / 2 + Math.cos(a) * radius,
-      y: height / 2 + Math.sin(a) * radius,
+      x: width / 2 + Math.cos(a) * ringRadius,
+      y: height / 2 + Math.sin(a) * ringRadius,
       wl: 50,
       phase: a,
       amp: 0.8,
@@ -556,10 +569,13 @@ const initChapterOneArtwork = () => {
     const fpsCap = state === RenderState.FOCUSED ? RENDER_POLICY.chapterFpsFocused : RENDER_POLICY.chapterFpsVisibleNotFocused;
     const frameDuration = 1000 / fpsCap;
     if (ts - lastTs < frameDuration) return;
-    const deltaMs = lastTs > 0 ? ts - lastTs : frameDuration;
+    const rawDeltaMs = lastTs > 0 ? ts - lastTs : frameDuration;
+    const deltaMs = Math.min(120, Math.max(8, rawDeltaMs));
     lastTs = ts;
 
     bctx.clearRect(0, 0, width, height);
+
+    const sourceFalloffDist = 400;
 
     for (let i = 0; i < rows; i += 1) {
       for (let j = 0; j < cols; j += 1) {
@@ -571,16 +587,15 @@ const initChapterOneArtwork = () => {
           const dx = x - s.x;
           const dy = y - s.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          const falloff = Math.max(0, 1 - dist / 260);
+          const falloff = Math.max(0, 1 - dist / sourceFalloffDist);
           amp += s.amp * falloff * Math.sin((dist / s.wl - time) * Math.PI * 2 + s.phase);
         }
-        // Edgeless approach: taper field energy near boundaries.
-        const dxCenter = x - centerX;
-        const dyCenter = y - centerY;
-        const radial = Math.sqrt(dxCenter * dxCenter + dyCenter * dyCenter);
-        const t = Math.min(1, Math.max(0, (radial - edgeStart) / (edgeEnd - edgeStart)));
-        const envelope = 1 - t * t * (3 - 2 * t);
-        field[i * cols + j] = amp * envelope;
+        const dxC = x - centerX;
+        const dyC = y - centerY;
+        const radial = Math.sqrt(dxC * dxC + dyC * dyC);
+        const u = Math.min(1, Math.max(0, (radial - discInner) / (discOuter - discInner || 1)));
+        const discEnvelope = 1 - u * u * (3 - 2 * u);
+        field[i * cols + j] = amp * discEnvelope;
       }
     }
 
@@ -629,7 +644,8 @@ const initChapterOneArtwork = () => {
 
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(buffer, 0, 0);
-    time += 0.000625;
+    // ~0.012 per frame at 60fps (wave_interference_flowing.html); scale by real elapsed ms.
+    time += deltaMs * 0.00072;
     debug?.frame();
   };
 
@@ -652,6 +668,13 @@ const initChapterOneArtwork = () => {
       debug?.set({ running: false });
     }
   };
+  const resetAnimationState = () => {
+    time = 0;
+    lastTs = 0;
+    bctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, width, height);
+  };
+  let hiddenAtMs = 0;
 
   const unsubscribeLifecycle = pageLifecycle.subscribe(({ isActive }) => {
     pageActive = isActive;
@@ -669,8 +692,12 @@ const initChapterOneArtwork = () => {
     debug?.set({ visible: isVisible });
     if (!isVisible) {
       stopLoop();
+      if (!hiddenAtMs) hiddenAtMs = performance.now();
       return;
     }
+    const hiddenDurationMs = hiddenAtMs ? performance.now() - hiddenAtMs : 0;
+    hiddenAtMs = 0;
+    if (hiddenDurationMs >= OUT_OF_VIEW_RESET_DELAY_MS) resetAnimationState();
     if (prefersReducedMotion) {
       animate(performance.now());
       return;
@@ -678,7 +705,7 @@ const initChapterOneArtwork = () => {
     ensureLoop();
   });
 
-  if (prefersReducedMotion) animate();
+  if (prefersReducedMotion) animate(performance.now());
   else ensureLoop();
 
   return () => {
@@ -830,6 +857,12 @@ const initChapterTwoArtwork = () => {
       debug?.set({ running: false });
     }
   };
+  const resetAnimationState = () => {
+    time = 0;
+    lastTs = 0;
+    ctx.clearRect(0, 0, width, height);
+  };
+  let hiddenAtMs = 0;
 
   const unsubscribeLifecycle = pageLifecycle.subscribe(({ isActive }) => {
     pageActive = isActive;
@@ -847,8 +880,12 @@ const initChapterTwoArtwork = () => {
     debug?.set({ visible: isVisible });
     if (!isVisible) {
       stopLoop();
+      if (!hiddenAtMs) hiddenAtMs = performance.now();
       return;
     }
+    const hiddenDurationMs = hiddenAtMs ? performance.now() - hiddenAtMs : 0;
+    hiddenAtMs = 0;
+    if (hiddenDurationMs >= OUT_OF_VIEW_RESET_DELAY_MS) resetAnimationState();
     if (prefersReducedMotion) {
       animate(performance.now());
       return;
@@ -1700,7 +1737,7 @@ const initSingleShaderDeck = (section) => {
   window.addEventListener('resize', onWin, { passive: true });
 
   let raf = 0;
-  const tStart = performance.now();
+  let tStart = performance.now();
   let lastT = tStart;
   let iFrame = 0;
   let lastFocusedDrawMs = 0;
@@ -1790,6 +1827,19 @@ const initSingleShaderDeck = (section) => {
       debug?.set({ running: true });
     }
   };
+  const resetTimelineState = () => {
+    tStart = performance.now();
+    lastT = tStart;
+    iFrame = 0;
+    lastFocusedDrawMs = 0;
+    lastFrameSec = 0;
+    perf.sampleMs.length = 0;
+    entries.forEach((e) => {
+      e.lastDrawMs = 0;
+      e.previewDirty = true;
+    });
+  };
+  let hiddenAtMs = 0;
 
   const tick = (now) => {
     raf = 0;
@@ -1868,11 +1918,15 @@ const initSingleShaderDeck = (section) => {
     visible = isVisible;
     debug?.set({ visible });
     if (visible) {
+      const hiddenDurationMs = hiddenAtMs ? performance.now() - hiddenAtMs : 0;
+      hiddenAtMs = 0;
+      if (hiddenDurationMs >= OUT_OF_VIEW_RESET_DELAY_MS) resetTimelineState();
       markAllPreviewsDirty();
       ensureLoop();
       return;
     }
     stopLoop();
+    if (!hiddenAtMs) hiddenAtMs = performance.now();
   });
 
   const drawStaticPreviewSet = () => {
