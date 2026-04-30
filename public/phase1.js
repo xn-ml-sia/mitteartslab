@@ -22,10 +22,19 @@ const refs = {
   abstractnessInput: document.getElementById('abstractness'),
   generateStatus: document.getElementById('generate-status'),
   generatedGrid: document.getElementById('generated-grid'),
-  regenerateAllButton: document.getElementById('regenerate-all'),
-  exportSingleButton: document.getElementById('export-single'),
-  exportSetButton: document.getElementById('export-set'),
+  regenerateUnlockedButton: document.getElementById('regenerate-unlocked-button'),
+  exportJsonButton: document.getElementById('export-json-button'),
+  createShareButton: document.getElementById('create-share-button'),
+  shareExpirySelect: document.getElementById('share-expiry-select'),
   exportStatus: document.getElementById('export-status'),
+  refreshDashboardButton: document.getElementById('refresh-dashboard-button'),
+  analyticsGrid: document.getElementById('analytics-grid'),
+  collectionNameInput: document.getElementById('collection-name-input'),
+  saveCollectionButton: document.getElementById('save-collection-button'),
+  collectionStatus: document.getElementById('collection-status'),
+  collectionsList: document.getElementById('collections-list'),
+  shareStatus: document.getElementById('share-status'),
+  sharesList: document.getElementById('shares-list'),
 };
 
 if (document.body.classList.contains('phase1-app')) {
@@ -125,6 +134,14 @@ const pollJob = async (jobId) => {
   throw new Error('Generation timed out');
 };
 
+const setPhase13ButtonsState = () => {
+  const hasRocks = appState.generatedRocks.length > 0;
+  refs.regenerateUnlockedButton.disabled = !hasRocks || !appState.currentGenerationContext;
+  refs.exportJsonButton.disabled = !hasRocks;
+  refs.createShareButton.disabled = !hasRocks;
+  refs.saveCollectionButton.disabled = !hasRocks;
+};
+
 const renderGeneratedRocks = (rocks) => {
   refs.generatedGrid.innerHTML = '';
   appState.generatedRocks = rocks;
@@ -170,7 +187,7 @@ const renderGeneratedRocks = (rocks) => {
           await fetch('/api/v1/favorites/toggle', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ rockId, favorite: !currentlyFavorite }),
+            body: JSON.stringify({ rock: appState.generatedRocks.find((item) => item.id === rockId) }),
           });
         } catch {
           // Keep local behavior even if favorite persistence fails.
@@ -187,6 +204,7 @@ const renderGeneratedRocks = (rocks) => {
     });
     refs.generatedGrid.appendChild(card);
   });
+  setPhase13ButtonsState();
 };
 
 const regenerateSingleRock = async (rockId) => {
@@ -247,31 +265,133 @@ const exportArtifact = async (format) => {
   }
 };
 
-const regenerateAll = async () => {
+const regenerateUnlocked = async () => {
   if (!appState.currentGenerationContext) {
     refs.generateStatus.textContent = 'No previous prompt found for regeneration.';
     return;
   }
-  refs.generateStatus.textContent = 'Regenerating full set...';
-  const payload = {
-    promptText: appState.currentGenerationContext.promptText,
-    controls: appState.currentGenerationContext.controls,
-    lockedRockIds: Array.from(appState.lockedRockIds),
-  };
+  const unlocked = appState.generatedRocks.filter((rock) => !appState.lockedRockIds.has(rock.id));
+  if (unlocked.length === 0) {
+    refs.generateStatus.textContent = 'All rocks are locked. Unlock one to regenerate.';
+    return;
+  }
+  refs.generateStatus.textContent = `Regenerating ${unlocked.length} unlocked rocks...`;
+  for (let i = 0; i < unlocked.length; i += 1) {
+    await regenerateSingleRock(unlocked[i].id);
+  }
+  refs.generateStatus.textContent = `Regenerated ${unlocked.length} unlocked rocks.`;
+};
+
+const renderAnalytics = async () => {
   try {
-    const response = await fetch('/api/v1/rocks/generate', {
+    const response = await fetch('/api/v1/dashboard');
+    if (!response.ok) throw new Error('Failed to fetch dashboard.');
+    const payload = await response.json();
+    const metrics = [
+      ['Prompts', payload.analytics.prompt_submitted],
+      ['Completed', payload.analytics.generation_completed],
+      ['Blocked', payload.analytics.moderation_blocked],
+      ['Reveals', payload.analytics.reveal_completed],
+      ['Collections', payload.collectionsCount],
+      ['Active shares', payload.activeSharesCount],
+    ];
+    refs.analyticsGrid.innerHTML = '';
+    metrics.forEach(([label, value]) => {
+      const card = document.createElement('div');
+      card.className = 'gr-metric-card';
+      card.innerHTML = `<span class="label">${label}</span><span class="value">${value}</span>`;
+      refs.analyticsGrid.appendChild(card);
+    });
+  } catch (error) {
+    refs.analyticsGrid.innerHTML = `<p class="gr-status is-error">${error.message}</p>`;
+  }
+};
+
+const renderCollections = async () => {
+  try {
+    const response = await fetch('/api/v1/collections');
+    if (!response.ok) throw new Error('Failed to fetch collections.');
+    const payload = await response.json();
+    refs.collectionsList.innerHTML = '';
+    payload.collections.forEach((collection) => {
+      const li = document.createElement('li');
+      const date = new Date(collection.createdAt).toLocaleString();
+      li.textContent = `${collection.name} - ${collection.rocks.length} rocks - ${date}`;
+      refs.collectionsList.appendChild(li);
+    });
+    if (payload.collections.length === 0) {
+      refs.collectionsList.innerHTML = '<li>No collections saved yet.</li>';
+    }
+  } catch (error) {
+    refs.collectionsList.innerHTML = `<li class="gr-status is-error">${error.message}</li>`;
+  }
+};
+
+const renderShares = async () => {
+  try {
+    const response = await fetch('/api/v1/shares');
+    if (!response.ok) throw new Error('Failed to fetch shares.');
+    const payload = await response.json();
+    refs.sharesList.innerHTML = '';
+    payload.shares.forEach((share) => {
+      const li = document.createElement('li');
+      const expires = new Date(share.expiresAt).toLocaleString();
+      const url = `${window.location.origin}/s/${share.token}`;
+      li.innerHTML = `<div>${share.title || 'Share link'}</div><div>Expires: ${expires}</div><a href="${url}" target="_blank" rel="noopener">${url}</a>`;
+      refs.sharesList.appendChild(li);
+    });
+    if (payload.shares.length === 0) {
+      refs.sharesList.innerHTML = '<li>No share links yet.</li>';
+    }
+  } catch (error) {
+    refs.sharesList.innerHTML = `<li class="gr-status is-error">${error.message}</li>`;
+  }
+};
+
+const saveCollection = async () => {
+  if (appState.generatedRocks.length === 0) return;
+  const name = refs.collectionNameInput.value.trim() || `Collection ${new Date().toLocaleString()}`;
+  try {
+    const response = await fetch('/api/v1/collections', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        name,
+        promptText: appState.currentGenerationContext?.promptText || '',
+        rocks: appState.generatedRocks,
+      }),
     });
-    if (!response.ok) throw new Error('Could not queue regeneration.');
-    const createPayload = await response.json();
-    const result = await pollJob(createPayload.jobId);
-    appState.generatedRocks = result.rocks || [];
-    renderGeneratedRocks(appState.generatedRocks);
-    refs.generateStatus.textContent = `Regenerated set with ${appState.generatedRocks.length} rocks.`;
+    if (!response.ok) throw new Error('Failed to save collection.');
+    refs.collectionStatus.textContent = `Saved collection: ${name}`;
+    refs.collectionNameInput.value = '';
+    await renderCollections();
+    await renderAnalytics();
   } catch (error) {
-    refs.generateStatus.textContent = error.message || 'Regenerate all failed.';
+    refs.collectionStatus.textContent = error.message;
+  }
+};
+
+const createShare = async () => {
+  if (appState.generatedRocks.length === 0) return;
+  const expiresInMinutes = Number(refs.shareExpirySelect.value || 60);
+  try {
+    const response = await fetch('/api/v1/shares', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: appState.currentGenerationContext?.promptText?.slice(0, 80) || 'Generated share',
+        rocks: appState.generatedRocks,
+        expiresInMinutes,
+      }),
+    });
+    if (!response.ok) throw new Error('Failed to create share link.');
+    const payload = await response.json();
+    const url = `${window.location.origin}/s/${payload.token}`;
+    refs.shareStatus.innerHTML = `Share link created (expires in ${expiresInMinutes} min): <a href="${url}" target="_blank" rel="noopener">${url}</a>`;
+    await renderShares();
+    await renderAnalytics();
+  } catch (error) {
+    refs.shareStatus.textContent = error.message;
   }
 };
 
@@ -315,6 +435,7 @@ const submitPrompt = async (event) => {
     appState.favoriteRockIds.clear();
     renderGeneratedRocks(result.rocks || []);
     refs.generateStatus.textContent = `Completed. Generated ${(result.rocks || []).length} rocks.`;
+    await renderAnalytics();
   } catch (error) {
     if (error.status === 'blocked') {
       refs.generateStatus.textContent = `Blocked by moderation: ${error.reason || 'prompt not allowed'}.`;
@@ -326,11 +447,21 @@ const submitPrompt = async (event) => {
 
 const init = () => {
   renderSingleGrid();
+  setPhase13ButtonsState();
+  renderAnalytics();
+  renderCollections();
+  renderShares();
   refs.revealButton.addEventListener('click', revealSelectedRock);
   refs.promptForm.addEventListener('submit', submitPrompt);
-  refs.regenerateAllButton?.addEventListener('click', regenerateAll);
-  refs.exportSingleButton?.addEventListener('click', () => exportArtifact('single'));
-  refs.exportSetButton?.addEventListener('click', () => exportArtifact('set'));
+  refs.regenerateUnlockedButton?.addEventListener('click', regenerateUnlocked);
+  refs.exportJsonButton?.addEventListener('click', () => exportArtifact('json'));
+  refs.createShareButton?.addEventListener('click', createShare);
+  refs.saveCollectionButton?.addEventListener('click', saveCollection);
+  refs.refreshDashboardButton?.addEventListener('click', async () => {
+    await renderAnalytics();
+    await renderCollections();
+    await renderShares();
+  });
 };
 
 init();

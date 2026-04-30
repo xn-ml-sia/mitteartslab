@@ -12,11 +12,15 @@ const JOBS_FILE = path.join(DATA_DIR, 'jobs.json');
 const ANALYTICS_FILE = path.join(DATA_DIR, 'analytics.json');
 const FAVORITES_FILE = path.join(DATA_DIR, 'favorites.json');
 const EXPORTS_FILE = path.join(DATA_DIR, 'exports.json');
+const COLLECTIONS_FILE = path.join(DATA_DIR, 'collections.json');
+const SHARES_FILE = path.join(DATA_DIR, 'shares.json');
 const MAX_PERSISTED_JOBS = 300;
 
 const jobs = new Map();
 const favorites = new Map();
 const exportsStore = new Map();
+const collections = new Map();
+const shares = new Map();
 const analytics = {
   prompt_submitted: 0,
   generation_completed: 0,
@@ -73,6 +77,8 @@ function persistState() {
   saveJsonFile(ANALYTICS_FILE, analytics);
   saveJsonFile(FAVORITES_FILE, Array.from(favorites.values()));
   saveJsonFile(EXPORTS_FILE, Array.from(exportsStore.values()).slice(-MAX_PERSISTED_JOBS));
+  saveJsonFile(COLLECTIONS_FILE, Array.from(collections.values()).slice(-MAX_PERSISTED_JOBS));
+  saveJsonFile(SHARES_FILE, Array.from(shares.values()).slice(-MAX_PERSISTED_JOBS));
 }
 
 function hydrateState() {
@@ -96,6 +102,18 @@ function hydrateState() {
   if (Array.isArray(persistedExports)) {
     persistedExports.forEach((artifact) => {
       if (artifact && artifact.id) exportsStore.set(artifact.id, artifact);
+    });
+  }
+  const persistedCollections = loadJsonFile(COLLECTIONS_FILE, []);
+  if (Array.isArray(persistedCollections)) {
+    persistedCollections.forEach((collection) => {
+      if (collection && collection.id) collections.set(collection.id, collection);
+    });
+  }
+  const persistedShares = loadJsonFile(SHARES_FILE, []);
+  if (Array.isArray(persistedShares)) {
+    persistedShares.forEach((share) => {
+      if (share && share.id) shares.set(share.id, share);
     });
   }
 }
@@ -323,6 +341,25 @@ function serveFile(res, filePath) {
   });
 }
 
+function makeSharePayload({ title, rocks, expiresInMinutes }) {
+  const id = crypto.randomUUID();
+  const token = crypto.randomUUID().replace(/-/g, '');
+  const now = Date.now();
+  const ttl = Math.max(1, Number(expiresInMinutes || 60));
+  return {
+    id,
+    token,
+    title: String(title || 'Generated share'),
+    createdAt: now,
+    expiresAt: now + ttl * 60 * 1000,
+    rocks: Array.isArray(rocks) ? rocks : [],
+  };
+}
+
+function isShareExpired(share) {
+  return Number(share.expiresAt || 0) <= Date.now();
+}
+
 function handleGenerationLifecycle(jobId, promptText, controls) {
   setTimeout(() => {
     const current = jobs.get(jobId);
@@ -389,6 +426,34 @@ const server = http.createServer(async (req, res) => {
 
   if (pathname === '/api/v1/favorites' && req.method === 'GET') {
     sendJson(res, 200, { favorites: Array.from(favorites.values()) });
+    return;
+  }
+
+  if (pathname === '/api/v1/collections' && req.method === 'GET') {
+    const list = Array.from(collections.values()).sort((a, b) => Number(b.createdAt) - Number(a.createdAt));
+    sendJson(res, 200, { collections: list });
+    return;
+  }
+
+  if (pathname === '/api/v1/shares' && req.method === 'GET') {
+    const list = Array.from(shares.values())
+      .filter((item) => !isShareExpired(item))
+      .sort((a, b) => Number(b.createdAt) - Number(a.createdAt));
+    sendJson(res, 200, { shares: list });
+    return;
+  }
+
+  if (pathname === '/api/v1/dashboard' && req.method === 'GET') {
+    const activeSharesCount = Array.from(shares.values()).filter((item) => !isShareExpired(item)).length;
+    sendJson(res, 200, {
+      analytics,
+      jobsCount: jobs.size,
+      favoritesCount: favorites.size,
+      exportsCount: exportsStore.size,
+      collectionsCount: collections.size,
+      sharesCount: shares.size,
+      activeSharesCount,
+    });
     return;
   }
 
@@ -461,6 +526,31 @@ const server = http.createServer(async (req, res) => {
       const excludedTitles = Array.isArray(body.excludedTitles) ? body.excludedTitles.map((v) => String(v)) : [];
       const rock = generateSingleRock(promptText, body.controls || {}, excludedTitles);
       sendJson(res, 200, { rock });
+    } catch (err) {
+      sendJson(res, 400, { error: err.message });
+    }
+    return;
+  }
+
+  if (pathname === '/api/v1/collections' && req.method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const rocks = Array.isArray(body.rocks) ? body.rocks : [];
+      if (rocks.length === 0) {
+        sendJson(res, 400, { error: 'At least one rock required.' });
+        return;
+      }
+      const id = crypto.randomUUID();
+      const collection = {
+        id,
+        name: String(body.name || `Collection ${new Date().toISOString()}`),
+        promptText: String(body.promptText || ''),
+        createdAt: Date.now(),
+        rocks,
+      };
+      collections.set(id, collection);
+      persistState();
+      sendJson(res, 201, { collection });
     } catch (err) {
       sendJson(res, 400, { error: err.message });
     }
@@ -550,6 +640,43 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === '/api/v1/shares' && req.method === 'POST') {
+    try {
+      const body = await parseBody(req);
+      const rocks = Array.isArray(body.rocks) ? body.rocks : [];
+      if (rocks.length === 0) {
+        sendJson(res, 400, { error: 'At least one rock required for share link.' });
+        return;
+      }
+      const share = makeSharePayload({
+        title: body.title,
+        rocks,
+        expiresInMinutes: body.expiresInMinutes,
+      });
+      shares.set(share.id, share);
+      persistState();
+      sendJson(res, 201, { id: share.id, token: share.token, expiresAt: share.expiresAt });
+    } catch (err) {
+      sendJson(res, 400, { error: err.message });
+    }
+    return;
+  }
+
+  if (pathname.startsWith('/s/') && req.method === 'GET') {
+    const token = pathname.split('/').pop();
+    const share = Array.from(shares.values()).find((item) => item.token === token);
+    if (!share) {
+      sendJson(res, 404, { error: 'Share not found' });
+      return;
+    }
+    if (isShareExpired(share)) {
+      sendJson(res, 410, { error: 'Share link expired' });
+      return;
+    }
+    sendJson(res, 200, share);
+    return;
+  }
+
   if (pathname.startsWith('/api/v1/exports/') && req.method === 'GET') {
     const id = pathname.split('/').pop();
     const artifact = exportsStore.get(id);
@@ -586,5 +713,5 @@ const server = http.createServer(async (req, res) => {
 
 hydrateState();
 server.listen(PORT, () => {
-  console.log(`Generative Rock Phase 1.1 server running on http://localhost:${PORT}`);
+  console.log(`Generative Rock Phase 1.3 server running on http://localhost:${PORT}`);
 });

@@ -91,6 +91,35 @@ The prototype now includes the next iteration features from the roadmap:
 
 These endpoints are implemented in `server.js` and integrated in `public/phase1.js`.
 
+## Phase 1.3 Enhancements (Implemented)
+
+The prototype now includes the next product-operational layer:
+
+- **Analytics dashboard panel**
+  - `GET /api/v1/dashboard`
+  - Aggregates analytics counters with counts for jobs, favorites, collections, exports, and active shares.
+- **Saved collections view**
+  - `POST /api/v1/collections`
+  - `GET /api/v1/collections`
+  - Save and browse named rock sets directly from the Phase 1 page.
+- **Share-link expiry controls**
+  - `POST /api/v1/shares`
+  - `GET /api/v1/shares`
+  - `GET /s/:token`
+  - Create links with selectable expiry windows (15m, 1h, 24h, 7d) and enforce expiration at read time.
+
+### New UI sections in `phase1.html`
+
+- Dashboard metrics cards with refresh action
+- Save collection input + list
+- Share list with expiry display
+- Share expiry selector tied to "Create share link"
+
+### Additional persistence files
+
+- `.data/collections.json`
+- `.data/shares.json`
+
 ## Phase 1.1 Hardening (Implemented)
 
 The prototype includes:

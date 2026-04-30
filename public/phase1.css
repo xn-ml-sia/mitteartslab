@@ -5,6 +5,11 @@
   color: #121212;
 }
 
+.gr-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 .topbar {
   max-width: 1100px;
   margin: 0 auto 10px;
@@ -40,6 +45,11 @@
 .gr-panel h2 {
   margin-top: 0;
   font-size: 18px;
+}
+
+.gr-panel h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
 }
 
 .gr-grid {
@@ -145,6 +155,16 @@
   background: #fff;
 }
 
+.gr-select,
+.gr-input {
+  font-family: inherit;
+  padding: 8px;
+  border: 1px solid #cfcfcf;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+}
+
 .gr-status {
   margin: 4px 0 12px;
   font-size: 12px;
@@ -215,8 +235,78 @@
   padding: 8px;
 }
 
+.gr-panel-wide {
+  margin-top: 18px;
+}
+
+.gr-phase13-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.gr-analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.gr-metric-card {
+  border: 1px solid #d7d7d7;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fafafa;
+}
+
+.gr-metric-card .label {
+  display: block;
+  font-size: 11px;
+  color: #666;
+}
+
+.gr-metric-card .value {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.gr-collection-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.gr-collections-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.gr-collections-list li {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fbfbfb;
+  font-size: 12px;
+}
+
+.gr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
 @media (max-width: 900px) {
   .gr-app {
+    grid-template-columns: 1fr;
+  }
+
+  .gr-phase13-grid {
     grid-template-columns: 1fr;
   }
 }

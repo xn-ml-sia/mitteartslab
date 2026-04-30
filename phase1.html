@@ -43,6 +43,12 @@
             <button class="gr-button" id="regenerate-unlocked-button" type="button" disabled>Regenerate unlocked</button>
             <button class="gr-button" id="export-json-button" type="button" disabled>Export JSON</button>
             <button class="gr-button" id="create-share-button" type="button" disabled>Create share link</button>
+            <select id="share-expiry-select" class="gr-select">
+              <option value="15">Share expiry: 15 min</option>
+              <option value="60" selected>Share expiry: 1 hour</option>
+              <option value="1440">Share expiry: 24 hours</option>
+              <option value="10080">Share expiry: 7 days</option>
+            </select>
           </div>
           <p id="export-status" class="gr-status">No export yet.</p>
           <div id="generated-grid" class="gr-grid" aria-live="polite"></div>
@@ -60,6 +66,31 @@
           </div>
         </section>
       </div>
+
+      <section class="gr-panel gr-panel-wide">
+        <h2>Phase 1.3: Dashboard, Collections, and Share Controls</h2>
+        <div class="gr-phase13-grid">
+          <div>
+            <h3>Analytics Dashboard</h3>
+            <div id="analytics-grid" class="gr-analytics-grid"></div>
+            <button class="gr-button" id="refresh-dashboard-button" type="button">Refresh dashboard</button>
+          </div>
+          <div>
+            <h3>Saved Collections</h3>
+            <div class="gr-collection-controls">
+              <input id="collection-name-input" class="gr-input" type="text" placeholder="Collection name (e.g. apology set)" />
+              <button class="gr-button" id="save-collection-button" type="button" disabled>Save current set</button>
+            </div>
+            <p id="collection-status" class="gr-status">No collection action yet.</p>
+            <ul id="collections-list" class="gr-collections-list"></ul>
+          </div>
+          <div>
+            <h3>Share Links</h3>
+            <p id="share-status" class="gr-status">No share link created.</p>
+            <ul id="shares-list" class="gr-collections-list"></ul>
+          </div>
+        </div>
+      </section>
     </main>
 
     <script type="module" src="./public/phase1.js"></script>
