@@ -1,0 +1,222 @@
+.infiniteCanvasViewport.is-dragging {
+  cursor: grabbing;
+}
+
+.stoneface-overlay {
+  position: fixed;
+  top: 14px;
+  left: 18px;
+  z-index: 30;
+  max-width: min(560px, calc(100vw - 36px));
+  padding: 12px 14px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: rgba(240, 236, 225, 0.76);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+.stoneface-overlay h1 {
+  margin: 0;
+  font-family: var(--font-family-code) !important;
+  font-size: clamp(28px, 4vw, 46px);
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  color: #111;
+}
+
+.stoneface-tagline,
+.stoneface-helper,
+.stoneface-legend {
+  margin: 7px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #222;
+}
+
+.stoneface-legend {
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #3c3c3c;
+}
+
+.mediaBlock {
+  position: relative;
+  overflow: hidden;
+  background: #d8d8d8;
+}
+
+.stoneShaderCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  aspect-ratio: 1 / 1;
+  filter: contrast(1.08) brightness(0.95) saturate(0.44);
+}
+
+.stoneface-drawer-preview {
+  filter: contrast(1.08) brightness(0.95) saturate(0.44);
+}
+
+.mediaItem.is-fallback .mediaBlock {
+  background: linear-gradient(135deg, #cfcfcf, #e8e8e8);
+}
+
+.attribution {
+  display: grid;
+  gap: 4px;
+}
+
+.stone-caption-meta {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5e5e5e;
+}
+
+.stone-caption-line {
+  display: block;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #202020;
+}
+
+.stoneface-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.26);
+}
+
+.stoneface-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 50;
+  width: min(420px, 90vw);
+  height: 100vh;
+  border-radius: 0;
+  border-left: 1px solid var(--mono-300);
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  padding: 14px;
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform var(--motion-slow) var(--motion-ease-standard);
+  pointer-events: none;
+}
+
+body.stoneface-drawer-open .stoneface-drawer {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.stoneface-drawer-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.stoneface-drawer-emotion {
+  margin: 0;
+  font-size: 18px;
+  font-family: var(--font-family-code) !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.stoneface-drawer-card {
+  margin-top: 10px;
+  padding: 12px;
+}
+
+.stoneface-drawer-preview-wrap {
+  border: 1px solid var(--mono-250);
+  margin-bottom: 10px;
+  background: var(--mono-100);
+}
+
+.stoneface-drawer-preview {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  display: block;
+}
+
+.stoneface-drawer-meta {
+  margin: 0 0 8px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mono-600);
+}
+
+.stoneface-drawer-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.stoneface-chip {
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border: 1px solid var(--mono-300);
+  background: var(--mono-50);
+  padding: 4px 6px;
+  line-height: 1;
+}
+
+.stoneface-chip.is-material {
+  border-color: var(--mono-500);
+}
+
+.stoneface-drawer-caption {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--mono-900);
+}
+
+.stoneface-drawer-rationale {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--mono-700);
+}
+
+.stoneface-drawer-section {
+  margin: 0 0 8px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mono-600);
+}
+
+.stoneface-drawer-value {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--mono-850);
+}
+
+@media (max-width: 768px) {
+  .stoneface-overlay {
+    top: 8px;
+    left: 8px;
+    max-width: calc(100vw - 16px);
+    padding: 10px 11px;
+  }
+
+  .stoneface-tagline,
+  .stoneface-helper,
+  .stoneface-legend {
+    font-size: 11px;
+  }
+
+  .stoneface-drawer {
+    width: 100vw;
+  }
+}

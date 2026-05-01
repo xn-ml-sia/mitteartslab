@@ -52,6 +52,7 @@ This repository now includes a Phase 1 prototype implementation aligned to the r
    - `npm start`
 3. Open:
    - `http://localhost:3000/phase1.html`
+   - `http://localhost:3000/landing.html`
 
 ### Environment note
 
@@ -119,6 +120,48 @@ The prototype now includes the next product-operational layer:
 
 - `.data/collections.json`
 - `.data/shares.json`
+
+## Concept Landing Page (Implemented)
+
+The landing route is now a stone-gallery experience cloned from the gallery interaction model:
+
+- `landing.html`
+- `public/landing.css`
+- `public/landing.js`
+
+### Landing + Shader behavior
+
+- Gallery-clone draggable/pannable field of stone cards (deterministic placement and camera behavior).
+- Each card mounts the `sec2_rock` shader on its own canvas.
+- A local deterministic expression engine (no backend/API call) maps emotion seeds into:
+  - caption text
+  - shader uniforms (`uShapeProfile`, `uNoiseAmount`, `uCutDepth`, `uMorphSeed`)
+- WebGL fallback caption note is shown when rendering is unavailable.
+- Reduced-motion mode removes non-essential motion while keeping interaction feedback.
+
+### Sixth pass: Stoneface narrative layer
+
+- `landing.html` now includes a fixed `Stoneface` title, tagline, drag helper text, and pun-dial legend overlay.
+- Landing card set uses the current 12-card count with curated Stoneface voice/pun examples.
+- Captions now render as two lines:
+  - metadata (`emotion / pun level / mode`)
+  - expressive Stoneface line
+- Rendering model uses a single shared WebGL renderer + per-card blit with a throttled shared animation loop for subtle motion.
+- Hybrid art direction now tracks the `index.html` section-2 rock vibe while preserving Stoneface material storytelling:
+  - cards blend toward index-like baseline uniforms (`uShapeProfile ~ 0.5`, `uNoiseAmount ~ 0.1`, `uCutDepth ~ 0.8`, `uMorphSeed ~ 0.3`)
+  - grading is near-monochrome (`contrast/brightness` forward, low saturation) for a closer gallery mood
+  - cards use lightweight shared-time animation and optional hover tilt (`iMouse`) for subtle live motion
+  - material families are intentionally focused on `smooth` and `granite`, each offset from the baseline with small texture/luster deltas
+- Clicking a card opens a right-side details drawer with caption, rationale, and shader profile values.
+- Drawer preview stone animates while the drawer is open (card field remains static).
+
+Access it directly at:
+
+- `http://localhost:3000/landing.html`
+
+Navigation link:
+
+- `index.html` now includes a `concept` link in the header.
 
 ## Phase 1.1 Hardening (Implemented)
 

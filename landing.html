@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mitte arts lab : stone gallery</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='none'/%3E%3Ccircle cx='8' cy='8' r='6.25' fill='none' stroke='%23603553' stroke-width='1'/%3E%3Ccircle cx='12' cy='8' r='1.5' fill='%2327251f'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./public/styles.css" />
+    <link rel="stylesheet" href="./public/landing.css" />
+  </head>
+  <body class="gallery-mode">
+    
+    <main class="infiniteCanvasViewport" aria-label="Stone gallery page" tabindex="0">
+      <section class="infiniteCanvasContainer" role="list" aria-label="Expressive stone cards">
+        <h1 id="gallery-title">stoneface <br>& co</h1>
+      </section>
+    </main>
+    <div id="stoneface-drawer-backdrop" class="stoneface-drawer-backdrop" hidden></div>
+    <aside id="stoneface-drawer" class="stoneface-drawer gr-panel" aria-label="Stone details drawer" aria-hidden="true">
+      <div class="stoneface-drawer-head">
+        <p id="drawer-emotion" class="stoneface-drawer-emotion">emotion</p>
+        <button id="drawer-close" type="button" class="gr-btn">Close</button>
+      </div>
+      <div class="gr-card stoneface-drawer-card">
+        <div class="stoneface-drawer-preview-wrap">
+          <canvas id="drawer-stone-canvas" class="stoneface-drawer-preview" width="512" height="512" aria-label="Animated selected stone"></canvas>
+        </div>
+        <div id="drawer-chips" class="stoneface-drawer-chips" aria-label="Stone tags"></div>
+        <p id="drawer-meta" class="stoneface-drawer-meta"></p>
+        <p id="drawer-caption" class="stoneface-drawer-caption"></p>
+        <p id="drawer-rationale" class="stoneface-drawer-rationale"></p>
+      </div>
+      <div class="gr-card stoneface-drawer-card">
+        <p class="stoneface-drawer-section">Shader profile</p>
+        <p id="drawer-shape" class="stoneface-drawer-value"></p>
+        <p id="drawer-noise" class="stoneface-drawer-value"></p>
+        <p id="drawer-cut" class="stoneface-drawer-value"></p>
+        <p id="drawer-seed" class="stoneface-drawer-value"></p>
+      </div>
+    </aside>
+    <template id="stone-card-template">
+      <figure class="mediaItem" role="listitem" tabindex="0">
+        <div class="mediaBlock" aria-hidden="true">
+          <canvas class="stoneShaderCanvas" width="512" height="512"></canvas>
+        </div>
+        <figcaption class="attribution"></figcaption>
+      </figure>
+    </template>
+    <script type="module" src="./public/landing.js"></script>
+  </body>
+</html>
