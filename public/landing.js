@@ -4,21 +4,58 @@ const viewport = document.querySelector('.infiniteCanvasViewport');
 const container = document.querySelector('.infiniteCanvasContainer');
 const template = document.getElementById('stone-card-template');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const motionPaused = true;
+const disableCardMotion = reduceMotion || motionPaused;
+const disableDrawerMotion = reduceMotion;
+const drawer = document.getElementById('stoneface-drawer');
+const drawerBackdrop = document.getElementById('stoneface-drawer-backdrop');
+const drawerClose = document.getElementById('drawer-close');
+const drawerEmotion = document.getElementById('drawer-emotion');
+const drawerMeta = document.getElementById('drawer-meta');
+const drawerCaption = document.getElementById('drawer-caption');
+const drawerRationale = document.getElementById('drawer-rationale');
+const drawerChips = document.getElementById('drawer-chips');
+const drawerShape = document.getElementById('drawer-shape');
+const drawerNoise = document.getElementById('drawer-noise');
+const drawerCut = document.getElementById('drawer-cut');
+const drawerSeed = document.getElementById('drawer-seed');
+const drawerPreviewCanvas = document.getElementById('drawer-stone-canvas');
 
 const STONEFACE_SET = [
-  { emotion: 'accountability', punLevel: 1, mode: 'repair', lines: ['I carry this weight; no pebble gets outsourced.'] },
-  { emotion: 'belonging', punLevel: 2, mode: 'inclusion', lines: ['You are in the circle, not kicked into gravel.'] },
-  { emotion: 'grief', punLevel: 0, mode: 'witness', lines: ['I remember quietly; no dramatic landslide required.'] },
-  { emotion: 'hope', punLevel: 1, mode: 'renewal', lines: ['Small light, slow weathering, still moving toward warmth.'] },
-  { emotion: 'protection', punLevel: 1, mode: 'guard', lines: ['I hold this edge for you, rock steady.'] },
-  { emotion: 'vulnerability', punLevel: 2, mode: 'open', lines: ['No granite armor today, just honest sediment.'] },
-  { emotion: 'trust', punLevel: 1, mode: 'consistency', lines: ['Test me over time; I am built for pressure.'] },
-  { emotion: 'reconciliation', punLevel: 2, mode: 'return', lines: ['Back at the fault line, choosing repair over rupture.'] },
-  { emotion: 'devotion', punLevel: 1, mode: 'continuity', lines: ['I keep showing up, one stone-cold commitment at a time.'] },
-  { emotion: 'distance', punLevel: 2, mode: 'reach', lines: ['A stone throw away, still reaching anyway.'] },
-  { emotion: 'forgiveness', punLevel: 1, mode: 'mercy', lines: ['We can sand down edges without erasing history.'] },
-  { emotion: 'new_beginning', punLevel: 2, mode: 'fresh-layer', lines: ['New chapter, same bedrock, better geology.'] },
+  { emotion: 'accountability', punLevel: 1, mode: 'repair', stoneType: 'granite', lines: ['I carry this weight; no pebble gets outsourced.'] },
+  { emotion: 'belonging', punLevel: 2, mode: 'inclusion', stoneType: 'smooth', lines: ['You are in the circle, not kicked into gravel.'] },
+  { emotion: 'grief', punLevel: 0, mode: 'witness', stoneType: 'smooth', lines: ['I remember quietly; no dramatic landslide required.'] },
+  { emotion: 'hope', punLevel: 1, mode: 'renewal', stoneType: 'smooth', lines: ['Small light, slow weathering, still moving toward warmth.'] },
+  { emotion: 'protection', punLevel: 1, mode: 'guard', stoneType: 'granite', lines: ['I hold this edge for you, rock steady.'] },
+  { emotion: 'vulnerability', punLevel: 2, mode: 'open', stoneType: 'granite', lines: ['No granite armor today, just honest sediment.'] },
+  { emotion: 'trust', punLevel: 1, mode: 'consistency', stoneType: 'granite', lines: ['Test me over time; I am built for pressure.'] },
+  { emotion: 'reconciliation', punLevel: 2, mode: 'return', stoneType: 'smooth', lines: ['Back at the fault line, choosing repair over rupture.'] },
+  { emotion: 'devotion', punLevel: 1, mode: 'continuity', stoneType: 'granite', lines: ['I keep showing up, one stone-cold commitment at a time.'] },
+  { emotion: 'distance', punLevel: 2, mode: 'reach', stoneType: 'smooth', lines: ['A stone throw away, still reaching anyway.'] },
+  { emotion: 'forgiveness', punLevel: 1, mode: 'mercy', stoneType: 'smooth', lines: ['We can sand down edges without erasing history.'] },
+  { emotion: 'new_beginning', punLevel: 2, mode: 'fresh-layer', stoneType: 'smooth', lines: ['New chapter, same bedrock, better geology.'] },
 ];
+
+const STONE_MATERIALS = {
+  smooth: { tint: [0.86, 0.93, 0.99], type: 0.88, grainScale: 3.1, grainContrast: 0.05, veinAmount: 0.1, fractureAmount: 0.04, glossiness: 0.92, scatter: 0.34 },
+  granite: { tint: [0.74, 0.72, 0.7], type: 0.14, grainScale: 26.0, grainContrast: 0.96, veinAmount: 0.03, fractureAmount: 0.36, glossiness: 0.22, scatter: 0.06 },
+};
+const INDEX_BASE_PROFILE = {
+  shapeProfile: [0.5, 0.5, 0.5, 0.5],
+  noiseAmount: 0.1,
+  cutDepth: 0.8,
+  morphSeed: 0.3,
+};
+const INDEX_BASE_MATERIAL = {
+  tint: [1.0, 1.0, 1.0],
+  type: 0.2,
+  grainScale: 6.0,
+  grainContrast: 0.2,
+  veinAmount: 0.08,
+  fractureAmount: 0.2,
+  glossiness: 0.4,
+  scatter: 0.1,
+};
 
 const hashString = (str) => {
   let h = 2166136261 >>> 0;
@@ -39,23 +76,55 @@ const makeRng = (seed) => {
   };
 };
 
+const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const humanize = (v) => String(v || '').replace(/_/g, ' ');
+const blendMaterial = (from, to, t) => ({
+  tint: [
+    lerp(from.tint[0], to.tint[0], t),
+    lerp(from.tint[1], to.tint[1], t),
+    lerp(from.tint[2], to.tint[2], t),
+  ],
+  type: lerp(from.type, to.type, t),
+  grainScale: lerp(from.grainScale, to.grainScale, t),
+  grainContrast: lerp(from.grainContrast, to.grainContrast, t),
+  veinAmount: lerp(from.veinAmount, to.veinAmount, t),
+  fractureAmount: lerp(from.fractureAmount, to.fractureAmount, t),
+  glossiness: lerp(from.glossiness, to.glossiness, t),
+  scatter: lerp(from.scatter, to.scatter, t),
+});
+
 const buildExpression = (entry, idx) => {
   const seed = `${entry.emotion}:${entry.mode}:${idx}`;
   const h = hashString(seed);
   const rng = makeRng(h);
-  const a = rng();
-  const b = rng();
-  const c = rng();
-  const d = rng();
+  const base = [rng(), rng(), rng(), rng()];
+  const wildShape = base.map((n, i) => clamp(i % 2 === 0 ? Math.pow(n, 0.55) : 1 - Math.pow(1 - n, 0.55), 0, 1));
   const profile = {
-    shapeProfile: [a, b, c, d],
-    noiseAmount: 0.05 + b * 0.14,
-    cutDepth: 0.58 + c * 0.68,
-    morphSeed: (h % 997) / 997,
+    shapeProfile: wildShape.map((v) => lerp(INDEX_BASE_PROFILE.shapeProfile[0], v, 0.42)),
+    noiseAmount: lerp(INDEX_BASE_PROFILE.noiseAmount, 0.08 + base[1] * 0.24, 0.5),
+    cutDepth: lerp(INDEX_BASE_PROFILE.cutDepth, 0.72 + base[2] * 0.42, 0.5),
+    morphSeed: lerp(INDEX_BASE_PROFILE.morphSeed, (h % 997) / 997, 0.4),
   };
+  const targetMaterial = STONE_MATERIALS[entry.stoneType] || STONE_MATERIALS.smooth;
+  const material = blendMaterial(INDEX_BASE_MATERIAL, targetMaterial, entry.stoneType === 'granite' ? 0.58 : 0.5);
+  if (entry.stoneType === 'granite') {
+    profile.noiseAmount = clamp(profile.noiseAmount + 0.05, 0.0, 1.0);
+    profile.cutDepth = clamp(profile.cutDepth + 0.05, 0.0, 1.4);
+    material.grainContrast = clamp(material.grainContrast + 0.05, 0.0, 1.0);
+    material.glossiness = clamp(material.glossiness - 0.05, 0.0, 1.0);
+  } else {
+    profile.noiseAmount = clamp(profile.noiseAmount - 0.04, 0.0, 1.0);
+    profile.cutDepth = clamp(profile.cutDepth - 0.05, 0.0, 1.4);
+    material.grainContrast = clamp(material.grainContrast - 0.03, 0.0, 1.0);
+    material.glossiness = clamp(material.glossiness + 0.05, 0.0, 1.0);
+  }
   const line = entry.lines[h % entry.lines.length];
-  const meta = `${entry.emotion} / pun ${entry.punLevel} / ${entry.mode}`;
-  return { emotion: entry.emotion, meta, line, profile };
+  const meta = `${entry.emotion} / pun ${entry.punLevel} / ${entry.mode} / ${humanize(entry.stoneType)}`;
+  const rationale = entry.stoneType === 'granite'
+    ? `Granite mode leans coarse and grounded: denser grain, lower luster, and chunkier cuts to feel weighty under pressure.`
+    : `Smooth mode leans polished and breathable: softer grain, higher sheen, and gentler cuts so the feeling reads calm but alive.`;
+  return { emotion: entry.emotion, punLevel: entry.punLevel, mode: entry.mode, stoneType: entry.stoneType, meta, line, rationale, profile, material };
 };
 
 const createCard = (expression, idx) => {
@@ -122,9 +191,17 @@ void main(){ vec4 fragColor = vec4(0.0); mainImage(fragColor, gl_FragCoord.xy); 
     uNoiseAmount: gl.getUniformLocation(program, 'uNoiseAmount'),
     uCutDepth: gl.getUniformLocation(program, 'uCutDepth'),
     uMorphSeed: gl.getUniformLocation(program, 'uMorphSeed'),
+    uStoneTint: gl.getUniformLocation(program, 'uStoneTint'),
+    uStoneType: gl.getUniformLocation(program, 'uStoneType'),
+    uGrainScale: gl.getUniformLocation(program, 'uGrainScale'),
+    uGrainContrast: gl.getUniformLocation(program, 'uGrainContrast'),
+    uVeinAmount: gl.getUniformLocation(program, 'uVeinAmount'),
+    uFractureAmount: gl.getUniformLocation(program, 'uFractureAmount'),
+    uGlossiness: gl.getUniformLocation(program, 'uGlossiness'),
+    uScatter: gl.getUniformLocation(program, 'uScatter'),
   };
 
-  const renderProfileToCanvas = (targetCanvas, profile, timeSec = 0) => {
+  const renderProfileToCanvas = (targetCanvas, profile, material, timeSec = 0, mouse = null) => {
     if (!(targetCanvas instanceof HTMLCanvasElement)) return false;
     const width = 512;
     const height = 512;
@@ -135,11 +212,20 @@ void main(){ vec4 fragColor = vec4(0.0); mainImage(fragColor, gl_FragCoord.xy); 
     gl.bindVertexArray(vao);
     gl.uniform3f(u.iResolution, width, height, 1.0);
     gl.uniform1f(u.iTime, reduceMotion ? 0 : timeSec);
-    gl.uniform4f(u.iMouse, 0, 0, 0, 0);
+    if (mouse) gl.uniform4f(u.iMouse, mouse.x, mouse.y, mouse.z, mouse.w);
+    else gl.uniform4f(u.iMouse, 0, 0, 0, 0);
     gl.uniform4f(u.uShapeProfile, ...profile.shapeProfile);
     gl.uniform1f(u.uNoiseAmount, profile.noiseAmount);
     gl.uniform1f(u.uCutDepth, profile.cutDepth);
     gl.uniform1f(u.uMorphSeed, profile.morphSeed);
+    if (u.uStoneTint) gl.uniform3f(u.uStoneTint, ...(material?.tint || [1, 1, 1]));
+    if (u.uStoneType) gl.uniform1f(u.uStoneType, material?.type ?? 0.2);
+    if (u.uGrainScale) gl.uniform1f(u.uGrainScale, material?.grainScale ?? 6.0);
+    if (u.uGrainContrast) gl.uniform1f(u.uGrainContrast, material?.grainContrast ?? 0.2);
+    if (u.uVeinAmount) gl.uniform1f(u.uVeinAmount, material?.veinAmount ?? 0.1);
+    if (u.uFractureAmount) gl.uniform1f(u.uFractureAmount, material?.fractureAmount ?? 0.2);
+    if (u.uGlossiness) gl.uniform1f(u.uGlossiness, material?.glossiness ?? 0.4);
+    if (u.uScatter) gl.uniform1f(u.uScatter, material?.scatter ?? 0.1);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     const ctx = targetCanvas.getContext('2d');
     if (!ctx) return false;
@@ -159,15 +245,16 @@ const expressions = STONEFACE_SET.map((entry, idx) => buildExpression(entry, idx
 const renderer = createStoneRenderer(SHADER_SOURCES.sec2_rock || '');
 const cardEntries = expressions.map((expr, idx) => {
   const card = createCard(expr, idx);
+  card.dataset.index = String(idx);
   container.appendChild(card);
   const shaderCanvas = card.querySelector('.stoneShaderCanvas');
-  const ok = renderer ? renderer.renderProfileToCanvas(shaderCanvas, expr.profile, idx * 0.29) : false;
+  const ok = renderer ? renderer.renderProfileToCanvas(shaderCanvas, expr.profile, expr.material, idx * 0.05) : false;
   if (!ok) {
     card.classList.add('is-fallback');
     const line = card.querySelector('.stone-caption-line');
     if (line) line.textContent = `${expr.line} (fallback render)`;
   }
-  return { card, shaderCanvas, profile: expr.profile, fallback: !ok };
+  return { card, shaderCanvas, profile: expr.profile, material: expr.material, fallback: !ok, expression: expr, mouse: null, seedTime: idx * 0.07 };
 });
 
 const state = {
@@ -277,7 +364,7 @@ const placeCards = () => {
     card.style.top = `${Math.round(p.y + shiftY)}px`;
     card.style.width = `${state.itemWidth}px`;
     card.style.height = `${state.itemHeight + captionHeight}px`;
-    if (reduceMotion) card.classList.add('is-visible');
+    if (disableCardMotion) card.classList.add('is-visible');
     else requestAnimationFrame(() => card.classList.add('is-visible'));
   });
 };
@@ -301,6 +388,7 @@ const refresh = () => {
 };
 
 const onPointerDown = (e) => {
+  if (e.target instanceof Element && e.target.closest('.mediaItem')) return;
   state.isDragging = true;
   state.lastX = e.clientX;
   state.lastY = e.clientY;
@@ -320,11 +408,26 @@ const onPointerUp = () => {
   viewport.classList.remove('is-dragging');
 };
 const onWheel = (e) => {
+  if (document.body.classList.contains('stoneface-drawer-open')) return;
   e.preventDefault();
   const bounded = applyBounds(state.targetX - e.deltaX * 1.5, state.targetY - e.deltaY * 1.5);
   state.targetX = bounded.x;
   state.targetY = bounded.y;
   scheduleAnimation();
+};
+
+const toShaderMouse = (ev, element) => {
+  if (!(element instanceof Element)) return null;
+  const rect = element.getBoundingClientRect();
+  if (!rect.width || !rect.height) return null;
+  const xNorm = clamp((ev.clientX - rect.left) / rect.width, 0, 1);
+  const yNorm = clamp((ev.clientY - rect.top) / rect.height, 0, 1);
+  return { x: xNorm * 512, y: (1 - yNorm) * 512, z: 1, w: 1 };
+};
+
+const isCardVisible = (card) => {
+  const r = card.getBoundingClientRect();
+  return r.right > -40 && r.bottom > -40 && r.left < window.innerWidth + 40 && r.top < window.innerHeight + 40;
 };
 
 refresh();
@@ -333,29 +436,162 @@ window.addEventListener('pointermove', onPointerMove, { passive: true });
 window.addEventListener('pointerup', onPointerUp, { passive: true });
 viewport.addEventListener('wheel', onWheel, { passive: false });
 window.addEventListener('resize', refresh, { passive: true });
-
-const isCardVisible = (card) => {
-  const r = card.getBoundingClientRect();
-  return r.right > -40 && r.bottom > -40 && r.left < window.innerWidth + 40 && r.top < window.innerHeight + 40;
+const openDrawer = (entry) => {
+  if (!drawer || !drawerBackdrop) return;
+  const p = entry.profile;
+  const e = entry.expression;
+  if (drawerEmotion) drawerEmotion.textContent = humanize(e.emotion);
+  if (drawerMeta) drawerMeta.textContent = `${e.meta}`;
+  if (drawerChips) {
+    const wildness = ((p.noiseAmount * 0.55) + (p.cutDepth * 0.45)).toFixed(2);
+    const typeLabel = humanize(e.stoneType);
+    drawerChips.innerHTML = `
+      <span class="stoneface-chip is-material">${typeLabel}</span>
+      <span class="stoneface-chip">pun ${e.punLevel}</span>
+      <span class="stoneface-chip">${humanize(e.mode)}</span>
+      <span class="stoneface-chip">wildness ${wildness}</span>
+    `;
+  }
+  if (drawerCaption) drawerCaption.textContent = e.line;
+  if (drawerRationale) drawerRationale.textContent = e.rationale;
+  if (drawerShape) drawerShape.textContent = `uShapeProfile: [${p.shapeProfile.map((v) => v.toFixed(2)).join(', ')}]`;
+  if (drawerNoise) drawerNoise.textContent = `uNoiseAmount: ${p.noiseAmount.toFixed(3)}`;
+  if (drawerCut) drawerCut.textContent = `uCutDepth: ${p.cutDepth.toFixed(3)}`;
+  if (drawerSeed) drawerSeed.textContent = `uMorphSeed: ${p.morphSeed.toFixed(3)}`;
+  drawerBackdrop.hidden = false;
+  drawer.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('stoneface-drawer-open');
+  startDrawerAnimation(entry);
 };
 
-let rafId = 0;
-let lastFrame = 0;
-const frameIntervalMs = reduceMotion ? 1000 : 1000 / 18;
-const animateVisibleCards = (ts) => {
-  if (!renderer) return;
-  if (!lastFrame || ts - lastFrame >= frameIntervalMs) {
-    lastFrame = ts;
-    const tSec = ts / 1000;
-    cardEntries.forEach((entry, idx) => {
-      if (entry.fallback || !isCardVisible(entry.card)) return;
-      renderer.renderProfileToCanvas(entry.shaderCanvas, entry.profile, tSec + idx * 0.17);
+const closeDrawer = () => {
+  if (!drawer || !drawerBackdrop) return;
+  drawerBackdrop.hidden = true;
+  drawer.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('stoneface-drawer-open');
+  stopDrawerAnimation();
+};
+
+let drawerAnimFrame = 0;
+let drawerAnimEntry = null;
+let drawerAnimStart = 0;
+let drawerMouse = null;
+let drawerMouseActive = false;
+const animateDrawerStone = (ts) => {
+  if (!drawerAnimEntry || !renderer || !drawerPreviewCanvas) return;
+  if (disableDrawerMotion) {
+    renderer.renderProfileToCanvas(drawerPreviewCanvas, drawerAnimEntry.profile, drawerAnimEntry.material, 0, drawerMouse);
+    drawerAnimFrame = 0;
+    return;
+  }
+  if (!drawerAnimStart) drawerAnimStart = ts;
+  const tSec = (ts - drawerAnimStart) / 1000;
+  renderer.renderProfileToCanvas(drawerPreviewCanvas, drawerAnimEntry.profile, drawerAnimEntry.material, tSec, drawerMouse);
+  drawerAnimFrame = requestAnimationFrame(animateDrawerStone);
+};
+
+const startDrawerAnimation = (entry) => {
+  drawerAnimEntry = entry;
+  drawerAnimStart = 0;
+  if (drawerAnimFrame) cancelAnimationFrame(drawerAnimFrame);
+  if (disableDrawerMotion) {
+    if (renderer && drawerPreviewCanvas) {
+      renderer.renderProfileToCanvas(drawerPreviewCanvas, entry.profile, entry.material, 0, drawerMouse);
+    }
+    drawerAnimFrame = 0;
+    return;
+  }
+  drawerAnimFrame = requestAnimationFrame(animateDrawerStone);
+};
+
+const stopDrawerAnimation = () => {
+  drawerAnimEntry = null;
+  drawerMouse = null;
+  drawerMouseActive = false;
+  drawerAnimStart = 0;
+  if (drawerAnimFrame) cancelAnimationFrame(drawerAnimFrame);
+  drawerAnimFrame = 0;
+};
+
+let cardAnimFrame = 0;
+let cardAnimStart = 0;
+let cardAnimLast = 0;
+const cardFrameStep = 1000 / 12;
+const animateCards = (ts) => {
+  if (!renderer || disableCardMotion) return;
+  if (!cardAnimStart) cardAnimStart = ts;
+  if (ts - cardAnimLast >= cardFrameStep) {
+    cardAnimLast = ts;
+    const tSec = (ts - cardAnimStart) / 1000;
+    cardEntries.forEach((entry) => {
+      if (entry.fallback || !entry.shaderCanvas) return;
+      if (!isCardVisible(entry.card) && !entry.mouse) return;
+      renderer.renderProfileToCanvas(entry.shaderCanvas, entry.profile, entry.material, tSec + entry.seedTime, entry.mouse);
     });
   }
-  rafId = requestAnimationFrame(animateVisibleCards);
+  cardAnimFrame = requestAnimationFrame(animateCards);
 };
-rafId = requestAnimationFrame(animateVisibleCards);
+
+const startCardAnimation = () => {
+  if (disableCardMotion || !renderer || cardAnimFrame) return;
+  cardAnimFrame = requestAnimationFrame(animateCards);
+};
+
+const stopCardAnimation = () => {
+  if (!cardAnimFrame) return;
+  cancelAnimationFrame(cardAnimFrame);
+  cardAnimFrame = 0;
+  cardAnimStart = 0;
+  cardAnimLast = 0;
+};
+
+cardEntries.forEach((entry) => {
+  entry.card.addEventListener('click', () => openDrawer(entry));
+  entry.card.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Enter' && ev.key !== ' ') return;
+    ev.preventDefault();
+    openDrawer(entry);
+  });
+  entry.card.addEventListener('pointerenter', (ev) => {
+    entry.mouse = toShaderMouse(ev, entry.card);
+  });
+  entry.card.addEventListener('pointermove', (ev) => {
+    entry.mouse = toShaderMouse(ev, entry.card);
+  });
+  entry.card.addEventListener('pointerleave', () => {
+    entry.mouse = null;
+  });
+});
+
+drawerPreviewCanvas?.addEventListener('pointerdown', (ev) => {
+  drawerMouseActive = true;
+  drawerMouse = toShaderMouse(ev, drawerPreviewCanvas);
+  drawerPreviewCanvas.setPointerCapture?.(ev.pointerId);
+});
+drawerPreviewCanvas?.addEventListener('pointermove', (ev) => {
+  if (!drawerMouseActive) return;
+  drawerMouse = toShaderMouse(ev, drawerPreviewCanvas);
+});
+drawerPreviewCanvas?.addEventListener('pointerup', (ev) => {
+  drawerMouseActive = false;
+  drawerPreviewCanvas.releasePointerCapture?.(ev.pointerId);
+});
+drawerPreviewCanvas?.addEventListener('pointercancel', (ev) => {
+  drawerMouseActive = false;
+  drawerPreviewCanvas.releasePointerCapture?.(ev.pointerId);
+});
+drawerPreviewCanvas?.addEventListener('pointerleave', () => {
+  if (!drawerMouseActive) drawerMouse = null;
+});
+
+drawerClose?.addEventListener('click', closeDrawer);
+drawerBackdrop?.addEventListener('click', closeDrawer);
+window.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape') closeDrawer();
+});
+startCardAnimation();
 
 window.addEventListener('beforeunload', () => {
-  if (rafId) cancelAnimationFrame(rafId);
+  stopDrawerAnimation();
+  stopCardAnimation();
 });

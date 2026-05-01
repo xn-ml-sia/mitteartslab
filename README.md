@@ -146,7 +146,14 @@ The landing route is now a stone-gallery experience cloned from the gallery inte
 - Captions now render as two lines:
   - metadata (`emotion / pun level / mode`)
   - expressive Stoneface line
-- Rendering model remains single shared WebGL renderer + per-card blit + B/W shader filter for reliability.
+- Rendering model uses a single shared WebGL renderer + per-card blit with a throttled shared animation loop for subtle motion.
+- Hybrid art direction now tracks the `index.html` section-2 rock vibe while preserving Stoneface material storytelling:
+  - cards blend toward index-like baseline uniforms (`uShapeProfile ~ 0.5`, `uNoiseAmount ~ 0.1`, `uCutDepth ~ 0.8`, `uMorphSeed ~ 0.3`)
+  - grading is near-monochrome (`contrast/brightness` forward, low saturation) for a closer gallery mood
+  - cards use lightweight shared-time animation and optional hover tilt (`iMouse`) for subtle live motion
+  - material families are intentionally focused on `smooth` and `granite`, each offset from the baseline with small texture/luster deltas
+- Clicking a card opens a right-side details drawer with caption, rationale, and shader profile values.
+- Drawer preview stone animates while the drawer is open (card field remains static).
 
 Access it directly at:
 

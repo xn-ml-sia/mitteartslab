@@ -1241,6 +1241,18 @@ const vec3 BLUE = vec3(0.54,0.77,1.0) * LIGHT_INTENSITY;
 const vec3 WHITE = vec3(1.2,1.07,0.98) * LIGHT_INTENSITY;
 
 const float DISPLACEMENT = 0.1;
+uniform vec4 uShapeProfile;
+uniform float uNoiseAmount;
+uniform float uCutDepth;
+uniform float uMorphSeed;
+uniform vec3 uStoneTint;
+uniform float uStoneType;
+uniform float uGrainScale;
+uniform float uGrainContrast;
+uniform float uVeinAmount;
+uniform float uFractureAmount;
+uniform float uGlossiness;
+uniform float uScatter;
 
 mat3 fromEuler(vec3 ang) {
     vec2 a1 = vec2(sin(ang.x),cos(ang.x));
@@ -1351,28 +1363,33 @@ float boolSmoothSub(float a, float b, float k ) {
 }
 
 float rock(vec3 p) {
-    float d = sphere(p,1.0);
+    float shapeX = mix(0.72, 1.22, clamp(uShapeProfile.x, 0.0, 1.0));
+    float shapeY = mix(0.62, 1.38, clamp(uShapeProfile.y, 0.0, 1.0));
+    float shapeZ = mix(0.7, 1.28, clamp(uShapeProfile.z, 0.0, 1.0));
+    vec3 sp = p / vec3(shapeX, shapeY, shapeZ);
+    float d = sphere(sp,1.0);
     for(int i = 0; i < 9; i++) {
         float ii = float(i);
-        float r = 2.5 + hash11(ii);
+        float seeded = ii + floor(uMorphSeed * 113.0);
+        float r = 2.0 + hash11(seeded) * mix(0.55, 1.35, clamp(uShapeProfile.w, 0.0, 1.0));
         vec3 v = normalize(hash31(ii) * 2.0 - 1.0);
         #ifdef SMOOTH
-        d = boolSmoothSub(d,sphere(p+v*r,r * 0.8), 0.03);
+        d = boolSmoothSub(d,sphere(sp+v*r,r * (0.42 + uCutDepth * 0.35)), 0.03 + uCutDepth * 0.05);
         #else
-        d = boolSub(d,sphere(p+v*r,r * 0.8));
+        d = boolSub(d,sphere(sp+v*r,r * (0.42 + uCutDepth * 0.35)));
         #endif
     }
-    return d;
+    return d * min(shapeX, min(shapeY, shapeZ));
 }
 
 float map(vec3 p) {
-    float d = rock(p) + fbm3(p*4.0,0.4,2.96) * DISPLACEMENT;
+    float d = rock(p) + fbm3(p*4.0 + vec3(0.0, uMorphSeed * 2.0, 0.0),0.4,2.96) * (DISPLACEMENT + uNoiseAmount);
     d = boolUnion(d,plane(p,vec4(0.0,1.0,0.0,1.0)));
     return d;
 }
 
 float map_detailed(vec3 p) {
-    float d = rock(p) + fbm3_high(p*4.0,0.4,2.96) * DISPLACEMENT;
+    float d = rock(p) + fbm3_high(p*4.0 + vec3(0.0, uMorphSeed * 2.0, 0.0),0.4,2.96) * (DISPLACEMENT + uNoiseAmount);
     d = boolUnion(d,plane(p,vec4(0.0,1.0,0.0,1.0)));
     return d;
 }
@@ -1410,18 +1427,47 @@ vec2 spheretracing(vec3 ori, vec3 dir, out vec3 p) {
     return td;
 }
 
+float graniteSpeckle(vec3 p) {
+    float g0 = noise_3(p * uGrainScale);
+    float g1 = noise_3(p * (uGrainScale * 2.3 + 3.1));
+    return smoothstep(0.52, 0.92, mix(g0, g1, 0.55));
+}
+
+float marbleVein(vec3 p) {
+    float flow = p.x * 2.8 + p.y * 0.7 + noise_3(p * 3.4 + vec3(0.0, uMorphSeed * 2.0, 0.0)) * 2.1;
+    float wave = abs(sin(flow));
+    return smoothstep(0.72, 0.98, wave);
+}
+
+float fractureMask(vec3 p) {
+    float f = noise_3(p * (uGrainScale * 1.2 + 4.0) + vec3(uMorphSeed * 5.0));
+    return smoothstep(0.8 - uFractureAmount * 0.35, 0.98, f);
+}
+
 vec3 getStoneColor(vec3 p, float c, vec3 l, vec3 n, vec3 e) {
+    float grainBase = noise_3(vec3(p.x * uGrainScale, p.y * (uGrainScale * 0.6), p.z * uGrainScale));
+    float grain = mix(grainBase, pow(grainBase, 2.0), clamp(uGrainContrast, 0.0, 1.0));
+    float speckle = graniteSpeckle(p);
+    float vein = marbleVein(p) * uVeinAmount;
+    float fracture = fractureMask(p);
     c = min(c + pow(noise_3(vec3(p.x*20.0,0.0,p.z*20.0)),70.0) * 8.0, 1.0);
     float ic = pow(1.0-c,0.5);
-    vec3 base = vec3(0.42,0.3,0.2) * 0.35;
-    vec3 sand = vec3(0.51,0.41,0.32)*0.9;
-    vec3 color = mix(base,sand,c);
+    float typeMix = clamp(uStoneType, 0.0, 1.0);
+    vec3 base = mix(vec3(0.42,0.3,0.2) * 0.35, vec3(0.18,0.2,0.26), typeMix * 0.55);
+    vec3 sand = mix(vec3(0.51,0.41,0.32)*0.9, vec3(0.78,0.84,0.95), typeMix * 0.45);
+    base *= mix(vec3(1.0), uStoneTint, 0.58);
+    sand *= mix(vec3(1.0), uStoneTint, 0.86);
+    vec3 color = mix(base,sand,mix(c, grain, 0.55));
+    color = mix(color, color * 0.82, fracture * uFractureAmount);
+    color += speckle * uGrainContrast * 0.22;
+    color = mix(color, vec3(0.95) * uStoneTint, vein * 0.55);
+    color = mix(color, color * 1.06, uScatter * 0.35);
 
     float f = pow(1.0 - max(dot(n,-e),0.0), 5.0) * 0.75 * ic;
-    color += vec3(diffuse(n,l,0.5) * WHITE);
-    color += vec3(specular(n,l,e,8.0) * WHITE * 1.5 * ic);
+    color += vec3(diffuse(n,l,mix(0.45, 0.85, uGlossiness)) * WHITE);
+    color += vec3(specular(n,l,e,mix(10.0, 48.0, uGlossiness)) * WHITE * mix(1.0, 3.2, uGlossiness) * ic);
     n = normalize(n - normalize(p) * 0.4);
-    color += vec3(specular(n,l,e,80.0) * WHITE * 1.5 * ic);
+    color += vec3(specular(n,l,e,mix(60.0, 180.0, uGlossiness)) * WHITE * mix(1.2, 4.0, uGlossiness) * ic);
     color = mix(color,vec3(1.0),f);
 
     color *= sqrt(abs(p.y*0.5+0.5)) * 0.4 + 0.6;
@@ -1435,7 +1481,8 @@ vec3 getPixel(in vec2 coord, float time) {
     vec2 uv = iuv;
     uv.x *= iResolution.x / iResolution.y;
 
-    vec3 ang = vec3(0.0,0.2,time);
+    float spin = mix(0.08, 0.45, clamp(uShapeProfile.x, 0.0, 1.0));
+    vec3 ang = vec3(0.0,0.2,time * spin + uMorphSeed * 0.5);
     if(iMouse.z > 0.0) ang = vec3(0.0,clamp(2.0-iMouse.y*0.01,0.0,3.1415),iMouse.x*0.01);
     mat3 rot = fromEuler(ang);
 

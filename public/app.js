@@ -1374,6 +1374,18 @@ void main() {
       uChan1: gl.getUniformLocation(program, 'iChannel1'),
       uChan2: gl.getUniformLocation(program, 'iChannel2'),
       uChan3: gl.getUniformLocation(program, 'iChannel3'),
+      uShapeProfile: gl.getUniformLocation(program, 'uShapeProfile'),
+      uNoiseAmount: gl.getUniformLocation(program, 'uNoiseAmount'),
+      uCutDepth: gl.getUniformLocation(program, 'uCutDepth'),
+      uMorphSeed: gl.getUniformLocation(program, 'uMorphSeed'),
+      uStoneTint: gl.getUniformLocation(program, 'uStoneTint'),
+      uStoneType: gl.getUniformLocation(program, 'uStoneType'),
+      uGrainScale: gl.getUniformLocation(program, 'uGrainScale'),
+      uGrainContrast: gl.getUniformLocation(program, 'uGrainContrast'),
+      uVeinAmount: gl.getUniformLocation(program, 'uVeinAmount'),
+      uFractureAmount: gl.getUniformLocation(program, 'uFractureAmount'),
+      uGlossiness: gl.getUniformLocation(program, 'uGlossiness'),
+      uScatter: gl.getUniformLocation(program, 'uScatter'),
     };
   };
 
@@ -1537,6 +1549,18 @@ void main() {
     if (pass.uChan1) gl.uniform1i(pass.uChan1, 1);
     if (pass.uChan2) gl.uniform1i(pass.uChan2, 2);
     if (pass.uChan3) gl.uniform1i(pass.uChan3, 3);
+    if (pass.uShapeProfile) gl.uniform4f(pass.uShapeProfile, 0.5, 0.5, 0.5, 0.5);
+    if (pass.uNoiseAmount) gl.uniform1f(pass.uNoiseAmount, 0.1);
+    if (pass.uCutDepth) gl.uniform1f(pass.uCutDepth, 0.8);
+    if (pass.uMorphSeed) gl.uniform1f(pass.uMorphSeed, 0.3);
+    if (pass.uStoneTint) gl.uniform3f(pass.uStoneTint, 1.0, 1.0, 1.0);
+    if (pass.uStoneType) gl.uniform1f(pass.uStoneType, 0.2);
+    if (pass.uGrainScale) gl.uniform1f(pass.uGrainScale, 6.0);
+    if (pass.uGrainContrast) gl.uniform1f(pass.uGrainContrast, 0.2);
+    if (pass.uVeinAmount) gl.uniform1f(pass.uVeinAmount, 0.08);
+    if (pass.uFractureAmount) gl.uniform1f(pass.uFractureAmount, 0.2);
+    if (pass.uGlossiness) gl.uniform1f(pass.uGlossiness, 0.4);
+    if (pass.uScatter) gl.uniform1f(pass.uScatter, 0.1);
     if (pass.uMouse) {
       const mx = mouse[0];
       const my = mouse[1];

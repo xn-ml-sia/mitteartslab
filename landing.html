@@ -12,15 +12,35 @@
     <link rel="stylesheet" href="./public/landing.css" />
   </head>
   <body class="gallery-mode">
-    <header class="stoneface-overlay" aria-label="Stoneface heading">
-      <h1>Stoneface</h1>
-      <p class="stoneface-tagline">What words cannot hold, a stone can.</p>
-      <p class="stoneface-helper">Drag to wander the field. Each stone is a model mood with a little gravel humor.</p>
-      <p class="stoneface-legend">Pun dial: 0 plain stone, 1 light gravel, 2 fun sediment, 3 boulder comedy.</p>
-    </header>
+    
     <main class="infiniteCanvasViewport" aria-label="Stone gallery page" tabindex="0">
-      <section class="infiniteCanvasContainer" role="list" aria-label="Expressive stone cards"></section>
+      <section class="infiniteCanvasContainer" role="list" aria-label="Expressive stone cards">
+        <h1 id="gallery-title">stoneface <br>& co</h1>
+      </section>
     </main>
+    <div id="stoneface-drawer-backdrop" class="stoneface-drawer-backdrop" hidden></div>
+    <aside id="stoneface-drawer" class="stoneface-drawer gr-panel" aria-label="Stone details drawer" aria-hidden="true">
+      <div class="stoneface-drawer-head">
+        <p id="drawer-emotion" class="stoneface-drawer-emotion">emotion</p>
+        <button id="drawer-close" type="button" class="gr-btn">Close</button>
+      </div>
+      <div class="gr-card stoneface-drawer-card">
+        <div class="stoneface-drawer-preview-wrap">
+          <canvas id="drawer-stone-canvas" class="stoneface-drawer-preview" width="512" height="512" aria-label="Animated selected stone"></canvas>
+        </div>
+        <div id="drawer-chips" class="stoneface-drawer-chips" aria-label="Stone tags"></div>
+        <p id="drawer-meta" class="stoneface-drawer-meta"></p>
+        <p id="drawer-caption" class="stoneface-drawer-caption"></p>
+        <p id="drawer-rationale" class="stoneface-drawer-rationale"></p>
+      </div>
+      <div class="gr-card stoneface-drawer-card">
+        <p class="stoneface-drawer-section">Shader profile</p>
+        <p id="drawer-shape" class="stoneface-drawer-value"></p>
+        <p id="drawer-noise" class="stoneface-drawer-value"></p>
+        <p id="drawer-cut" class="stoneface-drawer-value"></p>
+        <p id="drawer-seed" class="stoneface-drawer-value"></p>
+      </div>
+    </aside>
     <template id="stone-card-template">
       <figure class="mediaItem" role="listitem" tabindex="0">
         <div class="mediaBlock" aria-hidden="true">
