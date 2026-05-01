@@ -1,0 +1,312 @@
+.gr-app {
+  margin: 0;
+  font-family: "IBM Plex Mono", "Courier Prime", monospace;
+  background: #f5f5f5;
+  color: #121212;
+}
+
+.gr-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.topbar {
+  max-width: 1100px;
+  margin: 0 auto 10px;
+  padding: 24px 20px 0;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+.topbar p {
+  margin: 8px 0 0;
+  color: #4a4a4a;
+}
+
+.gr-app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px 48px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.gr-panel {
+  background: #ffffff;
+  border: 1px solid #dedede;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.gr-panel h2 {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+.gr-panel h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.gr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.gr-rock-card,
+.gr-generated-card {
+  border: 1px solid #d5d5d5;
+  border-radius: 8px;
+  background: #fafafa;
+  padding: 10px;
+}
+
+.gr-rock-card {
+  text-align: left;
+  cursor: pointer;
+}
+
+.gr-rock-card.is-selected {
+  border-color: #444;
+  background: #f0f0f0;
+}
+
+.gr-rock-card h4,
+.gr-generated-card h4 {
+  margin: 8px 0 6px;
+  font-size: 14px;
+}
+
+.gr-rock-card p,
+.gr-generated-card p {
+  margin: 0 0 6px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.gr-generated-card.is-locked {
+  border-color: #3d3d3d;
+  background: #f2f2f2;
+}
+
+.gr-generated-card.is-favorite {
+  box-shadow: 0 0 0 2px #d4ad00 inset;
+}
+
+.gr-rock-chip {
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 24%, #e6e6e6 0%, #b3b3b3 58%, #7a7a7a 100%);
+  box-shadow: inset -8px -8px 16px rgba(0, 0, 0, 0.14);
+}
+
+.gr-button {
+  margin-top: 12px;
+  border: 1px solid #3d3d3d;
+  background: #212121;
+  color: #fff;
+  border-radius: 6px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.gr-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.gr-reveal {
+  margin-top: 12px;
+  border: 1px solid #d5d5d5;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fcfcfc;
+}
+
+.gr-reveal[hidden] {
+  display: none;
+}
+
+.gr-controls {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.gr-controls label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.gr-controls textarea,
+.gr-controls select,
+.gr-controls input {
+  font-family: inherit;
+  padding: 8px;
+  border: 1px solid #cfcfcf;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.gr-select,
+.gr-input {
+  font-family: inherit;
+  padding: 8px;
+  border: 1px solid #cfcfcf;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+}
+
+.gr-status {
+  margin: 4px 0 12px;
+  font-size: 12px;
+  color: #333;
+}
+
+.gr-status.is-error {
+  color: #9b1c1c;
+}
+
+.gr-status.is-blocked {
+  color: #7a4d00;
+}
+
+.gr-meta {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #565656;
+  border-top: 1px dashed #d7d7d7;
+  padding-top: 6px;
+}
+
+.gr-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.gr-card-actions button {
+  border: 1px solid #bcbcbc;
+  background: #fff;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 11px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.gr-card-actions button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gr-bulk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+
+.gr-bulk-actions button {
+  border: 1px solid #bcbcbc;
+  background: #fff;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.gr-export-output {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #2d2d2d;
+  border: 1px dashed #d2d2d2;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.gr-panel-wide {
+  margin-top: 18px;
+}
+
+.gr-phase13-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.gr-analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.gr-metric-card {
+  border: 1px solid #d7d7d7;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fafafa;
+}
+
+.gr-metric-card .label {
+  display: block;
+  font-size: 11px;
+  color: #666;
+}
+
+.gr-metric-card .value {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.gr-collection-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.gr-collections-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 7px;
+}
+
+.gr-collections-list li {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fbfbfb;
+  font-size: 12px;
+}
+
+.gr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 900px) {
+  .gr-app {
+    grid-template-columns: 1fr;
+  }
+
+  .gr-phase13-grid {
+    grid-template-columns: 1fr;
+  }
+}
