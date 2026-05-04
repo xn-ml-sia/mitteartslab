@@ -1,5 +1,8 @@
 import { SHADER_SOURCES } from './shader-deck-shaders.js';
 
+/** ESM build for chapter 2 particle vessel (vanilla port of EmptyParticles). */
+const THREE_CDN_MODULE = 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+
 /** Slow oscillation between two RGB triplets from CSS (`r, g, b` comma strings). */
 const MODULE_DRIFT_SPEED = 0.0001;
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -719,39 +722,151 @@ const initChapterOneArtwork = () => {
   };
 };
 
-const initChapterTwoArtwork = () => {
-  const canvas = document.getElementById('metamorphosis-canvas');
-  if (!canvas) return null;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return null;
-  const section = canvas.closest('.chapter-observe');
-  const visibilityNode = resolveVisibilityNode(section, canvas);
-  const sectionTracker = createSectionVisibilityTracker(visibilityNode, 0.2);
-  let pageActive = pageLifecycle.isActive();
-  const debug = createDebugModuleProbe('chapter2');
-  debug?.set({ running: false, visible: sectionTracker.isVisible(), renderState: 'init' });
-  const rootStyles = getComputedStyle(document.documentElement);
-  const strokeRgb = parseRgbTriplet(rootStyles.getPropertyValue('--mono-800').trim(), [26, 26, 26]);
-  const midRgb = parseRgbTriplet(rootStyles.getPropertyValue('--mono-600').trim(), [64, 64, 64]);
-  const lightRgb = parseRgbTriplet(rootStyles.getPropertyValue('--mono-400').trim(), [140, 140, 140]);
+/** Port of EmptyParticles / ParticleVessel: shader points in a vessel formation. */
+const createChapterTwoParticleVessel = (THREE, container, options) => {
+  const {
+    count,
+    sectionTracker,
+    prefersReducedMotion,
+    debug,
+    visibilityNode,
+  } = options;
 
-  canvas.width = 550;
-  canvas.height = 550;
+  const width = Math.max(1, container.clientWidth);
+  const height = Math.max(1, container.clientHeight);
 
-  const width = canvas.width;
-  const height = canvas.height;
-  const phi = (1 + Math.sqrt(5)) / 2;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    powerPreference: 'high-performance',
+    alpha: true,
+    stencil: false,
+    depth: true,
+  });
+  renderer.setClearColor(0x000000, 0);
+  renderer.setSize(width, height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  container.appendChild(renderer.domElement);
+
+  camera.position.z = 5;
+  scene.background = null;
+
+  const vertexShader = `
+    uniform float time;
+    attribute float size;
+    attribute vec3 customColor;
+    varying vec3 vColor;
+
+    void main() {
+      vColor = customColor;
+      vec3 pos = position;
+
+      float radius = length(pos.xz);
+      float angle = atan(pos.z, pos.x);
+      float height = pos.y;
+
+      float vessel = smoothstep(0.3, 0.7, radius) * smoothstep(1.0, 0.7, radius);
+
+      angle += time * 0.08;
+
+      float space = sin(time * 0.3 + radius * 3.0) * 0.1;
+
+      float newRadius = (radius + space) * vessel;
+
+      vec3 newPos;
+      newPos.x = cos(angle) * newRadius;
+      newPos.z = sin(angle) * newRadius;
+      newPos.y = height * vessel - 1.2;
+
+      newPos *= 2.75;
+
+      vec4 mvPosition = modelViewMatrix * vec4(newPos, 1.0);
+      gl_PointSize = size * (128.0 / -mvPosition.z);
+      gl_Position = projectionMatrix * mvPosition;
+    }
+  `;
+
+  const fragmentShader = `
+    uniform float opacity;
+    varying vec3 vColor;
+    void main() {
+      vec2 center = gl_PointCoord - vec2(0.5);
+      float dist = dot(center, center);
+
+      if (dist > 0.25) discard;
+
+      float alpha = (1.0 - smoothstep(0.2025, 0.25, dist)) * opacity;
+      gl_FragColor = vec4(vColor, alpha);
+    }
+  `;
+
+  const particleMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      time: { value: 0 },
+      opacity: { value: 0.4 },
+    },
+    vertexShader,
+    fragmentShader,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.NormalBlending,
+    side: THREE.DoubleSide,
+    vertexColors: true,
+  });
+
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+
+  let i3 = 0;
+  for (let i = 0; i < count; i += 1) {
+    const t = i / count;
+    const radius = Math.pow(t, 0.5);
+    const angle = t * Math.PI * 40;
+    const vesselHeight = Math.sin(t * Math.PI) * 1.8;
+    const randRadius = radius + (Math.random() - 0.5) * 0.05;
+    const randAngle = angle + (Math.random() - 0.5) * 0.1;
+
+    positions[i3] = Math.cos(randAngle) * randRadius;
+    positions[i3 + 1] = vesselHeight;
+    positions[i3 + 2] = Math.sin(randAngle) * randRadius;
+
+    const shade = 0.1 + Math.sqrt(radius) * 0.1 + Math.random() * 0.02;
+    colors[i3] = shade;
+    colors[i3 + 1] = shade;
+    colors[i3 + 2] = shade;
+
+    sizes[i] = (1.0 - Math.abs(vesselHeight * 0.5)) * 0.2 + 0.1;
+
+    i3 += 3;
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
+  geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+  geometry.computeBoundingBox();
+  geometry.computeBoundingSphere();
+
+  const points = new THREE.Points(geometry, particleMaterial);
+  scene.add(points);
+
+  const clock = new THREE.Clock();
   let raf = 0;
-  let time = 0;
   let lastTs = 0;
+  const targetInterval = 1000 / 60;
+  let pageActive = pageLifecycle.isActive();
+  let hiddenAtMs = 0;
+
   const isActuallyVisible = () => {
-    const node = visibilityNode || canvas;
+    const node = visibilityNode || container;
     const rect = node.getBoundingClientRect();
     return rect.bottom > 0 && rect.top < window.innerHeight;
   };
   const isSectionVisible = () => sectionTracker.isVisible() || isActuallyVisible();
 
-  const animate = (ts = 0) => {
+  const renderFrame = (ts = performance.now()) => {
     const sectionVisible = isSectionVisible();
     const state = resolveRenderState({
       reducedMotion: prefersReducedMotion,
@@ -760,91 +875,633 @@ const initChapterTwoArtwork = () => {
     });
     debug?.set({ renderState: state, visible: sectionVisible, running: Boolean(raf) && pageActive });
     if (state === RenderState.OFFSCREEN) return;
+
+    if (!prefersReducedMotion) {
+      const deltaTime = ts - lastTs;
+      if (deltaTime < targetInterval) return;
+      lastTs = ts - (deltaTime % targetInterval);
+    }
+
+    const time = prefersReducedMotion ? 0 : clock.getElapsedTime();
+    particleMaterial.uniforms.time.value = time;
+    renderer.render(scene, camera);
+    debug?.frame();
+  };
+
+  const tick = (ts) => {
+    raf = 0;
+    renderFrame(ts);
+    if (!prefersReducedMotion && pageActive && isSectionVisible()) {
+      raf = requestAnimationFrame(tick);
+    }
+  };
+
+  const ensureLoop = () => {
+    if (!pageActive) return;
+    if (prefersReducedMotion || !isSectionVisible()) {
+      renderFrame(performance.now());
+      return;
+    }
+    if (!raf) {
+      raf = requestAnimationFrame(tick);
+      debug?.set({ running: true });
+    }
+  };
+
+  const stopLoop = () => {
+    if (raf) {
+      cancelAnimationFrame(raf);
+      raf = 0;
+      debug?.set({ running: false });
+    }
+  };
+
+  const resetMotion = () => {
+    clock.stop();
+    clock.start();
+    lastTs = 0;
+  };
+
+  let resizeTimeout = null;
+  const handleResize = () => {
+    if (!container.isConnected) return;
+    const w = Math.max(1, container.clientWidth);
+    const h = Math.max(1, container.clientHeight);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+    renderFrame(performance.now());
+  };
+
+  const onWindowResize = () => {
+    if (resizeTimeout) clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(handleResize, 100);
+  };
+  window.addEventListener('resize', onWindowResize, { passive: true });
+
+  let observerTimeout = null;
+  const resizeObserver = new ResizeObserver(() => {
+    if (observerTimeout) clearTimeout(observerTimeout);
+    observerTimeout = setTimeout(handleResize, 100);
+  });
+  resizeObserver.observe(container);
+
+  const unsubscribeLifecycle = pageLifecycle.subscribe(({ isActive }) => {
+    pageActive = isActive;
+    if (!pageActive) {
+      stopLoop();
+      return;
+    }
+    ensureLoop();
+  });
+
+  const unsubscribeVisibility = sectionTracker.subscribe((isVisible) => {
+    debug?.set({ visible: isVisible });
+    if (!isVisible) {
+      stopLoop();
+      if (!hiddenAtMs) hiddenAtMs = performance.now();
+      return;
+    }
+    const hiddenDurationMs = hiddenAtMs ? performance.now() - hiddenAtMs : 0;
+    hiddenAtMs = 0;
+    if (hiddenDurationMs >= OUT_OF_VIEW_RESET_DELAY_MS) resetMotion();
+    ensureLoop();
+  });
+
+  if (prefersReducedMotion) renderFrame(performance.now());
+  else ensureLoop();
+
+  return () => {
+    stopLoop();
+    unsubscribeVisibility();
+    unsubscribeLifecycle();
+    window.removeEventListener('resize', onWindowResize);
+    if (resizeTimeout) clearTimeout(resizeTimeout);
+    if (observerTimeout) clearTimeout(observerTimeout);
+    resizeObserver.disconnect();
+    scene.remove(points);
+    geometry.dispose();
+    particleMaterial.dispose();
+    renderer.dispose();
+    if (renderer.domElement.parentNode === container) {
+      container.removeChild(renderer.domElement);
+    }
+    renderer.forceContextLoss();
+    debug?.set({ running: false, renderState: 'disposed' });
+  };
+};
+
+const initChapterTwoArtwork = () => {
+  const mount = document.getElementById('chapter-2-particles');
+  if (!mount) return null;
+  const section = mount.closest('.chapter-observe');
+  const visibilityNode = resolveVisibilityNode(section, mount);
+  const sectionTracker = createSectionVisibilityTracker(visibilityNode, 0.2);
+  const debug = createDebugModuleProbe('chapter2');
+  debug?.set({ running: false, visible: sectionTracker.isVisible(), renderState: 'init' });
+
+  const count = prefersReducedMotion
+    ? 8000
+    : window.matchMedia('(max-width: 640px)').matches
+      ? 14000
+      : 45000;
+
+  let cancelled = false;
+  let disposeVessel = null;
+
+  import(THREE_CDN_MODULE)
+    .then((THREE) => {
+      if (cancelled) return;
+      disposeVessel = createChapterTwoParticleVessel(THREE, mount, {
+        count,
+        sectionTracker,
+        prefersReducedMotion,
+        debug,
+        visibilityNode,
+      });
+    })
+    .catch((err) => {
+      console.warn('Chapter 2 artwork: Three.js failed to load', err);
+    });
+
+  return () => {
+    cancelled = true;
+    disposeVessel?.();
+    disposeVessel = null;
+    sectionTracker.dispose();
+    debug?.set({ running: false, renderState: 'disposed' });
+  };
+};
+
+const initChapterThreeArtwork = () => initCrumblingArtwork('chapter-3-canvas');
+
+/** L-systems from tiny_swaying_tree.html; coordinates in 300×300 reference space. */
+const CH4_AXIOM = 'X';
+const CH4_RULES = { X: 'F-[[X]+X]+F[+FX]-X', F: 'FF' };
+const CH4_FINAL_RULES = { X: 'F-[[X]+X]+F[+FX]-X+[F+X][-X]', F: 'FF' };
+const CH4_REF_W = 300;
+const CH4_REF_H = 300;
+// Counter-clockwise tilt so chapter-4 tree reads as sideways growth.
+const CH4_BASE_ROTATION = -0.72;
+
+const ch4Generate = (start, iters, rules = CH4_RULES) => {
+  let s = start;
+  for (let i = 0; i < iters; i += 1) {
+    let n = '';
+    for (const c of s) n += rules[c] || c;
+    s = n;
+  }
+  return s;
+};
+
+const CH4_SYSTEMS = [
+  { system: ch4Generate(CH4_AXIOM, 2), angleDelta: Math.PI / 7, length: 6.1 },
+  { system: ch4Generate(CH4_AXIOM, 3), angleDelta: Math.PI / 7, length: 5.0 },
+  { system: ch4Generate(CH4_AXIOM, 4), angleDelta: Math.PI / 7, length: 4.0 },
+  // Depth-5 expansion on base rules: much denser branching.
+  { system: ch4Generate(CH4_AXIOM, 5), angleDelta: Math.PI / 7, length: 3.35 },
+  // Extra canopy: same depth, wider angles + slightly longer strokes (can read past the square).
+  { system: ch4Generate(CH4_AXIOM, 5, CH4_FINAL_RULES), angleDelta: Math.PI / 6.2, length: 3.12 },
+  { system: ch4Generate(CH4_AXIOM, 5, CH4_FINAL_RULES), angleDelta: Math.PI / 8, length: 3.0 },
+];
+
+// Grow to peak and reduce back, excluding duplicate endpoints in the reverse.
+const CH4_STAGE_SEQUENCE = [0, 1, 2, 3, 4, 5, 4, 3, 2, 1];
+const CH4_STAGE_HOLD_MS = [900, 1100, 1350, 1600, 2100, 5200];
+const CH4_SEQUENCE_TRANSITION_RATE = [1.3, 1.2, 1.12, 1.05, 1.0, 1.02, 1.05, 1.12, 1.22, 1.3];
+
+const ch4UpdateBounds = (sysData, time, acc) => {
+  const { system, angleDelta, length } = sysData;
+  let x = CH4_REF_W / 2;
+  let y = CH4_REF_H * 0.92;
+  let angle = -Math.PI / 2 + CH4_BASE_ROTATION + Math.sin(time * 0.18) * 0.25;
+  const stack = [];
+  const addPt = (px, py) => {
+    acc.minX = Math.min(acc.minX, px);
+    acc.maxX = Math.max(acc.maxX, px);
+    acc.minY = Math.min(acc.minY, py);
+    acc.maxY = Math.max(acc.maxY, py);
+  };
+  addPt(x, y);
+  for (let i = 0; i < system.length; i += 1) {
+    const cmd = system[i];
+    if (cmd === 'F') {
+      const x2 = x + length * Math.cos(angle);
+      const y2 = y + length * Math.sin(angle);
+      addPt(x2, y2);
+      x = x2;
+      y = y2;
+    } else if (cmd === '+') {
+      angle += angleDelta + Math.sin(time * 0.18 + i * 0.01) * 0.03;
+    } else if (cmd === '-') {
+      angle -= angleDelta + Math.sin(time * 0.18 + i * 0.01) * 0.03;
+    } else if (cmd === '[') {
+      stack.push({ x, y, angle });
+    } else if (cmd === ']') {
+      const st = stack.pop();
+      if (st) {
+        x = st.x;
+        y = st.y;
+        angle = st.angle;
+      }
+    }
+  }
+};
+
+const ch4EmptyBounds = () => ({
+  minX: Infinity,
+  minY: Infinity,
+  maxX: -Infinity,
+  maxY: -Infinity,
+});
+
+const ch4UnionBounds = (a, b) => ({
+  minX: Math.min(a.minX, b.minX),
+  minY: Math.min(a.minY, b.minY),
+  maxX: Math.max(a.maxX, b.maxX),
+  maxY: Math.max(a.maxY, b.maxY),
+});
+
+const ch4NormalizeBounds = (b) => {
+  if (!Number.isFinite(b.minX) || b.maxX <= b.minX || b.maxY <= b.minY) {
+    return { minX: 0, minY: 0, maxX: CH4_REF_W, maxY: CH4_REF_H };
+  }
+  return b;
+};
+
+const ch4CalcGlobalBounds = () => {
+  // Fixed framing: use final stage envelope across a few sway moments.
+  const samples = [0.0, 0.6, 1.2, 1.8, 2.4, 3.0, 3.6, 4.2];
+  let bounds = ch4EmptyBounds();
+  samples.forEach((t) => {
+    const b = ch4EmptyBounds();
+    ch4UpdateBounds(CH4_SYSTEMS[CH4_SYSTEMS.length - 1], t, b);
+    bounds = ch4UnionBounds(bounds, b);
+  });
+  const wide = CH4_SYSTEMS[CH4_SYSTEMS.length - 2];
+  if (wide) {
+    samples.forEach((t) => {
+      const b = ch4EmptyBounds();
+      ch4UpdateBounds(wide, t, b);
+      bounds = ch4UnionBounds(bounds, b);
+    });
+  }
+  return ch4NormalizeBounds(bounds);
+};
+const CH4_GLOBAL_BOUNDS = ch4CalcGlobalBounds();
+
+const ch4Hash11 = (n) => {
+  const s = Math.sin(n * 127.1) * 43758.5453123;
+  return s - Math.floor(s);
+};
+
+const ch4DrawTree = (ctx, sysData, alpha, time, options = {}) => {
+  const { system, angleDelta, length } = sysData;
+  const {
+    startCommand = 0,
+    maxCommands = system.length,
+    revealEnd = system.length,
+    drawStride = 1,
+    offsetX = 0,
+    offsetY = 0,
+    alphaScale = 1,
+    fallProgress = 0,
+    fallDistance = 0,
+    fallDrift = 0,
+    swayIntensity = 1,
+    sproutDensity = 0,
+    windChaos = 1,
+    windGust = 0,
+  } = options;
+  let x = CH4_REF_W / 2 + offsetX;
+  let y = CH4_REF_H * 0.92 + offsetY;
+  let angle = -Math.PI / 2 + CH4_BASE_ROTATION + Math.sin(time * 0.18) * 0.25;
+  const stack = [];
+  let depth = 0;
+  const cmdLimit = Math.max(0, Math.min(system.length, maxCommands));
+  const cmdStart = Math.max(0, Math.min(system.length, startCommand));
+  const stride = Math.max(1, drawStride);
+  const reveal = Math.max(0, Math.min(system.length, revealEnd));
+  const revealFloor = Math.floor(reveal);
+  const revealFrac = reveal - revealFloor;
+  for (let i = 0; i < cmdLimit; i += 1) {
+    const cmd = system[i];
+    if (cmd === 'F') {
+      const x2 = x + length * Math.cos(angle);
+      const y2 = y + length * Math.sin(angle);
+      if (i >= cmdStart && i % stride === 0) {
+        let revealWeight = 1;
+        if (i > revealFloor) revealWeight = 0;
+        else if (i === revealFloor) revealWeight = revealFrac;
+        if (revealWeight > 0) {
+          const op = (0.22 - (i / system.length) * 0.09) * alpha * alphaScale * revealWeight;
+          const t = Math.max(0, Math.min(1, fallProgress));
+          const seed = ch4Hash11(i * 1.913 + depth * 7.371);
+          const driftX = (seed - 0.5) * fallDrift * t + Math.sin(time * 0.9 + seed * 6.283) * t * 1.6;
+          const driftY = fallDistance * t * (0.35 + seed * 0.9);
+          const sx = x + driftX;
+          const sy = y + driftY;
+          const ex = x + (x2 - x) * revealWeight + driftX;
+          const ey = y + (y2 - y) * revealWeight + driftY;
+          // Detached branch tumble during shrink transitions.
+          const tumble = (seed - 0.5) * t * 1.15;
+          const mx = (sx + ex) * 0.5;
+          const my = (sy + ey) * 0.5;
+          const dx = ex - sx;
+          const dy = ey - sy;
+          const cosA = Math.cos(tumble);
+          const sinA = Math.sin(tumble);
+          const rdx = dx * cosA - dy * sinA;
+          const rdy = dx * sinA + dy * cosA;
+          const rsx = mx - rdx * 0.5;
+          const rsy = my - rdy * 0.5;
+          const rex = mx + rdx * 0.5;
+          const rey = my + rdy * 0.5;
+          ctx.strokeStyle = `rgba(51,51,51,${Math.max(0, op)})`;
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.moveTo(rsx, rsy);
+          ctx.lineTo(rex, rey);
+          ctx.stroke();
+        }
+      }
+      if (sproutDensity > 0 && i >= cmdStart && i % stride === 0) {
+        const seed = ch4Hash11(i * 2.17 + depth * 9.13);
+        if (seed < sproutDensity) {
+          const sproutLen = length * (0.22 + seed * 0.26);
+          const sproutAng = angle + (seed - 0.5) * 1.05 + Math.sin(time * 0.62 + seed * 5.2) * 0.18;
+          const mx = (x + x2) * 0.5;
+          const my = (y + y2) * 0.5;
+          const ex = mx + Math.cos(sproutAng) * sproutLen;
+          const ey = my + Math.sin(sproutAng) * sproutLen;
+          const op = (0.12 + seed * 0.06) * alpha * alphaScale;
+          ctx.strokeStyle = `rgba(51,51,51,${Math.max(0, op)})`;
+          ctx.lineWidth = 0.65;
+          ctx.beginPath();
+          ctx.moveTo(mx, my);
+          ctx.lineTo(ex, ey);
+          ctx.stroke();
+        }
+      }
+      x = x2;
+      y = y2;
+    } else if (cmd === '+') {
+      const depthNorm = Math.min(1, depth / 10);
+      const gust = Math.sin(time * 1.15 + i * 0.02 + depth * 0.41) * windGust;
+      const windPrimary = Math.sin(time * (0.27 * windChaos) + i * 0.011 + depth * 0.63);
+      const windSecondary = Math.sin(time * (0.19 * windChaos) + i * 0.007 + depth * 0.37);
+      const windTertiary = Math.sin(time * 0.41 + i * 0.019 + depth * 0.88);
+      const wind =
+        (windPrimary * 0.020 + windSecondary * 0.012 + windTertiary * 0.010 * (windChaos - 1) * 0.35 + gust) *
+        (0.28 + depthNorm * 1.35) *
+        swayIntensity;
+      angle += angleDelta + wind;
+    } else if (cmd === '-') {
+      const depthNorm = Math.min(1, depth / 10);
+      const gust = Math.sin(time * 1.15 + i * 0.02 + depth * 0.41) * windGust;
+      const windPrimary = Math.sin(time * (0.27 * windChaos) + i * 0.011 + depth * 0.63);
+      const windSecondary = Math.sin(time * (0.19 * windChaos) + i * 0.007 + depth * 0.37);
+      const windTertiary = Math.sin(time * 0.41 + i * 0.019 + depth * 0.88);
+      const wind =
+        (windPrimary * 0.020 + windSecondary * 0.012 + windTertiary * 0.010 * (windChaos - 1) * 0.35 + gust) *
+        (0.28 + depthNorm * 1.35) *
+        swayIntensity;
+      angle -= angleDelta + wind;
+    } else if (cmd === '[') {
+      stack.push({ x, y, angle });
+      depth += 1;
+    } else if (cmd === ']') {
+      const st = stack.pop();
+      depth = Math.max(0, depth - 1);
+      if (st) {
+        x = st.x;
+        y = st.y;
+        angle = st.angle;
+      }
+    }
+  }
+};
+
+const initChapterFourTreeArtwork = () => {
+  const canvas = document.getElementById('chapter-4-tree-canvas');
+  if (!canvas) return null;
+  const ctx = canvas.getContext('2d', { alpha: true });
+  if (!ctx) return null;
+  const section = canvas.closest('.chapter-observe');
+  const visibilityNode = resolveVisibilityNode(section, canvas);
+  const sectionTracker = createSectionVisibilityTracker(visibilityNode, 0.2);
+  const debug = createDebugModuleProbe('chapter4');
+  debug?.set({ running: false, visible: sectionTracker.isVisible(), renderState: 'init' });
+
+  let logicalW = 1;
+  let logicalH = 1;
+  let dpr = 1;
+
+  const syncCanvasSize = () => {
+    // Anchor rendering to the chapter-4 artwork box, not viewport center.
+    const rect = canvas.getBoundingClientRect();
+    const boxW = Math.max(1, Math.floor(rect.width));
+    const boxH = Math.max(1, Math.floor(rect.height));
+    const vw = Math.max(1, window.innerWidth);
+    const vh = Math.max(1, window.innerHeight - 60);
+    logicalW = boxW > 1 ? boxW : vw;
+    logicalH = boxH > 1 ? boxH : vh;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const pxW = Math.max(1, Math.floor(logicalW * dpr));
+    const pxH = Math.max(1, Math.floor(logicalH * dpr));
+    if (canvas.width !== pxW || canvas.height !== pxH) {
+      canvas.width = pxW;
+      canvas.height = pxH;
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+
+  syncCanvasSize();
+
+  let treeTime = 0;
+  let stagePos = 0;
+  let transitionFactor = 0;
+  let isTransitioning = false;
+  let stageMs = 0;
+  let raf = 0;
+  let lastTs = 0;
+  let pageActive = pageLifecycle.isActive();
+  // Faster growth/decay motion.
+  const STAGE_MS = 1500;
+  // Longer hold only at full growth stage.
+  const FULL_STAGE_HOLD_MS = 5200;
+  // Baseline transition speed multiplied by per-sequence profile.
+  const TRANSITION_SPEED_BASE = 0.015 * (60 / 1000);
+
+  let hiddenAtMs = 0;
+
+  const resetGrowth = () => {
+    treeTime = 0;
+    stagePos = 0;
+    transitionFactor = 0;
+    isTransitioning = false;
+    stageMs = 0;
+    lastTs = 0;
+  };
+
+  const ch4StageWind = (stageIdx) => {
+    const isFinal = stageIdx === CH4_SYSTEMS.length - 1;
+    const isWide = stageIdx === CH4_SYSTEMS.length - 2;
+    if (isFinal) return { sway: 1.55, chaos: 1.55, gust: 0.045, sprout: 0.42 };
+    if (isWide) return { sway: 1.18, chaos: 1.18, gust: 0.022, sprout: 0.28 };
+    return { sway: 1, chaos: 1, gust: 0, sprout: 0 };
+  };
+
+  const render = (ts = 0) => {
+    const sectionVisible = sectionTracker.isVisible();
+    const state = resolveRenderState({
+      reducedMotion: prefersReducedMotion,
+      sectionVisible,
+      isFocusedSurface: true,
+    });
+    debug?.set({ renderState: state, visible: sectionVisible, running: Boolean(raf) && pageActive });
     const fpsCap = state === RenderState.FOCUSED ? RENDER_POLICY.chapterFpsFocused : RENDER_POLICY.chapterFpsVisibleNotFocused;
     const frameDuration = 1000 / fpsCap;
+    if (state === RenderState.OFFSCREEN) return;
     if (ts - lastTs < frameDuration) return;
     const deltaMs = lastTs > 0 ? ts - lastTs : frameDuration;
     lastTs = ts;
 
-    const now = performance.now();
-    // Start blank, then quickly build up visible spiral boxes.
-    const maxRectangles = Math.max(0, Math.min(60, Math.floor(time * 0.035 - 2.0)));
-
-    ctx.clearRect(0, 0, width, height);
-
-    ctx.save();
-    ctx.translate(width / 2, height / 2);
-
-    let rectWidth = 300;
-    let rectHeight = rectWidth / phi;
-    let scale = 1;
-    const angle = time * 0.00025;
-
-    for (let i = 0; i < maxRectangles; i += 1) {
-      ctx.save();
-
-      const spiralAngle = i * 0.174533;
-      const radius = scale * 100;
-      const x = Math.cos(spiralAngle) * radius;
-      const y = Math.sin(spiralAngle) * radius;
-
-      ctx.translate(x, y);
-      ctx.rotate(spiralAngle + angle);
-
-      const alpha = Math.max(0, 0.5 - i * 0.01);
-      const paletteWave = (Math.sin(now * MODULE_DRIFT_SPEED + i * 0.13) + 1) * 0.5;
-      let rgb = strokeRgb;
-      if (paletteWave > 0.66) rgb = midRgb;
-      else if (paletteWave > 0.33) rgb = lightRgb;
-      ctx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`;
-      ctx.lineWidth = 0.8;
-      ctx.strokeRect(-rectWidth / 2, -rectHeight / 2, rectWidth, rectHeight);
-
-      if (i % 3 === 0) {
-        ctx.beginPath();
-        ctx.moveTo(-rectWidth / 2, -rectHeight / 2);
-        ctx.lineTo(rectWidth / 2, rectHeight / 2);
-        ctx.moveTo(rectWidth / 2, -rectHeight / 2);
-        ctx.lineTo(-rectWidth / 2, rectHeight / 2);
-        ctx.strokeStyle = `rgba(${lightRgb[0]}, ${lightRgb[1]}, ${lightRgb[2]}, ${alpha * 0.28})`;
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
+    if (!prefersReducedMotion) {
+      treeTime += deltaMs * 0.00048;
+      if (isTransitioning) {
+        const transitionRate = CH4_SEQUENCE_TRANSITION_RATE[stagePos] || CH4_SEQUENCE_TRANSITION_RATE[0];
+        transitionFactor += deltaMs * TRANSITION_SPEED_BASE * transitionRate;
+        if (transitionFactor >= 1) {
+          isTransitioning = false;
+          transitionFactor = 0;
+          stagePos = (stagePos + 1) % CH4_STAGE_SEQUENCE.length;
+          stageMs = 0;
+        }
+      } else {
+        stageMs += deltaMs;
+        const stageIndexForHold = CH4_STAGE_SEQUENCE[stagePos];
+        const holdMs = stageIndexForHold === CH4_SYSTEMS.length - 1
+          ? FULL_STAGE_HOLD_MS
+          : (CH4_STAGE_HOLD_MS[stageIndexForHold] || STAGE_MS);
+        if (stageMs > holdMs) isTransitioning = true;
       }
-
-      ctx.restore();
-
-      rectWidth *= 0.95;
-      rectHeight *= 0.95;
-      scale *= 0.98;
     }
 
-    ctx.beginPath();
-    for (let i = 0; i <= maxRectangles; i += 1) {
-      const spiralAngle = i * 0.174533;
-      const radius = Math.pow(0.98, i) * 100;
-      const x = Math.cos(spiralAngle) * radius;
-      const y = Math.sin(spiralAngle) * radius;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+    const drawTime = prefersReducedMotion ? 1.25 : treeTime;
+    const baseIdx = CH4_STAGE_SEQUENCE[stagePos];
+    const nextIdx = CH4_STAGE_SEQUENCE[(stagePos + 1) % CH4_STAGE_SEQUENCE.length];
+
+    syncCanvasSize();
+
+    const pad = 18;
+    const cw = logicalW;
+    const ch = logicalH;
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cw, ch);
+
+    const b = CH4_GLOBAL_BOUNDS;
+    const bw = Math.max(b.maxX - b.minX, 1e-6);
+    const bh = Math.max(b.maxY - b.minY, 1e-6);
+    const baseScale = Math.min((cw - 2 * pad) / bw, (ch - 2 * pad) / bh);
+    const breathing = prefersReducedMotion || isTransitioning ? 1 : (1 + Math.sin(drawTime * 0.35) * 0.012);
+    const scale = baseScale * breathing;
+    const tx = pad + (cw - 2 * pad - bw * scale) / 2 - b.minX * scale;
+    const ty = pad + (ch - 2 * pad - bh * scale) / 2 - b.minY * scale;
+    ctx.setTransform(scale * dpr, 0, 0, scale * dpr, tx * dpr, ty * dpr);
+
+    if (prefersReducedMotion) {
+      const w = ch4StageWind(CH4_SYSTEMS.length - 1);
+      ch4DrawTree(ctx, CH4_SYSTEMS[CH4_SYSTEMS.length - 1], 1, drawTime, {
+        swayIntensity: w.sway,
+        windChaos: w.chaos,
+        windGust: w.gust,
+        sproutDensity: w.sprout,
+      });
+    } else if (isTransitioning) {
+      const ease = 1 - (1 - transitionFactor) ** 3;
+      const baseSystem = CH4_SYSTEMS[baseIdx];
+      const nextSystem = CH4_SYSTEMS[nextIdx];
+      const isShrinking = nextIdx < baseIdx;
+      const wBase = ch4StageWind(baseIdx);
+      const wNext = ch4StageWind(nextIdx);
+      if (isShrinking) {
+        // Shrink pass: persistent target + smoothly collapsing source + detached falling twigs.
+        const eased = ease * ease * (3 - 2 * ease);
+        const keepCut = Math.max(10, Math.floor(baseSystem.system.length * (1 - eased * 0.94)));
+        const dropStart = Math.min(baseSystem.system.length, keepCut);
+        const stayAlpha = 1 - eased * 0.66;
+
+        ch4DrawTree(ctx, nextSystem, 1, drawTime, {
+          swayIntensity: 0.92 * wNext.sway,
+          windChaos: wNext.chaos,
+          windGust: wNext.gust,
+          sproutDensity: wNext.sprout,
+        });
+        ch4DrawTree(ctx, baseSystem, stayAlpha, drawTime, {
+          maxCommands: keepCut,
+          revealEnd: keepCut + eased,
+          swayIntensity: 0.78 * wBase.sway,
+          windChaos: wBase.chaos,
+          windGust: wBase.gust * 0.55,
+          sproutDensity: wBase.sprout * 0.55,
+          alphaScale: 0.9,
+        });
+        ch4DrawTree(ctx, baseSystem, 1, drawTime, {
+          startCommand: dropStart,
+          maxCommands: baseSystem.system.length,
+          drawStride: 3,
+          alphaScale: 1 - eased * 0.8,
+          fallProgress: eased,
+          fallDistance: 78,
+          fallDrift: 22,
+          swayIntensity: 0.5 * wBase.sway,
+          windChaos: wBase.chaos,
+          windGust: wBase.gust * 0.85,
+          sproutDensity: 0,
+        });
+      } else {
+        const eased = ease * ease * (3 - 2 * ease);
+        const reveal = Math.max(8, nextSystem.system.length * eased);
+        ch4DrawTree(ctx, baseSystem, 1 - eased * 0.22, drawTime, {
+          swayIntensity: 0.88 * wBase.sway,
+          windChaos: wBase.chaos,
+          windGust: wBase.gust,
+          sproutDensity: wBase.sprout,
+        });
+        ch4DrawTree(ctx, nextSystem, 1, drawTime, {
+          revealEnd: reveal,
+          swayIntensity: 0.98 * wNext.sway,
+          windChaos: wNext.chaos,
+          windGust: wNext.gust,
+          sproutDensity: wNext.sprout * eased,
+          alphaScale: 0.92 + eased * 0.08,
+        });
+      }
+    } else {
+      const w = ch4StageWind(baseIdx);
+      ch4DrawTree(ctx, CH4_SYSTEMS[baseIdx], 1, drawTime, {
+        swayIntensity: w.sway,
+        windChaos: w.chaos,
+        windGust: w.gust,
+        sproutDensity: w.sprout,
+      });
     }
-    ctx.strokeStyle = `rgba(${midRgb[0]}, ${midRgb[1]}, ${midRgb[2]}, 0.28)`;
-    ctx.lineWidth = 1;
-    ctx.stroke();
 
-    ctx.restore();
-
-    // Very slow stop-motion-like chapter-2 progression.
-    time += deltaMs * 0.035;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     debug?.frame();
   };
 
   const tick = (ts = 0) => {
     raf = 0;
-    animate(ts);
-    if (!prefersReducedMotion && pageActive && isSectionVisible()) raf = requestAnimationFrame(tick);
+    render(ts);
+    if (!prefersReducedMotion && pageActive && sectionTracker.isVisible()) {
+      raf = requestAnimationFrame(tick);
+    }
   };
   const ensureLoop = () => {
-    if (prefersReducedMotion || !pageActive || !isSectionVisible()) return;
+    if (prefersReducedMotion || !pageActive || !sectionTracker.isVisible()) return;
     if (!raf) {
       raf = requestAnimationFrame(tick);
       debug?.set({ running: true });
@@ -857,12 +1514,6 @@ const initChapterTwoArtwork = () => {
       debug?.set({ running: false });
     }
   };
-  const resetAnimationState = () => {
-    time = 0;
-    lastTs = 0;
-    ctx.clearRect(0, 0, width, height);
-  };
-  let hiddenAtMs = 0;
 
   const unsubscribeLifecycle = pageLifecycle.subscribe(({ isActive }) => {
     pageActive = isActive;
@@ -871,7 +1522,7 @@ const initChapterTwoArtwork = () => {
       return;
     }
     if (prefersReducedMotion) {
-      animate(performance.now());
+      render(performance.now());
       return;
     }
     ensureLoop();
@@ -885,28 +1536,34 @@ const initChapterTwoArtwork = () => {
     }
     const hiddenDurationMs = hiddenAtMs ? performance.now() - hiddenAtMs : 0;
     hiddenAtMs = 0;
-    if (hiddenDurationMs >= OUT_OF_VIEW_RESET_DELAY_MS) resetAnimationState();
+    if (hiddenDurationMs >= OUT_OF_VIEW_RESET_DELAY_MS) resetGrowth();
     if (prefersReducedMotion) {
-      animate(performance.now());
+      render(performance.now());
       return;
     }
     ensureLoop();
   });
 
-  if (prefersReducedMotion) animate();
+  if (prefersReducedMotion) render(performance.now());
   else ensureLoop();
+
+  const onResize = () => {
+    syncCanvasSize();
+    render(performance.now());
+  };
+  window.addEventListener('resize', onResize, { passive: true });
 
   return () => {
     unsubscribeVisibility();
     unsubscribeLifecycle();
     stopLoop();
     sectionTracker.dispose();
-    ctx.clearRect(0, 0, width, height);
+    window.removeEventListener('resize', onResize);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     debug?.set({ running: false, renderState: 'disposed' });
   };
 };
-
-const initChapterThreeArtwork = () => initCrumblingArtwork('chapter-3-canvas');
 
 const SHADERTOY_PRELUDE = `#version 300 es
 precision highp float;
@@ -2148,6 +2805,7 @@ const createAppRuntimeController = () => {
       initChapterOneArtwork(),
       initChapterTwoArtwork(),
       initChapterThreeArtwork(),
+      initChapterFourTreeArtwork(),
       initShaderDeck(),
       initChapterFlow(),
     ].filter(Boolean);

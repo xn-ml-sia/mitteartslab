@@ -22,39 +22,24 @@ const drawerSeed = document.getElementById('drawer-seed');
 const drawerPreviewCanvas = document.getElementById('drawer-stone-canvas');
 
 const STONEFACE_SET = [
-  { emotion: 'accountability', punLevel: 1, mode: 'repair', stoneType: 'granite', lines: ['I carry this weight; no pebble gets outsourced.'] },
-  { emotion: 'belonging', punLevel: 2, mode: 'inclusion', stoneType: 'smooth', lines: ['You are in the circle, not kicked into gravel.'] },
-  { emotion: 'grief', punLevel: 0, mode: 'witness', stoneType: 'smooth', lines: ['I remember quietly; no dramatic landslide required.'] },
-  { emotion: 'hope', punLevel: 1, mode: 'renewal', stoneType: 'smooth', lines: ['Small light, slow weathering, still moving toward warmth.'] },
-  { emotion: 'protection', punLevel: 1, mode: 'guard', stoneType: 'granite', lines: ['I hold this edge for you, rock steady.'] },
-  { emotion: 'vulnerability', punLevel: 2, mode: 'open', stoneType: 'granite', lines: ['No granite armor today, just honest sediment.'] },
-  { emotion: 'trust', punLevel: 1, mode: 'consistency', stoneType: 'granite', lines: ['Test me over time; I am built for pressure.'] },
-  { emotion: 'reconciliation', punLevel: 2, mode: 'return', stoneType: 'smooth', lines: ['Back at the fault line, choosing repair over rupture.'] },
-  { emotion: 'devotion', punLevel: 1, mode: 'continuity', stoneType: 'granite', lines: ['I keep showing up, one stone-cold commitment at a time.'] },
-  { emotion: 'distance', punLevel: 2, mode: 'reach', stoneType: 'smooth', lines: ['A stone throw away, still reaching anyway.'] },
-  { emotion: 'forgiveness', punLevel: 1, mode: 'mercy', stoneType: 'smooth', lines: ['We can sand down edges without erasing history.'] },
-  { emotion: 'new_beginning', punLevel: 2, mode: 'fresh-layer', stoneType: 'smooth', lines: ['New chapter, same bedrock, better geology.'] },
+  { emotion: 'accountability', punLevel: 1, mode: 'repair', caption: ['I own the crack; no blame-shifting shale today.', 'I am here to patch it, not bury it in sediment.'] },
+  { emotion: 'belonging', punLevel: 2, mode: 'inclusion', caption: ['You are not an extra pebble; you are part of the bedrock.', 'Scoot closer, the circle has room and zero gravel gatekeeping.'] },
+  { emotion: 'grief', punLevel: 0, mode: 'witness', variantOverride: 'flatter', caption: ['I hold this silence like a warm river stone.', 'No fix-it landslide, just steady presence at your edge.'] },
+  { emotion: 'hope', punLevel: 1, mode: 'renewal', caption: ['Tiny glint, big insistence; dawn still mineralizes.', 'Call it a quartz of faith, still growing in pressure.'] },
+  { emotion: 'protection', punLevel: 1, mode: 'guard', caption: ['I stand here like a cairn when the weather gets loud.', 'Lean on me; my boundaries are firm, not cold.'] },
+  { emotion: 'vulnerability', punLevel: 2, mode: 'open', caption: ['Today I skip the armor and show the fault lines.', 'Consider this my soft-rock era, no polish cosplay.'] },
+  { emotion: 'trust', punLevel: 1, mode: 'consistency', caption: ['Test me by seasons, not by sparkle.', 'I am built like basalt: quiet, repeatable, and load-bearing.'] },
+  { emotion: 'reconciliation', punLevel: 2, mode: 'return', variantOverride: 'rounder', caption: ['I came back to the fracture with both hands open.', 'Let us make tectonic peace, one careful shift at a time.'] },
+  { emotion: 'devotion', punLevel: 1, mode: 'continuity', caption: ['I choose you again, and then again, and then again.', 'Stone-cold fact: this is commitment, not a mood.'] },
+  { emotion: 'distance', punLevel: 2, mode: 'reach', variantOverride: 'edgy', caption: ['Miles apart, still in each other\'s orbit.', 'A stone\'s throw joke, but my reach is the real thing.'] },
+  { emotion: 'forgiveness', punLevel: 1, mode: 'mercy', variantOverride: 'flatter', caption: ['I do not erase the scar; I soften the edge.', 'We can weather this without becoming rubble.'] },
+  { emotion: 'new_beginning', punLevel: 2, mode: 'fresh-layer', variantOverride: 'rounder', caption: ['Fresh layer, same mountain, better map.', 'New chapter carved in bedrock, not in panic.'] },
 ];
 
-const STONE_MATERIALS = {
-  smooth: { tint: [0.86, 0.93, 0.99], type: 0.88, grainScale: 3.1, grainContrast: 0.05, veinAmount: 0.1, fractureAmount: 0.04, glossiness: 0.92, scatter: 0.34 },
-  granite: { tint: [0.74, 0.72, 0.7], type: 0.14, grainScale: 26.0, grainContrast: 0.96, veinAmount: 0.03, fractureAmount: 0.36, glossiness: 0.22, scatter: 0.06 },
-};
 const INDEX_BASE_PROFILE = {
   shapeProfile: [0.5, 0.5, 0.5, 0.5],
-  noiseAmount: 0.1,
-  cutDepth: 0.8,
+  cutDepth: 0.5,
   morphSeed: 0.3,
-};
-const INDEX_BASE_MATERIAL = {
-  tint: [1.0, 1.0, 1.0],
-  type: 0.2,
-  grainScale: 6.0,
-  grainContrast: 0.2,
-  veinAmount: 0.08,
-  fractureAmount: 0.2,
-  glossiness: 0.4,
-  scatter: 0.1,
 };
 
 const hashString = (str) => {
@@ -79,59 +64,111 @@ const makeRng = (seed) => {
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 const humanize = (v) => String(v || '').replace(/_/g, ' ');
-const blendMaterial = (from, to, t) => ({
-  tint: [
-    lerp(from.tint[0], to.tint[0], t),
-    lerp(from.tint[1], to.tint[1], t),
-    lerp(from.tint[2], to.tint[2], t),
-  ],
-  type: lerp(from.type, to.type, t),
-  grainScale: lerp(from.grainScale, to.grainScale, t),
-  grainContrast: lerp(from.grainContrast, to.grainContrast, t),
-  veinAmount: lerp(from.veinAmount, to.veinAmount, t),
-  fractureAmount: lerp(from.fractureAmount, to.fractureAmount, t),
-  glossiness: lerp(from.glossiness, to.glossiness, t),
-  scatter: lerp(from.scatter, to.scatter, t),
-});
+const EMOTION_PROFILE_HINTS = {
+  accountability: { shape: [0.56, 0.62, 0.48, 0.44], cutDepth: 0.58, view: [0.68, 0.52] },
+  belonging: { shape: [0.61, 0.56, 0.58, 0.52], cutDepth: 0.46, view: [0.4, 0.5] },
+  grief: { shape: [0.78, 0.26, 0.73, 0.28], cutDepth: 0.33, view: [0.12, 0.66] },
+  hope: { shape: [0.63, 0.52, 0.48, 0.64], cutDepth: 0.48, view: [0.58, 0.38] },
+  protection: { shape: [0.54, 0.66, 0.44, 0.42], cutDepth: 0.57, view: [0.73, 0.5] },
+  vulnerability: { shape: [0.49, 0.44, 0.57, 0.72], cutDepth: 0.44, view: [0.26, 0.45] },
+  trust: { shape: [0.57, 0.61, 0.52, 0.39], cutDepth: 0.55, view: [0.65, 0.49] },
+  reconciliation: { shape: [0.61, 0.7, 0.56, 0.74], cutDepth: 0.54, view: [0.84, 0.34] },
+  devotion: { shape: [0.6, 0.58, 0.47, 0.56], cutDepth: 0.53, view: [0.62, 0.44] },
+  distance: { shape: [0.3, 0.41, 0.82, 0.22], cutDepth: 0.67, view: [0.08, 0.72] },
+  forgiveness: { shape: [0.82, 0.08, 0.73, 0.18], cutDepth: 0.26, view: [0.28, 0.69] },
+  new_beginning: { shape: [0.74, 0.72, 0.6, 0.84], cutDepth: 0.39, view: [0.78, 0.28] },
+};
+const VIEW_SEQUENCE = [
+  [0.18, 0.58], // left three-quarter
+  [0.32, 0.46], // left front
+  [0.5, 0.4], // frontal high
+  [0.68, 0.46], // right front
+  [0.82, 0.58], // right three-quarter
+  [0.5, 0.64], // lower frontal
+];
+const SHAPE_VARIANTS = [
+  { id: 'rounder', cutOffset: -0.1 },
+  { id: 'flatter', cutOffset: -0.03 },
+  { id: 'edgy', cutOffset: 0.12 },
+];
 
 const buildExpression = (entry, idx) => {
-  const seed = `${entry.emotion}:${entry.mode}:${idx}`;
+  const textSeed = hashString(`${entry.caption[0]}|${entry.caption[1]}`);
+  const seed = `${entry.emotion}:${entry.mode}:${entry.punLevel}:${idx}:${textSeed}`;
   const h = hashString(seed);
-  const rng = makeRng(h);
+  const rng = makeRng(h ^ textSeed);
   const base = [rng(), rng(), rng(), rng()];
+  const hint = EMOTION_PROFILE_HINTS[entry.emotion] || {
+    shape: [0.5, 0.5, 0.5, 0.5],
+    cutDepth: 0.5,
+    view: [0.5, 0.5],
+  };
   const wildShape = base.map((n, i) => clamp(i % 2 === 0 ? Math.pow(n, 0.55) : 1 - Math.pow(1 - n, 0.55), 0, 1));
+  const shaped = wildShape.map((v, i) => lerp(hint.shape[i], v, 0.35));
+  const variant = SHAPE_VARIANTS.find((v) => v.id === entry.variantOverride) || SHAPE_VARIANTS[Math.abs((h + idx * 31) % SHAPE_VARIANTS.length)];
+  let shapeProfile = shaped.map((v) => clamp(lerp(INDEX_BASE_PROFILE.shapeProfile[0], v, 0.58), 0.12, 0.88));
+  if (variant.id === 'rounder') {
+    shapeProfile[0] = lerp(shapeProfile[0], 0.62, 0.58);
+    shapeProfile[1] = lerp(shapeProfile[1], 0.6, 0.58);
+    shapeProfile[2] = lerp(shapeProfile[2], 0.62, 0.58);
+  } else if (variant.id === 'flatter') {
+    shapeProfile[0] = lerp(shapeProfile[0], 0.68, 0.62);
+    shapeProfile[1] = lerp(shapeProfile[1], 0.31, 0.7);
+    shapeProfile[2] = lerp(shapeProfile[2], 0.66, 0.62);
+  } else {
+    shapeProfile[0] = clamp(shapeProfile[0] + (base[0] - 0.5) * 0.28 + 0.08, 0.12, 0.9);
+    shapeProfile[1] = clamp(shapeProfile[1] - 0.11 + (base[1] - 0.5) * 0.1, 0.12, 0.88);
+    shapeProfile[2] = clamp(shapeProfile[2] + (base[2] - 0.5) * 0.26 + 0.06, 0.12, 0.9);
+  }
+  // Dedicated branch: keep forgiveness in a low, weathered suiseki-like profile.
+  if (entry.emotion === 'forgiveness') {
+    shapeProfile[0] = lerp(shapeProfile[0], 0.86, 0.82);
+    shapeProfile[1] = lerp(shapeProfile[1], 0.06, 0.9);
+    shapeProfile[2] = lerp(shapeProfile[2], 0.78, 0.82);
+    shapeProfile[3] = lerp(shapeProfile[3], 0.14, 0.78);
+  }
   const profile = {
-    shapeProfile: wildShape.map((v) => lerp(INDEX_BASE_PROFILE.shapeProfile[0], v, 0.42)),
-    noiseAmount: lerp(INDEX_BASE_PROFILE.noiseAmount, 0.08 + base[1] * 0.24, 0.5),
-    cutDepth: lerp(INDEX_BASE_PROFILE.cutDepth, 0.72 + base[2] * 0.42, 0.5),
+    shapeProfile,
+    cutDepth: clamp(lerp(hint.cutDepth, 0.36 + base[2] * 0.34, 0.38) + variant.cutOffset, 0.26, 0.78),
     morphSeed: lerp(INDEX_BASE_PROFILE.morphSeed, (h % 997) / 997, 0.4),
   };
-  const targetMaterial = STONE_MATERIALS[entry.stoneType] || STONE_MATERIALS.smooth;
-  const material = blendMaterial(INDEX_BASE_MATERIAL, targetMaterial, entry.stoneType === 'granite' ? 0.58 : 0.5);
-  if (entry.stoneType === 'granite') {
-    profile.noiseAmount = clamp(profile.noiseAmount + 0.05, 0.0, 1.0);
-    profile.cutDepth = clamp(profile.cutDepth + 0.05, 0.0, 1.4);
-    material.grainContrast = clamp(material.grainContrast + 0.05, 0.0, 1.0);
-    material.glossiness = clamp(material.glossiness - 0.05, 0.0, 1.0);
-  } else {
-    profile.noiseAmount = clamp(profile.noiseAmount - 0.04, 0.0, 1.0);
-    profile.cutDepth = clamp(profile.cutDepth - 0.05, 0.0, 1.4);
-    material.grainContrast = clamp(material.grainContrast - 0.03, 0.0, 1.0);
-    material.glossiness = clamp(material.glossiness + 0.05, 0.0, 1.0);
+  if (entry.emotion === 'forgiveness') {
+    profile.cutDepth = clamp(lerp(profile.cutDepth, 0.24, 0.82), 0.18, 0.34);
   }
-  const line = entry.lines[h % entry.lines.length];
-  const meta = `${entry.emotion} / pun ${entry.punLevel} / ${entry.mode} / ${humanize(entry.stoneType)}`;
-  const rationale = entry.stoneType === 'granite'
-    ? `Granite mode leans coarse and grounded: denser grain, lower luster, and chunkier cuts to feel weighty under pressure.`
-    : `Smooth mode leans polished and breathable: softer grain, higher sheen, and gentler cuts so the feeling reads calm but alive.`;
-  return { emotion: entry.emotion, punLevel: entry.punLevel, mode: entry.mode, stoneType: entry.stoneType, meta, line, rationale, profile, material };
+  const contour = (profile.shapeProfile[0] + profile.shapeProfile[1] + profile.shapeProfile[2]) / 3;
+  const contourMood = contour < 0.46 ? 'compact silhouette' : contour > 0.58 ? 'broad silhouette' : 'balanced silhouette';
+  const cutMood = profile.cutDepth < 0.46 ? 'gentle carving' : profile.cutDepth > 0.56 ? 'deeper carving' : 'measured carving';
+  const cadenceBank = [
+    'punchline-first cadence',
+    'slow burn cadence',
+    'dry-delivery cadence',
+    'warm snark cadence',
+    'quiet flex cadence',
+    'wry confession cadence',
+  ];
+  const cadence = cadenceBank[h % cadenceBank.length];
+  const lineA = entry.caption[0];
+  const lineB = entry.caption[1];
+  const meta = `${entry.emotion} / pun ${entry.punLevel} / ${entry.mode} / ${variant.id} / ${cadence}`;
+  const rationale = `This piece leans ${variant.id}, reading as a ${contourMood} with ${cutMood}, so the tone lands ${entry.mode === 'witness' ? 'tender' : 'intentional'} instead of generic. Morph seed ${profile.morphSeed.toFixed(3)} keeps its rhythm one-of-one while staying reproducible.`;
+  const seq = VIEW_SEQUENCE[idx % VIEW_SEQUENCE.length];
+  const seqX = seq[0] + ((Math.floor(idx / VIEW_SEQUENCE.length) % 2) * 2 - 1) * 0.04;
+  const seqY = seq[1] + (((idx + 1) % 3) - 1) * 0.03;
+  const viewNormX = clamp(lerp(seqX, hint.view[0], 0.35), 0.15, 0.85);
+  const viewNormY = clamp(lerp(seqY, hint.view[1], 0.35), 0.2, 0.8);
+  const forgivenessViewX = 0.24;
+  const forgivenessViewY = 0.74;
+  const viewMouse = entry.emotion === 'forgiveness'
+    ? { x: forgivenessViewX * 512, y: (1 - forgivenessViewY) * 512, z: 1, w: 1 }
+    : { x: viewNormX * 512, y: (1 - viewNormY) * 512, z: 1, w: 1 };
+  return { emotion: entry.emotion, punLevel: entry.punLevel, mode: entry.mode, variant: variant.id, meta, lineA, lineB, rationale, profile, viewMouse };
 };
 
 const createCard = (expression, idx) => {
   const node = template.content.firstElementChild.cloneNode(true);
   node.dataset.emotion = expression.emotion;
   const caption = node.querySelector('.attribution');
-  caption.innerHTML = `<span class="stone-caption-meta">${expression.meta}</span><span class="stone-caption-line">${expression.line}</span>`;
+  caption.innerHTML = `<span class="stone-caption-meta">${expression.meta}</span><span class="stone-caption-line">${expression.lineA}</span><span class="stone-caption-line">${expression.lineB}</span>`;
   node.style.setProperty('--stagger-delay', `${Math.min(idx * 70, 900)}ms`);
   return node;
 };
@@ -188,20 +225,11 @@ void main(){ vec4 fragColor = vec4(0.0); mainImage(fragColor, gl_FragCoord.xy); 
     iTime: gl.getUniformLocation(program, 'iTime'),
     iMouse: gl.getUniformLocation(program, 'iMouse'),
     uShapeProfile: gl.getUniformLocation(program, 'uShapeProfile'),
-    uNoiseAmount: gl.getUniformLocation(program, 'uNoiseAmount'),
     uCutDepth: gl.getUniformLocation(program, 'uCutDepth'),
     uMorphSeed: gl.getUniformLocation(program, 'uMorphSeed'),
-    uStoneTint: gl.getUniformLocation(program, 'uStoneTint'),
-    uStoneType: gl.getUniformLocation(program, 'uStoneType'),
-    uGrainScale: gl.getUniformLocation(program, 'uGrainScale'),
-    uGrainContrast: gl.getUniformLocation(program, 'uGrainContrast'),
-    uVeinAmount: gl.getUniformLocation(program, 'uVeinAmount'),
-    uFractureAmount: gl.getUniformLocation(program, 'uFractureAmount'),
-    uGlossiness: gl.getUniformLocation(program, 'uGlossiness'),
-    uScatter: gl.getUniformLocation(program, 'uScatter'),
   };
 
-  const renderProfileToCanvas = (targetCanvas, profile, material, timeSec = 0, mouse = null) => {
+  const renderProfileToCanvas = (targetCanvas, profile, timeSec = 0, mouse = null) => {
     if (!(targetCanvas instanceof HTMLCanvasElement)) return false;
     const width = 512;
     const height = 512;
@@ -215,17 +243,8 @@ void main(){ vec4 fragColor = vec4(0.0); mainImage(fragColor, gl_FragCoord.xy); 
     if (mouse) gl.uniform4f(u.iMouse, mouse.x, mouse.y, mouse.z, mouse.w);
     else gl.uniform4f(u.iMouse, 0, 0, 0, 0);
     gl.uniform4f(u.uShapeProfile, ...profile.shapeProfile);
-    gl.uniform1f(u.uNoiseAmount, profile.noiseAmount);
     gl.uniform1f(u.uCutDepth, profile.cutDepth);
     gl.uniform1f(u.uMorphSeed, profile.morphSeed);
-    if (u.uStoneTint) gl.uniform3f(u.uStoneTint, ...(material?.tint || [1, 1, 1]));
-    if (u.uStoneType) gl.uniform1f(u.uStoneType, material?.type ?? 0.2);
-    if (u.uGrainScale) gl.uniform1f(u.uGrainScale, material?.grainScale ?? 6.0);
-    if (u.uGrainContrast) gl.uniform1f(u.uGrainContrast, material?.grainContrast ?? 0.2);
-    if (u.uVeinAmount) gl.uniform1f(u.uVeinAmount, material?.veinAmount ?? 0.1);
-    if (u.uFractureAmount) gl.uniform1f(u.uFractureAmount, material?.fractureAmount ?? 0.2);
-    if (u.uGlossiness) gl.uniform1f(u.uGlossiness, material?.glossiness ?? 0.4);
-    if (u.uScatter) gl.uniform1f(u.uScatter, material?.scatter ?? 0.1);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     const ctx = targetCanvas.getContext('2d');
     if (!ctx) return false;
@@ -248,13 +267,13 @@ const cardEntries = expressions.map((expr, idx) => {
   card.dataset.index = String(idx);
   container.appendChild(card);
   const shaderCanvas = card.querySelector('.stoneShaderCanvas');
-  const ok = renderer ? renderer.renderProfileToCanvas(shaderCanvas, expr.profile, expr.material, idx * 0.05) : false;
+  const ok = renderer ? renderer.renderProfileToCanvas(shaderCanvas, expr.profile, idx * 0.05, expr.viewMouse) : false;
   if (!ok) {
     card.classList.add('is-fallback');
     const line = card.querySelector('.stone-caption-line');
-    if (line) line.textContent = `${expr.line} (fallback render)`;
+    if (line) line.textContent = `${expr.lineA} (fallback render)`;
   }
-  return { card, shaderCanvas, profile: expr.profile, material: expr.material, fallback: !ok, expression: expr, mouse: null, seedTime: idx * 0.07 };
+  return { card, shaderCanvas, profile: expr.profile, fallback: !ok, expression: expr, mouse: null, viewMouse: expr.viewMouse, seedTime: idx * 0.07 };
 });
 
 const state = {
@@ -274,7 +293,7 @@ const state = {
   raf: 0,
 };
 
-const captionHeight = 62;
+const captionHeight = 84;
 const minGap = 70;
 const jitter = 34;
 
@@ -443,24 +462,26 @@ const openDrawer = (entry) => {
   if (drawerEmotion) drawerEmotion.textContent = humanize(e.emotion);
   if (drawerMeta) drawerMeta.textContent = `${e.meta}`;
   if (drawerChips) {
-    const wildness = ((p.noiseAmount * 0.55) + (p.cutDepth * 0.45)).toFixed(2);
-    const typeLabel = humanize(e.stoneType);
+    const contour = ((p.shapeProfile[0] + p.shapeProfile[1] + p.shapeProfile[2]) / 3).toFixed(2);
     drawerChips.innerHTML = `
-      <span class="stoneface-chip is-material">${typeLabel}</span>
       <span class="stoneface-chip">pun ${e.punLevel}</span>
       <span class="stoneface-chip">${humanize(e.mode)}</span>
-      <span class="stoneface-chip">wildness ${wildness}</span>
+      <span class="stoneface-chip">${humanize(e.variant)}</span>
+      <span class="stoneface-chip">contour ${contour}</span>
+      <span class="stoneface-chip">classic wet stone</span>
     `;
   }
-  if (drawerCaption) drawerCaption.textContent = e.line;
+  if (drawerCaption) drawerCaption.textContent = `${e.lineA} ${e.lineB}`;
   if (drawerRationale) drawerRationale.textContent = e.rationale;
   if (drawerShape) drawerShape.textContent = `uShapeProfile: [${p.shapeProfile.map((v) => v.toFixed(2)).join(', ')}]`;
-  if (drawerNoise) drawerNoise.textContent = `uNoiseAmount: ${p.noiseAmount.toFixed(3)}`;
+  if (drawerNoise) drawerNoise.textContent = 'DISPLACEMENT: 0.100';
   if (drawerCut) drawerCut.textContent = `uCutDepth: ${p.cutDepth.toFixed(3)}`;
   if (drawerSeed) drawerSeed.textContent = `uMorphSeed: ${p.morphSeed.toFixed(3)}`;
   drawerBackdrop.hidden = false;
   drawer.setAttribute('aria-hidden', 'false');
   document.body.classList.add('stoneface-drawer-open');
+  drawerMouse = e.viewMouse || null;
+  drawerMouseActive = false;
   startDrawerAnimation(entry);
 };
 
@@ -480,13 +501,13 @@ let drawerMouseActive = false;
 const animateDrawerStone = (ts) => {
   if (!drawerAnimEntry || !renderer || !drawerPreviewCanvas) return;
   if (disableDrawerMotion) {
-    renderer.renderProfileToCanvas(drawerPreviewCanvas, drawerAnimEntry.profile, drawerAnimEntry.material, 0, drawerMouse);
+    renderer.renderProfileToCanvas(drawerPreviewCanvas, drawerAnimEntry.profile, 0, drawerMouse);
     drawerAnimFrame = 0;
     return;
   }
   if (!drawerAnimStart) drawerAnimStart = ts;
   const tSec = (ts - drawerAnimStart) / 1000;
-  renderer.renderProfileToCanvas(drawerPreviewCanvas, drawerAnimEntry.profile, drawerAnimEntry.material, tSec, drawerMouse);
+  renderer.renderProfileToCanvas(drawerPreviewCanvas, drawerAnimEntry.profile, tSec, drawerMouse);
   drawerAnimFrame = requestAnimationFrame(animateDrawerStone);
 };
 
@@ -496,7 +517,7 @@ const startDrawerAnimation = (entry) => {
   if (drawerAnimFrame) cancelAnimationFrame(drawerAnimFrame);
   if (disableDrawerMotion) {
     if (renderer && drawerPreviewCanvas) {
-      renderer.renderProfileToCanvas(drawerPreviewCanvas, entry.profile, entry.material, 0, drawerMouse);
+      renderer.renderProfileToCanvas(drawerPreviewCanvas, entry.profile, 0, drawerMouse);
     }
     drawerAnimFrame = 0;
     return;
@@ -526,7 +547,7 @@ const animateCards = (ts) => {
     cardEntries.forEach((entry) => {
       if (entry.fallback || !entry.shaderCanvas) return;
       if (!isCardVisible(entry.card) && !entry.mouse) return;
-      renderer.renderProfileToCanvas(entry.shaderCanvas, entry.profile, entry.material, tSec + entry.seedTime, entry.mouse);
+      renderer.renderProfileToCanvas(entry.shaderCanvas, entry.profile, tSec + entry.seedTime, entry.mouse || entry.viewMouse);
     });
   }
   cardAnimFrame = requestAnimationFrame(animateCards);

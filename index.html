@@ -21,11 +21,18 @@
           <span>mitte arts lab</span>
         </div>
         <div class="mal-header-right">
-          <span>soft media agent</span>
-          <span class="mal-header-sep" aria-hidden="true">·</span>
-          <a class="gallery-nav-link chapter-link" href="./gallery.html">gallery</a>
-          <span class="mal-header-sep" aria-hidden="true">·</span>
-          <a class="gallery-nav-link chapter-link" href="./landing.html">stoneface</a>
+          <span class="mal-header-label">soft media agent</span>
+          <span class="mal-header-sep mal-header-sep-desktop" aria-hidden="true">·</span>
+          <a class="gallery-nav-link chapter-link mal-header-desktop-link" href="./gallery.html">portfolio</a>
+          <span class="mal-header-sep mal-header-sep-desktop" aria-hidden="true">·</span>
+          <a class="gallery-nav-link chapter-link mal-header-desktop-link" href="./landing.html">stoneface</a>
+          <details class="mal-mobile-menu">
+            <summary aria-label="Open navigation menu">&#8942;</summary>
+            <div class="mal-mobile-menu-panel">
+              <a class="gallery-nav-link chapter-link" href="./gallery.html">portfolio</a>
+              <a class="gallery-nav-link chapter-link" href="./landing.html">stoneface</a>
+            </div>
+          </details>
         </div>
       </header>
 
@@ -75,8 +82,8 @@
             </div>
           </div>
           <div class="artwork-container">
-            <div class="artwork chapter-artwork chapter-secondary-artwork" aria-label="Metamorphosis form animation">
-              <canvas id="metamorphosis-canvas" class="chapter-canvas" width="550" height="550"></canvas>
+            <div class="artwork chapter-artwork chapter-secondary-artwork" aria-label="Chapter 2 artwork">
+              <div id="chapter-2-particles" class="chapter-particles-mount chapter-canvas" aria-hidden="true"></div>
             </div>
           </div>
         </section>
@@ -107,6 +114,25 @@
           <div class="artwork-container">
             <div id="chapter-3-artwork" class="artwork chapter-artwork chapter-secondary-artwork" aria-label="Chapter 3 artwork">
               <canvas id="chapter-3-canvas" class="chapter-canvas" width="550" height="550"></canvas>
+            </div>
+          </div>
+        </section>
+        <section id="chapter-4" class="poem-section chapter-poem-section chapter-observe">
+          <div class="column-1">
+            <div class="poem">
+              <div class="poem-number">
+                <p>4</p>
+              </div>
+              <div class="poem-text">
+                <p>How do we decide which experiment to craft?</p>
+                <p>We follow hints of excitement. If several directions seem captivating, consider more than one experiment. </p>
+                <p>The Craft is not just a building up. It is also a breaking down. We decide which details to remove, so that more energy can be used to feed the core elements.</p>
+              </div>
+            </div>
+          </div>
+          <div class="artwork-container">
+            <div id="chapter-4-artwork" class="artwork chapter-artwork chapter-secondary-artwork" aria-label="Chapter 4 artwork">
+              <canvas id="chapter-4-tree-canvas" class="chapter-canvas chapter-4-tree-canvas" width="700" height="700"></canvas>
             </div>
           </div>
         </section>

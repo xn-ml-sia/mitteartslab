@@ -179,6 +179,18 @@ body,
   border-bottom-color: var(--rubin-gray);
 }
 
+.mal-mobile-menu {
+  display: none;
+}
+
+.mal-mobile-menu > summary {
+  list-style: none;
+}
+
+.mal-mobile-menu > summary::-webkit-details-marker {
+  display: none;
+}
+
 .mal-logo {
   position: relative;
   width: 16px;
@@ -357,6 +369,98 @@ body,
   pointer-events: none;
 }
 
+.chapter-particles-mount {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  position: relative;
+}
+
+.chapter-particles-mount canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Chapter 4 tree: allow dense canopy to extend past the square layout box */
+#chapter-4-artwork {
+  overflow: visible;
+}
+
+#chapter-4-artwork.chapter-artwork {
+  overflow: visible;
+}
+
+.chapter-4-tree-canvas {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  transform: none;
+  transform-origin: center center;
+}
+
+#chapter-4 {
+  position: relative;
+}
+
+#chapter-4 .column-1 {
+  position: relative;
+  z-index: 6;
+  margin-left: 0;
+  margin-right: auto;
+  max-width: 576px;
+}
+
+#chapter-1 .column-1,
+#chapter-2 .column-1,
+#chapter-3 .column-1 {
+  max-width: 576px;
+}
+
+#chapter-4 .artwork-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  pointer-events: none;
+  overflow: visible;
+}
+
+#chapter-4 #chapter-4-artwork {
+  width: 100vw;
+  max-width: 100vw;
+  height: calc(100vh - 60px);
+  max-height: calc(100vh - 60px);
+  overflow: visible;
+  padding: 0;
+}
+
+@media (max-width: 1024px) {
+  /* Keep chapter-4 branches anchored inside chapter-4 on mobile. */
+  #chapter-4 .artwork-container {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: auto;
+    min-height: calc(100dvh - 60px);
+    z-index: 1;
+    overflow: visible;
+  }
+
+  #chapter-4 #chapter-4-artwork {
+    width: 100%;
+    max-width: 100%;
+    height: min(100vw, calc(100dvh - 60px));
+    max-height: min(100vw, calc(100dvh - 60px));
+  }
+
+  #chapter-4 .column-1 {
+    z-index: 2;
+  }
+}
+
 /* --- Shader interlude: three WebGL2 blocks (ShaderToy) --- */
 .shader-deck-section {
   min-height: calc(100vh - 60px);
@@ -426,6 +530,55 @@ body,
 }
 
 @media (max-width: 1024px) {
+  .mal-header-right {
+    position: relative;
+  }
+
+  .mal-header-label,
+  .mal-header-sep-desktop,
+  .mal-header-desktop-link {
+    display: none;
+  }
+
+  .mal-mobile-menu {
+    display: inline-block;
+  }
+
+  .mal-mobile-menu > summary {
+    cursor: pointer;
+    border: 1px solid var(--rubin-gray);
+    border-radius: 6px;
+    padding: 4px 8px;
+    text-transform: lowercase;
+    user-select: none;
+  }
+
+  .mal-mobile-menu-panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--background-color);
+    border: 1px solid var(--rubin-gray);
+    border-radius: 8px;
+    z-index: 20;
+  }
+
+  .mal-mobile-menu-panel a {
+    text-decoration: none;
+    color: var(--text-color);
+    border-bottom: 1px solid transparent;
+    padding-bottom: 2px;
+  }
+
+  .mal-mobile-menu-panel a:hover {
+    border-bottom-color: var(--rubin-gray);
+  }
+
   .chapter-main {
     height: calc(100dvh - 60px);
     min-height: calc(100dvh - 60px);
