@@ -438,26 +438,49 @@ body,
 }
 
 @media (max-width: 1024px) {
-  /* Keep chapter-4 branches anchored inside chapter-4 on mobile. */
-  #chapter-4 .artwork-container {
+  /* Keep chapter-4 as a layered section on mobile (art behind text). */
+  #chapter-4 {
+    display: block;
     position: relative;
-    inset: auto;
-    width: 100%;
-    height: auto;
     min-height: calc(100dvh - 60px);
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    gap: 0;
+  }
+
+  #chapter-4 .artwork-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     z-index: 1;
     overflow: visible;
+    pointer-events: none;
+    padding: 0;
+    justify-content: flex-end;
+    align-items: center;
   }
 
   #chapter-4 #chapter-4-artwork {
-    width: 100%;
-    max-width: 100%;
-    height: min(100vw, calc(100dvh - 60px));
-    max-height: min(100vw, calc(100dvh - 60px));
+    width: 100vw;
+    max-width: 100vw;
+    height: calc(100dvh - 60px);
+    max-height: calc(100dvh - 60px);
+    padding: 0;
+    transform: translateY(12vh);
   }
 
   #chapter-4 .column-1 {
+    position: relative;
     z-index: 2;
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 14px 14px 8px;
   }
 }
 
@@ -469,7 +492,7 @@ body,
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 72px;
+  padding: 28px 72px 34px;
   background: var(--mono-50);
   border-top: none;
   box-sizing: border-box;
@@ -595,14 +618,14 @@ body,
 
   .chapter-poem-section > .column-1,
   .chapter-poem-section > .artwork-container {
-    min-height: calc(100dvh - 60px);
-    padding: 8px 10px;
+    min-height: auto;
+    padding: 14px 14px;
     box-sizing: border-box;
     scroll-snap-align: start;
     scroll-snap-stop: normal;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .chapter-poem-section .column-1 {
@@ -610,7 +633,7 @@ body,
     opacity: 1;
     transform: none;
     transition: none;
-    padding: 8px 10px;
+    padding: 14px 14px 8px;
     font-size: 18px;
   }
 
@@ -625,13 +648,13 @@ body,
     margin-top: 0;
     justify-content: center;
     align-items: center;
-    padding: 0;
+    padding: 10px 0 20px;
   }
 
   .chapter-artwork {
-    width: min(100vw, calc(100dvh - 60px));
-    max-width: 100vw;
-    height: min(100vw, calc(100dvh - 60px));
+    width: min(86vw, calc((100dvh - 60px) * 0.72));
+    max-width: 86vw;
+    height: min(86vw, calc((100dvh - 60px) * 0.72));
     aspect-ratio: 1;
     padding: 0;
     border-radius: 0;
@@ -643,27 +666,30 @@ body,
   }
 
   .shader-deck-section {
-    min-height: calc(100dvh - 60px);
-    padding: 12px;
+    min-height: auto;
+    padding: 34px 14px 44px;
   }
 
   .shader-deck {
     position: relative;
-    display: block;
-    width: min(86vw, 420px);
-    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: min(92vw, 420px);
+    aspect-ratio: auto;
     margin: 0 auto;
-    perspective: 1200px;
+    perspective: none;
   }
 
   .shader-deck .shader-card {
-    position: absolute;
-    inset: 0;
-    transform-origin: 50% 90%;
+    position: relative;
+    inset: auto;
+    transform-origin: 50% 50%;
     transition:
       transform var(--motion-slow) var(--motion-ease-standard),
       opacity var(--motion-base) var(--motion-ease-standard);
     cursor: pointer;
+    aspect-ratio: 1 / 1;
   }
 
   .shader-deck .shader-card.is-active-render {
@@ -671,26 +697,26 @@ body,
   }
 
   .shader-deck .shader-card[data-pos="0"] {
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: none;
     opacity: 1;
-    z-index: 3;
+    z-index: 1;
   }
 
   .shader-deck .shader-card[data-pos="1"] {
-    transform: translate3d(0, 14px, 0) scale(0.95);
-    opacity: 0.85;
-    z-index: 2;
+    transform: none;
+    opacity: 1;
+    z-index: 1;
   }
 
   .shader-deck .shader-card[data-pos="2"] {
-    transform: translate3d(0, 28px, 0) scale(0.9);
-    opacity: 0.7;
+    transform: none;
+    opacity: 1;
     z-index: 1;
   }
 
   .shader-deck .shader-card.is-leaving {
-    transform: translate3d(110%, -8%, 0) rotateZ(8deg) scale(0.94);
-    opacity: 0;
+    transform: none;
+    opacity: 1;
   }
 }
 

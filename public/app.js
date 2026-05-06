@@ -2360,8 +2360,7 @@ const initSingleShaderDeck = (section) => {
 
   const getPosScale = (card) => {
     if (!isShaderDeckMobile()) return 1;
-    const p = card.getAttribute('data-pos');
-    if (p === '1' || p === '2') return 0.6;
+    // Mobile now stacks cards; keep full resolution for every visible shader.
     return 1;
   };
 
@@ -2446,7 +2445,8 @@ const initSingleShaderDeck = (section) => {
     const topCard = getTopCard();
     return entries.find((e) => e.card === topCard) || null;
   };
-  const shouldAnimateAllVisible = () => !isShaderDeckMobile();
+  // Mobile now uses a vertical stack, so animate all visible cards like desktop.
+  const shouldAnimateAllVisible = () => true;
 
   const setActiveRenderCardClass = () => {
     if (!isShaderDeckMobile()) {
