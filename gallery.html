@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>mitte arts lab : gallery</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='none'/%3E%3Ccircle cx='8' cy='8' r='6.25' fill='none' stroke='%23603553' stroke-width='1'/%3E%3Ccircle cx='12' cy='8' r='1.5' fill='%2327251f'/%3E%3C/svg%3E" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%3E%3C%2Frect%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%226.25%22%20fill%3D%22none%22%20stroke%3D%22%23603553%22%20stroke-width%3D%221%22%3E%3C%2Fcircle%3E%3C%2Fsvg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -13,26 +13,25 @@
   <body class="gallery-mode">
     <header class="header chapter-header">
       <div class="mal-header-left">
-        <span class="mal-logo" aria-hidden="true">
-          <span class="mal-logo-ring"></span>
-          <span class="mal-logo-dot"></span>
-        </span>
+        <a class="mal-logo-home-link" href="./index.html" aria-label="Go to home">
+          <span class="mal-logo" data-mal-logo="left" aria-hidden="true"></span>
+        </a>
         <span>mitte arts lab</span>
       </div>
       <div class="mal-header-right">
-        <span class="mal-header-label">portfolio</span>
+        <span class="mal-header-label">soft media agent</span>
         <span class="mal-header-sep mal-header-sep-desktop" aria-hidden="true">·</span>
-        <a class="gallery-nav-link chapter-link mal-header-desktop-link" href="./index.html">home</a>
+        <a class="gallery-nav-link chapter-link mal-header-desktop-link" href="./gallery.html">portfolio</a>
         <span class="mal-header-sep mal-header-sep-desktop" aria-hidden="true">·</span>
         <a class="gallery-nav-link chapter-link mal-header-desktop-link" href="./landing.html">stoneface</a>
         <span class="mal-header-sep mal-header-sep-desktop" aria-hidden="true">·</span>
-        <a class="gallery-nav-link chapter-link mal-header-desktop-link" href="./second-life.html">second life</a>
+        <a class="gallery-nav-link chapter-link mal-header-desktop-link" href="./second-life.html">sloo</a>
         <details class="mal-mobile-menu">
           <summary aria-label="Open navigation menu">&#8942;</summary>
           <div class="mal-mobile-menu-panel">
-            <a class="gallery-nav-link chapter-link" href="./index.html">home</a>
+            <a class="gallery-nav-link chapter-link" href="./gallery.html">portfolio</a>
             <a class="gallery-nav-link chapter-link" href="./landing.html">stoneface</a>
-            <a class="gallery-nav-link chapter-link" href="./second-life.html">second life</a>
+            <a class="gallery-nav-link chapter-link" href="./second-life.html">sloo</a>
           </div>
         </details>
       </div>
@@ -40,21 +39,28 @@
     <main class="infiniteCanvasViewport" aria-label="Gallery page" tabindex="0">
       <section class="infiniteCanvasContainer" role="list" aria-label="Spread-out gallery">
         <figure class="mediaItem item-a" role="listitem">
-          <div class="mediaBlock tone-a" aria-hidden="true">
-            </div>
-          <figcaption class="attribution">zalando</figcaption>
+          <div class="mediaBlock tone-a logo-view-card" aria-hidden="true">
+            <span class="mal-logo" data-mal-logo="top"></span>
+          </div>
+          <figcaption class="attribution">logo — top</figcaption>
         </figure>
         <figure class="mediaItem item-b" role="listitem">
-          <div class="mediaBlock tone-b" aria-hidden="true"></div>
-          <figcaption class="attribution">blockfi</figcaption>
+          <div class="mediaBlock tone-b logo-view-card" aria-hidden="true">
+            <span class="mal-logo" data-mal-logo="bottom"></span>
+          </div>
+          <figcaption class="attribution">logo — bottom</figcaption>
         </figure>
         <figure class="mediaItem item-c" role="listitem">
-          <div class="mediaBlock tone-c" aria-hidden="true"></div>
-          <figcaption class="attribution">mezo</figcaption>
+          <div class="mediaBlock tone-c logo-view-card" aria-hidden="true">
+            <span class="mal-logo" data-mal-logo="left"></span>
+          </div>
+          <figcaption class="attribution">logo — left</figcaption>
         </figure>
         <figure class="mediaItem item-d" role="listitem">
-          <div class="mediaBlock tone-d" aria-hidden="true"></div>
-          <figcaption class="attribution">csign</figcaption>
+          <div class="mediaBlock tone-d logo-view-card" aria-hidden="true">
+            <span class="mal-logo" data-mal-logo="perspective"></span>
+          </div>
+          <figcaption class="attribution">logo — perspective</figcaption>
         </figure>
         <figure class="mediaItem item-e" role="listitem">
           <div class="mediaBlock tone-e" aria-hidden="true"></div>
@@ -108,6 +114,12 @@
       </section>
     </main>
 
+    <script type="module">
+      import { initMalLogos, setPageFavicon } from "./public/mal-logo.js";
+
+      initMalLogos();
+      setPageFavicon("left");
+    </script>
     <script type="module" src="./public/gallery-canvas.js"></script>
   </body>
 </html>

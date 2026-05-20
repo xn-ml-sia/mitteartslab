@@ -157,6 +157,13 @@ body,
   gap: 10px;
 }
 
+.mal-logo-home-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
 .mal-header-right {
   margin-left: auto;
   text-align: right;
@@ -193,38 +200,34 @@ body,
 
 .mal-logo {
   position: relative;
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   display: inline-block;
+  color: var(--rubin-dark-gray);
+  line-height: 0;
 }
 
-.mal-logo-ring {
-  position: absolute;
-  inset: 0;
-  border: 1px solid var(--rubin-dark-gray);
-  border-radius: 50%;
-  opacity: 0.8;
+
+.mal-logo svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.mal-logo-cap {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+  opacity: 0.84;
+}
+
+.mal-logo-cap-base,
+.mal-logo-cap-top-inner {
+  stroke: var(--rubin-gray);
 }
 
 .mal-logo-dot {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--rubin-slate);
-  left: 50%;
-  top: 50%;
-  transform-origin: -6px -6px;
-  animation: mal-orbit 2.4s linear infinite;
-}
-
-@keyframes mal-orbit {
-  from {
-    transform: rotate(0deg) translate(6px, 0);
-  }
-  to {
-    transform: rotate(360deg) translate(6px, 0);
-  }
+  fill: var(--rubin-slate);
 }
 
 .chapter-main {
@@ -795,6 +798,19 @@ body,
   display: block;
 }
 
+.logo-view-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(31, 30, 29, 0.15);
+}
+
+.logo-view-card .mal-logo {
+  width: 72px;
+  height: 72px;
+}
+
+
 .tone-a { background: #e2e2e2; }
 .tone-b { background: #d8d8d8; }
 .tone-c { background: #dfdfdf; }
@@ -1048,19 +1064,11 @@ body,
     transform var(--motion-slow) var(--motion-ease-standard) 80ms;
 }
 
-.mal-logo-dot {
-  animation-duration: 3s;
-}
-
 @media (prefers-reduced-motion: reduce) {
   html,
   body,
   .chapter-main {
     scroll-behavior: auto !important;
-  }
-
-  .mal-logo-dot {
-    animation: none !important;
   }
 
   .chapter-poem-section .column-1,

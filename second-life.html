@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Second Life, Inc — mitte arts lab</title>
+    <title>Sloo — mitte arts lab</title>
     <meta
       name="description"
       content="Digitize your personal items, give them a second life, and share the stories behind them."
     />
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='none'/%3E%3Ccircle cx='8' cy='8' r='6.25' fill='none' stroke='%23603553' stroke-width='1'/%3E%3Ccircle cx='12' cy='8' r='1.5' fill='%2327251f'/%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%3E%3C%2Frect%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%223.5%22%20fill%3D%22none%22%20stroke%3D%22%23603553%22%20stroke-width%3D%221%22%3E%3C%2Fcircle%3E%3C%2Fsvg%3E"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -26,12 +26,9 @@
       <header class="header chapter-header sl-header">
         <div class="mal-header-left">
           <a class="sl-logo-link" href="./index.html" aria-label="Second Life, Inc home">
-            <span class="sl-logo" aria-hidden="true">
-              <span class="sl-logo-frame"></span>
-              <span class="sl-logo-dot"></span>
-            </span>
+            <span class="mal-logo" data-mal-logo="perspective" aria-hidden="true"></span>
           </a>
-          <span class="sl-brand-name">Second Life, Inc</span>
+          <span class="sl-brand-name">Sloo</span>
         </div>
       </header>
 
@@ -39,10 +36,10 @@
         <section class="sl-hero" aria-labelledby="sl-hero-title">
           <div class="sl-wrap sl-hero-grid">
             <div class="sl-hero-copy">
-              <p class="sl-kicker">Second Life Natural Intelligent™</p>
+              <p class="sl-kicker">Sloo Natural Intelligent™</p>
               <h1 id="sl-hero-title">Digitize your personal items, give it a second life.</h1>
               <p class="sl-lead">
-                Second Life Natural Intelligent™️ help us reduce and give meanings to our everyday items. When it's time to say goodbye, you can share its stories with friends or a neighbor, or give it a second life with a new owner.
+                Sloo Natural Intelligent™️ help us reduce and give meanings to our everyday items. When it's time to say goodbye, you can share its stories with friends or a neighbor, or give it a second life with a new owner.
               </p>
               <div class="sl-actions">
                 <a
@@ -147,7 +144,7 @@
             <div class="sl-copy-block">
               <h2 id="sl-ownership-title">A simpler life needs clearer ownership</h2>
               <p>
-                Second Life Natural Intelligent™ helps you control what stays and what is ready to leave. The goal is
+                Sloo Natural Intelligent™ helps you control what stays and what is ready to leave. The goal is
                 not less for the sake of less — it is living with intention.
               </p>
               <ul class="sl-list">
@@ -226,7 +223,7 @@
             </figure>
             <blockquote class="sl-copy-block sl-pullquote" id="sl-quote-title">
               <p>
-                “Every object carries a map in its scars. Second Life helps you read it before the item moves on.”
+                “Every object carries a map in its scars. Sloo helps you read it before the item moves on.”
               </p>
               <footer>
                 <p class="sl-footer-link">Natural Intelligent™</p>
@@ -248,5 +245,11 @@
         </section>
       </main>
     </div>
+    <script type="module">
+      import { initMalLogos, setPageFavicon } from "./public/mal-logo.js";
+
+      initMalLogos();
+      setPageFavicon("perspective");
+    </script>
   </body>
 </html>
