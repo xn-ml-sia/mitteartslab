@@ -9,6 +9,8 @@ if (viewport && container && title && mediaItems.length > 0) {
   const IMG_SIZE_MOBILE = 600;
   const wheelSpeed = 1.5;
   const captionHeight = 28;
+  const minCardHeight = 420;
+  const maxCardHeight = 630;
   const minGap = 76;
   const jitter = 34;
   const maxPlacementAttempts = 1400;
@@ -115,13 +117,33 @@ if (viewport && container && title && mediaItems.length > 0) {
     };
   };
 
+  const parseMediaRatio = (raw) => {
+    if (!raw) return 1;
+    const parts = raw.split('/').map((part) => Number.parseFloat(part.trim()));
+    if (parts.length === 2 && Number.isFinite(parts[0]) && Number.isFinite(parts[1]) && parts[1] > 0) {
+      return parts[0] / parts[1];
+    }
+    const single = Number.parseFloat(raw);
+    return Number.isFinite(single) && single > 0 ? single : 1;
+  };
+
   const createSizeProfile = (i) => {
+    const ratioRaw = mediaItems[i]?.querySelector('.mediaBlock')?.style.getPropertyValue('--media-ratio');
+    const aspectRatio = parseMediaRatio(ratioRaw);
     const variants = state.isMobile
       ? [0.94, 0.97, 1, 1.03, 1.05, 0.96, 1.04]
       : [0.9, 0.95, 1, 1.05, 1.1, 0.92, 1.08];
     const s = variants[i % variants.length];
-    const w = Math.round(state.itemWidth * s);
-    const h = Math.round(state.itemHeight * s);
+    let w = Math.round(state.itemWidth * s);
+    let h = Math.round(w / aspectRatio);
+
+    if (h < minCardHeight) {
+      h = minCardHeight;
+      w = Math.round(h * aspectRatio);
+    } else if (h > maxCardHeight) {
+      h = maxCardHeight;
+      w = Math.round(h * aspectRatio);
+    }
     return { w, h, fullH: h + captionHeight };
   };
 

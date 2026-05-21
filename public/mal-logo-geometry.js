@@ -19,9 +19,9 @@ const ORBIT_CAP_BY_VIEW = {
 
 const ORBIT_ELLIPSE_SCALE_BY_VIEW = {
   top: { x: 1.0, y: 0.55 },
-  bottom: { x: 1.8, y: 0.95 },
+  bottom: { x: 1.8, y: 0.55 },
   left: { x: 1.18, y: 0.58 },
-  perspective: { x: 1.9, y: 0.8 },
+  perspective: { x: 1.9, y: 0.6 },
 };
 
 const ORBIT_PHASE_OFFSET_BY_VIEW = {
@@ -33,8 +33,8 @@ const ORBIT_PHASE_OFFSET_BY_VIEW = {
 
 const ORBIT_CENTER_OFFSET_BY_VIEW = {
   top: { x: -0.8, y: 0 },
-  bottom: { x: -0.8, y: 0 },
-  left: { x: 1.35, y: 0 },
+  bottom: { x: -0.8, y: 2.85 },
+  left: { x: 1.35, y: -3.8 },
   perspective: { x: 0, y: -0.8 },
 };
 

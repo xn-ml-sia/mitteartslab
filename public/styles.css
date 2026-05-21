@@ -762,8 +762,6 @@ body,
 .mediaItem {
   position: absolute;
   width: 25vw;
-  max-width: 420px;
-  min-width: 220px;
   overflow: hidden;
   border-radius: 2px;
   cursor: pointer;
@@ -781,21 +779,21 @@ body,
 }
 
 .mediaItem img {
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   user-select: none;
   pointer-events: none;
   -webkit-user-drag: none;
   -moz-user-select: none;
   width: 100%;
-  aspect-ratio: 1 / 1;
-  height: auto;
+  height: 100%;
 }
 
 .mediaBlock {
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: var(--media-ratio, 1 / 1);
   display: block;
+  overflow: hidden;
 }
 
 .logo-view-card {
@@ -874,7 +872,6 @@ body,
 
   .mediaItem {
     width: 30vw;
-    min-width: 180px;
   }
 
   .item-a { left: 8vw; top: 10vh; width: 28vw; }
