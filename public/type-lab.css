@@ -1,0 +1,185 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+body.typeLabPage {
+  font-family: "IBM Plex Mono", monospace;
+  background: #030303;
+  color: #d3d3d3;
+  overflow: hidden;
+}
+
+.typeLabLayout {
+  width: 100%;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) 1fr;
+}
+
+.typeLabSidebar {
+  height: 100vh;
+  padding: 20px 18px 28px;
+  border-right: 1px solid #1a1a1a;
+  background: linear-gradient(180deg, #0b0b0b 0%, #090909 100%);
+  overflow-y: auto;
+}
+
+.typeLabTitle {
+  margin: 0 0 18px;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #99a593;
+  font-weight: 500;
+}
+
+.controlSection {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #191919;
+}
+
+.controlSectionTitle {
+  margin: 0 0 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a8b6a1;
+}
+
+.controlLabel,
+.checkRow {
+  display: block;
+  font-size: 11px;
+  margin: 0 0 4px;
+  color: #adb2ab;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.controlInput {
+  width: 100%;
+  margin-bottom: 10px;
+  border: 1px solid #353535;
+  background: #0e0e0e;
+  color: #dce7cf;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 8px 9px;
+  outline: none;
+}
+
+.controlSelect {
+  width: 100%;
+  margin-bottom: 10px;
+  border: 1px solid #353535;
+  background: #0e0e0e;
+  color: #dce7cf;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 7px 9px;
+}
+
+.controlInput:focus {
+  border-color: #95f719;
+}
+
+.controlSlider {
+  width: 100%;
+  margin-bottom: 10px;
+  accent-color: #6cff0a;
+}
+
+.processButton {
+  width: 100%;
+  border: 1px solid #2c2c2c;
+  background: #121212;
+  color: #b9c4ab;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 9px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.processButton:hover {
+  border-color: #6cff0a;
+  color: #6cff0a;
+}
+
+.processStatus {
+  margin: 6px 0 0;
+  color: #7f8a77;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.typeLabStage {
+  position: relative;
+  padding: 12px;
+  background: #020202;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.stageHint {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  z-index: 2;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #5a6155;
+}
+
+.svgStage {
+  width: 100%;
+  min-height: calc(100vh - 24px);
+  background: #050505;
+  border: 1px solid #171717;
+}
+
+.svgStage svg {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 24px);
+}
+
+@media (max-width: 980px) {
+  .typeLabLayout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .typeLabSidebar {
+    height: 42vh;
+    border-right: none;
+    border-bottom: 1px solid #1a1a1a;
+  }
+
+  .svgStage,
+  .svgStage svg {
+    min-height: calc(58vh - 24px);
+    height: calc(58vh - 24px);
+  }
+}

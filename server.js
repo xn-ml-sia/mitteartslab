@@ -703,6 +703,11 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === '/type-lab' || pathname === '/type-lab.html') {
+    serveFile(res, path.join(ROOT, 'type-lab.html'));
+    return;
+  }
+
   if (pathname.startsWith('/public/')) {
     const filePath = path.join(PUBLIC_DIR, pathname.replace('/public/', ''));
     if (!filePath.startsWith(PUBLIC_DIR)) {

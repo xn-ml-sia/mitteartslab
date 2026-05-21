@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Type Line Fan Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./public/type-lab.css" />
+  </head>
+  <body class="typeLabPage">
+    <main class="typeLabLayout">
+      <aside class="typeLabSidebar" aria-label="Type lab controls">
+        <h1 class="typeLabTitle">Text Slice Transform</h1>
+
+        <section class="controlSection">
+          <h2 class="controlSectionTitle">Source</h2>
+          <label class="controlLabel" for="text-input">Text</label>
+          <input id="text-input" class="controlInput" type="text" value="JAZZ" maxlength="24" />
+          <label class="controlLabel" for="font-size-input">Font size</label>
+          <input id="font-size-input" class="controlSlider" type="range" min="120" max="580" step="1" value="380" />
+        </section>
+
+        <section class="controlSection">
+          <h2 class="controlSectionTitle">Slices</h2>
+          <label class="controlLabel" for="line-count-input">Lines</label>
+          <input id="line-count-input" class="controlSlider" type="range" min="24" max="400" step="1" value="120" />
+        </section>
+
+        <section class="controlSection">
+          <h2 class="controlSectionTitle">Process</h2>
+          <button id="bake-slices-button" class="processButton" type="button">Bake slices</button>
+          <button id="reset-from-text-button" class="processButton" type="button">Reset from text</button>
+          <p id="bake-status" class="processStatus">Mode: Live from text</p>
+        </section>
+
+        <section class="controlSection">
+          <h2 class="controlSectionTitle">Keyframes</h2>
+          <button id="set-start-keyframe-button" class="processButton" type="button">Set start</button>
+          <button id="set-end-keyframe-button" class="processButton" type="button">Set end</button>
+          <button id="play-keyframe-button" class="processButton" type="button">Play</button>
+          <label class="controlLabel" for="keyframe-duration-input">Duration (s)</label>
+          <input id="keyframe-duration-input" class="controlSlider" type="range" min="0.2" max="20" step="0.1" value="3.5" />
+          <label class="checkRow"><input id="keyframe-loop-input" type="checkbox" checked /> Loop</label>
+          <label class="checkRow"><input id="keyframe-pingpong-input" type="checkbox" checked /> Ping-pong</label>
+          <label class="controlLabel" for="keyframe-easing-select">Easing</label>
+          <select id="keyframe-easing-select" class="controlSelect">
+            <option value="linear">Linear</option>
+            <option value="easeInOutSine" selected>Ease In Out Sine</option>
+            <option value="easeInOutCubic">Ease In Out Cubic</option>
+            <option value="easeOutExpo">Ease Out Expo</option>
+          </select>
+          <p id="keyframe-status" class="processStatus">No keyframes yet</p>
+        </section>
+
+        <section class="controlSection">
+          <h2 class="controlSectionTitle">Fan Pivot</h2>
+          <label class="controlLabel" for="pivot-x-input">Pivot X (%)</label>
+          <input id="pivot-x-input" class="controlSlider" type="range" min="-50" max="150" step="0.1" value="10" />
+          <label class="controlLabel" for="pivot-y-input">Pivot Y (%)</label>
+          <input id="pivot-y-input" class="controlSlider" type="range" min="-50" max="150" step="0.1" value="6" />
+          <label class="controlLabel" for="pivot-rotation-input">Pivot rotation (deg)</label>
+          <input id="pivot-rotation-input" class="controlSlider" type="range" min="-180" max="180" step="0.1" value="0" />
+          <label class="controlLabel" for="fan-angle-input">Fan angle (deg)</label>
+          <input id="fan-angle-input" class="controlSlider" type="range" min="-180" max="180" step="0.1" value="180" />
+          <label class="controlLabel" for="collapse-zero-input">Collapse zero (deg)</label>
+          <input id="collapse-zero-input" class="controlSlider" type="range" min="-180" max="180" step="0.1" value="0" />
+          <label class="controlLabel" for="collapse-thickness-input">Collapse thickness</label>
+          <input id="collapse-thickness-input" class="controlSlider" type="range" min="0" max="60" step="0.1" value="6" />
+          <label class="controlLabel" for="fan-curve-input">Fan curve</label>
+          <input id="fan-curve-input" class="controlSlider" type="range" min="0.01" max="20" step="0.01" value="1.8" />
+          <label class="controlLabel" for="radius-gain-input">Radius gain</label>
+          <input id="radius-gain-input" class="controlSlider" type="range" min="0" max="8" step="0.05" value="1.4" />
+        </section>
+
+        <section class="controlSection">
+          <h2 class="controlSectionTitle">Stroke</h2>
+          <label class="controlLabel" for="stroke-min-input">Min</label>
+          <input id="stroke-min-input" class="controlSlider" type="range" min="0.2" max="6" step="0.1" value="0.8" />
+          <label class="controlLabel" for="stroke-max-input">Max</label>
+          <input id="stroke-max-input" class="controlSlider" type="range" min="0.4" max="12" step="0.1" value="5.2" />
+          <label class="controlLabel" for="stroke-threshold-input">Threshold</label>
+          <input id="stroke-threshold-input" class="controlSlider" type="range" min="0" max="4" step="0.05" value="0" />
+          <label class="controlLabel" for="line-size-variance-input">Line size variance</label>
+          <input id="line-size-variance-input" class="controlSlider" type="range" min="0" max="1" step="0.01" value="0.3" />
+        </section>
+      </aside>
+
+      <section class="typeLabStage">
+        <div class="stageHint">Drag Pivot handle. Fan opens from that point.</div>
+        <div id="svg-stage" class="svgStage" aria-live="polite"></div>
+      </section>
+    </main>
+    <script type="module" src="./public/type-lab.js"></script>
+  </body>
+</html>
