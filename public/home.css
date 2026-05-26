@@ -1,0 +1,230 @@
+.home-mode {
+  margin: 0;
+  min-height: 100%;
+  overflow-y: auto;
+}
+
+.home-mode-root {
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.home-mode::-webkit-scrollbar,
+.home-mode-root::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.home-page {
+  position: relative;
+}
+
+.home-hero {
+  position: fixed;
+  inset: 0;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.home-rock-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.home-brand {
+  position: absolute;
+  top: clamp(10px, 1.2vw, 22px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.home-brand-name {
+  color: rgba(0, 0, 0, 0.9);
+  font-family: "IBM Plex Mono", "Courier Prime", monospace;
+  font-size: clamp(12px, 1vw, 16px);
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+}
+
+.home-brand .mal-logo {
+  width: 34px;
+  height: 34px;
+}
+
+.home-quadrant-nav {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  width: 100%;
+  height: 100%;
+}
+
+.home-quadrant {
+  position: relative;
+  padding: clamp(18px, 2.2vw, 36px);
+  display: flex;
+}
+
+.home-quadrant-meet,
+.home-quadrant-work {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.home-quadrant-tools,
+.home-quadrant-products {
+  justify-content: flex-start;
+  align-items: flex-end;
+}
+
+.home-quadrant-work,
+.home-quadrant-products {
+  justify-content: flex-end;
+}
+
+.home-quadrant-work {
+  align-items: flex-end;
+}
+
+.home-quadrant-products {
+  align-items: flex-start;
+  text-align: right;
+}
+
+.home-nav-link {
+  color: rgba(0, 0, 0, 0.9);
+  font-family: "IBM Plex Mono", "Courier Prime", monospace;
+  font-size: clamp(12px, 1vw, 16px);
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-decoration: none;
+  text-transform: uppercase;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.22));
+  background-repeat: no-repeat;
+  background-size: 0% 0.72em;
+  background-position: 0 88%;
+  transition: background-size 150ms ease;
+}
+
+.home-nav-link:hover,
+.home-nav-link:focus-visible {
+  background-size: 100% 0.72em;
+}
+
+.home-menu {
+  flex-direction: column;
+}
+
+.home-quadrant-tools.home-menu {
+  justify-content: flex-end;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.home-quadrant-products.home-menu {
+  justify-content: flex-start;
+  align-items: flex-end;
+}
+
+.home-menu-trigger {
+  display: inline-block;
+  background-image: none;
+  background-size: 0 0;
+  transition: none;
+}
+
+.home-menu-trigger:hover,
+.home-menu-trigger:focus-visible {
+  background-size: 0 0;
+}
+
+.home-link-text {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.22));
+  background-repeat: no-repeat;
+  background-size: 0% 0.72em;
+  background-position: 0 88%;
+  transition: background-size 150ms ease;
+}
+
+.home-menu-trigger:hover .home-link-text,
+.home-menu-trigger:focus-visible .home-link-text {
+  background-size: 100% 0.72em;
+}
+
+.home-submenu {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.home-quadrant-tools .home-menu-trigger {
+  order: 2;
+}
+
+.home-quadrant-tools .home-submenu {
+  order: 1;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.home-submenu-link {
+  color: rgba(0, 0, 0, 0.9);
+  font-family: "IBM Plex Mono", "Courier Prime", monospace;
+  font-size: clamp(12px, 1vw, 16px);
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  text-decoration: none;
+  white-space: nowrap;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.22));
+  background-repeat: no-repeat;
+  background-size: 0% 0.72em;
+  background-position: 0 88%;
+  transition: background-size 150ms ease;
+}
+
+.home-submenu-link:hover,
+.home-submenu-link:focus-visible {
+  background-size: 100% 0.72em;
+}
+
+.home-menu.is-open .home-submenu {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.home-scroll-runway {
+  position: relative;
+  z-index: 1;
+  min-height: 320vh;
+  pointer-events: none;
+}
+
+@media (max-width: 1024px) {
+  .home-nav-link {
+    font-size: clamp(16px, 3.2vw, 26px);
+  }
+
+  .home-submenu-link {
+    font-size: clamp(12px, 2.3vw, 15px);
+  }
+
+  .home-submenu {
+    gap: 10px;
+  }
+}

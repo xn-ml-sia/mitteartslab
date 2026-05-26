@@ -1,4 +1,5 @@
 import { SHADER_SOURCES } from './shader-deck-shaders.js';
+import { createShaderToyRunner as createSharedShaderToyRunner } from './shader-runner.js';
 
 /** ESM build for chapter 2 particle vessel (vanilla port of EmptyParticles). */
 const THREE_CDN_MODULE = 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
@@ -2320,7 +2321,7 @@ const initSingleShaderDeck = (section) => {
       let body = key ? SHADER_SOURCES[key] : null;
       if (key === 'ldyXRw') body = CRATER_DOME_SHADER;
       if (!canvas || !body) return null;
-      const runner = createShaderToyRunner(canvas, body);
+      const runner = createSharedShaderToyRunner(canvas, body);
       if (!runner) return null;
       return { card, canvas, key, runner, lastDrawMs: 0 };
     })

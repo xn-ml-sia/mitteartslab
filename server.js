@@ -693,6 +693,21 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === '/about' || pathname === '/about.html') {
+    serveFile(res, path.join(ROOT, 'about.html'));
+    return;
+  }
+
+  if (pathname === '/gallery' || pathname === '/gallery.html') {
+    serveFile(res, path.join(ROOT, 'gallery.html'));
+    return;
+  }
+
+  if (pathname === '/landing' || pathname === '/landing.html') {
+    serveFile(res, path.join(ROOT, 'landing.html'));
+    return;
+  }
+
   if (pathname === '/phase1.html') {
     serveFile(res, path.join(ROOT, 'phase1.html'));
     return;
