@@ -48,6 +48,14 @@ body.typeLabPage {
   border-bottom: 1px solid #191919;
 }
 
+body:not(.is-expert):not(.is-alt-held) .controlSection[data-tier='expert'] {
+  display: none;
+}
+
+body:not(.is-expert):not(.is-alt-held) .expertOnly {
+  display: none;
+}
+
 .controlSectionTitle {
   margin: 0 0 10px;
   font-size: 11px;
@@ -104,6 +112,30 @@ body.typeLabPage {
   width: 100%;
   margin-bottom: 10px;
   accent-color: #6cff0a;
+}
+
+.modeGroup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.modeButton {
+  border: 1px solid #2c2c2c;
+  background: #121212;
+  color: #9faa94;
+  font-family: inherit;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 9px;
+  cursor: pointer;
+}
+
+.modeButton.is-active {
+  border-color: #6cff0a;
+  color: #6cff0a;
+  background: #101a08;
 }
 
 .processButton {
@@ -163,6 +195,64 @@ body.typeLabPage {
   display: block;
   width: 100%;
   height: calc(100vh - 24px);
+}
+
+.typeLabPalette {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 20;
+  padding-top: 12vh;
+}
+
+.typeLabPalette.is-open {
+  display: flex;
+}
+
+.typeLabPalettePanel {
+  width: min(560px, calc(100vw - 32px));
+  border: 1px solid #2f2f2f;
+  background: #0d0d0d;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+
+.typeLabPaletteInput {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #1f1f1f;
+  background: #101010;
+  color: #dce7cf;
+  font-family: inherit;
+  font-size: 13px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.typeLabPaletteList {
+  max-height: 320px;
+  overflow: auto;
+}
+
+.typeLabPaletteItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-bottom: 1px solid #1a1a1a;
+  background: #0d0d0d;
+  color: #bdc8b0;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.typeLabPaletteItem:hover {
+  color: #6cff0a;
+  background: #11180c;
 }
 
 @media (max-width: 980px) {

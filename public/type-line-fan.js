@@ -9,6 +9,14 @@ function lerp(a, b, t) {
   return a + (b - a) * t;
 }
 
+function easeByName(name, t) {
+  const x = clamp(t, 0, 1);
+  if (name === 'easeInOutSine') return 0.5 - 0.5 * Math.cos(Math.PI * x);
+  if (name === 'easeInOutCubic') return x < 0.5 ? 4 * x * x * x : 1 - ((-2 * x + 2) ** 3) / 2;
+  if (name === 'easeOutExpo') return x === 1 ? 1 : 1 - 2 ** (-10 * x);
+  return x;
+}
+
 function rotatePoint(x, y, angle) {
   const c = Math.cos(angle);
   const s = Math.sin(angle);
@@ -34,6 +42,32 @@ function lerpColor(a, b, t) {
 
 function formatLine(segment) {
   return `<line x1="${segment.x1.toFixed(2)}" y1="${segment.y1.toFixed(2)}" x2="${segment.x2.toFixed(2)}" y2="${segment.y2.toFixed(2)}" stroke="${segment.color}" stroke-width="${segment.stroke.toFixed(2)}" stroke-linecap="round" />`;
+}
+
+function cubicPoint(p0, p1, p2, p3, t) {
+  const omt = 1 - t;
+  const omt2 = omt * omt;
+  const t2 = t * t;
+  const b0 = omt2 * omt;
+  const b1 = 3 * omt2 * t;
+  const b2 = 3 * omt * t2;
+  const b3 = t2 * t;
+  return {
+    x: b0 * p0.x + b1 * p1.x + b2 * p2.x + b3 * p3.x,
+    y: b0 * p0.y + b1 * p1.y + b2 * p2.y + b3 * p3.y,
+  };
+}
+
+function cubicTangent(p0, p1, p2, p3, t) {
+  const omt = 1 - t;
+  const d0 = -3 * omt * omt;
+  const d1 = 3 * omt * omt - 6 * omt * t;
+  const d2 = 6 * omt * t - 3 * t * t;
+  const d3 = 3 * t * t;
+  const x = d0 * p0.x + d1 * p1.x + d2 * p2.x + d3 * p3.x;
+  const y = d0 * p0.y + d1 * p1.y + d2 * p2.y + d3 * p3.y;
+  const len = Math.hypot(x, y) || 1;
+  return { x: x / len, y: y / len };
 }
 
 export function createTypeLineFan() {
@@ -126,6 +160,93 @@ export function createTypeLineFan() {
     };
   }
 
+  function buildPathSegments(pathPoints, smoothness) {
+    const points = Array.isArray(pathPoints) ? pathPoints : [];
+    if (points.length < 2) return [];
+    const s = clamp(smoothness ?? 1, 0, 2);
+    const segments = [];
+    for (let i = 0; i < points.length - 1; i += 1) {
+      const p0 = points[Math.max(0, i - 1)];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[Math.min(points.length - 1, i + 2)];
+      const c1 = {
+        x: p1.x + ((p2.x - p0.x) * s) / 6,
+        y: p1.y + ((p2.y - p0.y) * s) / 6,
+      };
+      const c2 = {
+        x: p2.x - ((p3.x - p1.x) * s) / 6,
+        y: p2.y - ((p3.y - p1.y) * s) / 6,
+      };
+      segments.push({ p0: p1, p1: c1, p2: c2, p3: p2 });
+    }
+    return segments;
+  }
+
+  function buildPathSampler(pathPoints, rawOptions = {}) {
+    const options = {
+      smoothness: rawOptions.smoothness ?? 1,
+      samplesPerSegment: clamp(Math.round(rawOptions.samplesPerSegment ?? 72), 8, 200),
+    };
+    const segments = buildPathSegments(pathPoints, options.smoothness);
+    if (!segments.length) return null;
+    const samples = [];
+    let totalLen = 0;
+    let prev = null;
+    for (let i = 0; i < segments.length; i += 1) {
+      const seg = segments[i];
+      const steps = options.samplesPerSegment;
+      const startJ = i === 0 ? 0 : 1;
+      for (let j = startJ; j <= steps; j += 1) {
+        const t = j / steps;
+        const point = cubicPoint(seg.p0, seg.p1, seg.p2, seg.p3, t);
+        const tangent = cubicTangent(seg.p0, seg.p1, seg.p2, seg.p3, t);
+        if (prev) totalLen += Math.hypot(point.x - prev.x, point.y - prev.y);
+        samples.push({ x: point.x, y: point.y, tx: tangent.x, ty: tangent.y, len: totalLen });
+        prev = point;
+      }
+    }
+    const safeTotal = totalLen || 1;
+    function sampleAt(u) {
+      const wrapped = ((u % 1) + 1) % 1;
+      const target = wrapped * safeTotal;
+      let lo = 0;
+      let hi = samples.length - 1;
+      while (lo < hi) {
+        const mid = Math.floor((lo + hi) / 2);
+        if (samples[mid].len < target) lo = mid + 1;
+        else hi = mid;
+      }
+      const b = samples[clamp(lo, 0, samples.length - 1)];
+      const a = samples[Math.max(0, lo - 1)];
+      const span = Math.max(1e-6, b.len - a.len);
+      const k = clamp((target - a.len) / span, 0, 1);
+      return {
+        x: lerp(a.x, b.x, k),
+        y: lerp(a.y, b.y, k),
+        tx: lerp(a.tx, b.tx, k),
+        ty: lerp(a.ty, b.ty, k),
+      };
+    }
+    return {
+      getPointAt(u) {
+        const s = sampleAt(u);
+        return { x: s.x, y: s.y };
+      },
+      getTangentAt(u) {
+        const s = sampleAt(u);
+        const len = Math.hypot(s.tx, s.ty) || 1;
+        return { x: s.tx / len, y: s.ty / len };
+      },
+      getSampleAt(u) {
+        const s = sampleAt(u);
+        const len = Math.hypot(s.tx, s.ty) || 1;
+        return { x: s.x, y: s.y, tx: s.tx / len, ty: s.ty / len };
+      },
+      segments,
+    };
+  }
+
   function transformSliceModel(model, rawParams) {
     if (!model) return [];
     const params = {
@@ -181,6 +302,51 @@ export function createTypeLineFan() {
       }
     }
 
+    return transformed;
+  }
+
+  function transformSliceModelAlongPath(model, rawParams) {
+    if (!model) return [];
+    const params = {
+      pathPoints: Array.isArray(rawParams.pathPoints) ? rawParams.pathPoints : [],
+      pathSpan: rawParams.pathSpan ?? 1,
+      pathOffset: rawParams.pathOffset ?? 0,
+      pathStagger: rawParams.pathStagger ?? 0,
+      pathEasing: rawParams.pathEasing || 'linear',
+      followTangent: rawParams.followTangent ?? true,
+      tangentStrength: rawParams.tangentStrength ?? 1,
+      pathSmoothness: rawParams.pathSmoothness ?? 1,
+    };
+    const sampler = buildPathSampler(params.pathPoints, { smoothness: params.pathSmoothness });
+    if (!sampler) return transformSliceModel(model, rawParams);
+
+    const transformed = [];
+    const baseX = model.bbox.x;
+    const count = model.lineCount;
+    for (let i = 0; i < count; i += 1) {
+      const rawT = count <= 1 ? 0 : i / (count - 1);
+      const t = easeByName(params.pathEasing, rawT);
+      const u = params.pathOffset + t * params.pathSpan + rawT * params.pathStagger;
+      const sample = sampler.getSampleAt(u);
+      const tangentAngle = Math.atan2(sample.ty, sample.tx) * clamp(params.tangentStrength, 0, 1);
+      const row = model.rows[i];
+      const baseY = model.rowY[i];
+      for (let j = 0; j < row.length; j += 1) {
+        const seg = row[j];
+        const aLocal = { x: seg.x1 - baseX, y: seg.y1 - baseY };
+        const bLocal = { x: seg.x2 - baseX, y: seg.y2 - baseY };
+        const a = params.followTangent ? rotatePoint(aLocal.x, aLocal.y, tangentAngle) : aLocal;
+        const b = params.followTangent ? rotatePoint(bLocal.x, bLocal.y, tangentAngle) : bLocal;
+        transformed.push({
+          x1: sample.x + a.x,
+          y1: sample.y + a.y,
+          x2: sample.x + b.x,
+          y2: sample.y + b.y,
+          stroke: seg.stroke,
+          color: seg.color,
+        });
+      }
+    }
     return transformed;
   }
 
@@ -247,8 +413,15 @@ export function createTypeLineFan() {
 
     transformSliceModel,
 
+    transformSliceModelAlongPath,
+
+    buildPathSampler,
+
     render(rawParams) {
       const model = createSliceModel(rawParams);
+      if (Array.isArray(rawParams.pathPoints) && rawParams.pathPoints.length >= 2) {
+        return transformSliceModelAlongPath(model, rawParams);
+      }
       return transformSliceModel(model, rawParams);
     },
 

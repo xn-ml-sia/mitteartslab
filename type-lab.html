@@ -29,6 +29,14 @@
         </section>
 
         <section class="controlSection">
+          <h2 class="controlSectionTitle">Transform mode</h2>
+          <div class="modeGroup">
+            <button id="mode-pivot-button" class="modeButton is-active" type="button">Pivot</button>
+            <button id="mode-path-button" class="modeButton" type="button">Path</button>
+          </div>
+        </section>
+
+        <section class="controlSection">
           <h2 class="controlSectionTitle">Process</h2>
           <button id="bake-slices-button" class="processButton" type="button">Bake slices</button>
           <button id="reset-from-text-button" class="processButton" type="button">Reset from text</button>
@@ -75,6 +83,38 @@
         </section>
 
         <section class="controlSection">
+          <h2 class="controlSectionTitle">Path Mode</h2>
+          <label class="checkRow"><input id="path-edit-input" type="checkbox" /> Path edit</label>
+          <label class="checkRow"><input id="path-animate-input" type="checkbox" /> Animate path</label>
+          <label class="controlLabel" for="path-animate-speed-input">Path speed</label>
+          <input id="path-animate-speed-input" class="controlSlider" type="range" min="-2" max="2" step="0.01" value="0.15" />
+          <label class="checkRow"><input id="path-animate-pingpong-input" type="checkbox" checked /> Path ping-pong</label>
+          <button id="path-clear-button" class="processButton" type="button">Clear path</button>
+          <label class="controlLabel" for="path-span-input">Path span</label>
+          <input id="path-span-input" class="controlSlider" type="range" min="0.1" max="2" step="0.01" value="1" />
+          <label class="controlLabel" for="path-offset-input">Path offset</label>
+          <input id="path-offset-input" class="controlSlider" type="range" min="-1" max="1" step="0.01" value="0" />
+          <label class="controlLabel" for="path-stagger-input">Stagger</label>
+          <input id="path-stagger-input" class="controlSlider" type="range" min="-1" max="1" step="0.01" value="0.08" />
+          <label class="controlLabel" for="path-easing-select">Path easing</label>
+          <select id="path-easing-select" class="controlSelect">
+            <option value="linear">Linear</option>
+            <option value="easeInOutSine" selected>Ease In Out Sine</option>
+            <option value="easeInOutCubic">Ease In Out Cubic</option>
+            <option value="easeOutExpo">Ease Out Expo</option>
+          </select>
+          <label class="checkRow"><input id="follow-tangent-input" type="checkbox" checked /> Follow tangent</label>
+          <label class="controlLabel" for="tangent-strength-input">Tangent strength</label>
+          <input id="tangent-strength-input" class="controlSlider" type="range" min="0" max="1" step="0.01" value="1" />
+          <label class="controlLabel expertOnly" for="path-smoothness-input">Path smoothness</label>
+          <input id="path-smoothness-input" class="controlSlider expertOnly" type="range" min="0" max="2" step="0.01" value="1" />
+          <label class="controlLabel expertOnly" for="skew-x-input">Skew X</label>
+          <input id="skew-x-input" class="controlSlider expertOnly" type="range" min="-200" max="200" step="0.1" value="0" />
+          <label class="controlLabel expertOnly" for="skew-y-input">Skew Y</label>
+          <input id="skew-y-input" class="controlSlider expertOnly" type="range" min="-200" max="200" step="0.1" value="0" />
+        </section>
+
+        <section class="controlSection">
           <h2 class="controlSectionTitle">Stroke</h2>
           <label class="controlLabel" for="stroke-min-input">Min</label>
           <input id="stroke-min-input" class="controlSlider" type="range" min="0.2" max="6" step="0.1" value="0.8" />
@@ -88,7 +128,7 @@
       </aside>
 
       <section class="typeLabStage">
-        <div class="stageHint">Drag Pivot handle. Fan opens from that point.</div>
+        <div class="stageHint">Pivot mode: drag pivot. Path mode: enable path edit and click to add points.</div>
         <div id="svg-stage" class="svgStage" aria-live="polite"></div>
       </section>
     </main>

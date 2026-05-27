@@ -4,6 +4,7 @@
   "private": true,
   "description": "Phase 1 prototype for Generative Rock",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test:type-lab": "node scripts/type-lab-smoke-test.mjs"
   }
 }
