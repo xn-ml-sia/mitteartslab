@@ -138,12 +138,6 @@ body,
   margin: 0 auto;
 }
 
-body.gallery-mode .galleryPage {
-  max-width: none;
-  margin: 0;
-  width: 100%;
-}
-
 .chapter-header {
   border-bottom: none;
   box-shadow: none;
@@ -732,12 +726,19 @@ body.gallery-mode .galleryPage {
 /* Gallery page layout (reference-inspired infinite canvas) */
 body.gallery-mode {
   background: #fff;
+  overflow: hidden;
+}
+
+body.gallery-mode .galleryPage {
+  height: auto;
+  min-height: 0;
+  display: block;
 }
 
 .infiniteCanvasViewport {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: calc(100vh - 60px);
   overflow: hidden;
   cursor: pointer;
   background-color: #fff;

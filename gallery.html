@@ -11,32 +11,31 @@
     <link rel="stylesheet" href="./public/styles.css" />
   </head>
   <body class="gallery-mode">
-    <div class="galleryPage">
-    <header class="header chapter-header">
-      <div class="mal-header-left">
-        <a class="mal-logo-home-link" href="./index.html" aria-label="Go to home">
+    <div class="galleryPage chapter-page">
+      <header class="header chapter-header">
+        <div class="mal-header-left">
           <span class="mal-logo" data-mal-logo="left" aria-hidden="true"></span>
-        </a>
-        <span>mitte arts lab</span>
-      </div>
-      <div class="mal-header-right">
-        <span class="mal-header-label">work</span>
-        <span class="mal-header-sep mal-header-sep-desktop" aria-hidden="true">·</span>
-        <a class="gallery-nav-link chapter-link mal-header-desktop-link" href="./about.html">meet mal</a>
-        <span class="mal-header-sep mal-header-sep-desktop" aria-hidden="true">·</span>
-        <a class="gallery-nav-link chapter-link mal-header-desktop-link" href="./index.html">products</a>
-        <span class="mal-header-sep mal-header-sep-desktop" aria-hidden="true">·</span>
-        <a class="gallery-nav-link chapter-link mal-header-desktop-link" href="./index.html">open tools</a>
-        <details class="mal-mobile-menu">
-          <summary aria-label="Open navigation menu">&#8942;</summary>
-          <div class="mal-mobile-menu-panel">
-            <a class="gallery-nav-link chapter-link" href="./about.html">meet mal</a>
-            <a class="gallery-nav-link chapter-link" href="./index.html">products</a>
-            <a class="gallery-nav-link chapter-link" href="./index.html">open tools</a>
-          </div>
-        </details>
-      </div>
-    </header>
+          <span>mitte arts lab</span>
+        </div>
+        <div class="mal-header-right">
+          <span class="mal-header-label">work</span>
+          <span class="mal-header-sep mal-header-sep-desktop" aria-hidden="true">·</span>
+          <a class="gallery-nav-link chapter-link mal-header-desktop-link" href="./about.html">meet mal</a>
+          <span class="mal-header-sep mal-header-sep-desktop" aria-hidden="true">·</span>
+          <a class="gallery-nav-link chapter-link mal-header-desktop-link" href="./index.html">products</a>
+          <span class="mal-header-sep mal-header-sep-desktop" aria-hidden="true">·</span>
+          <a class="gallery-nav-link chapter-link mal-header-desktop-link" href="./index.html">open tools</a>
+          <details class="mal-mobile-menu">
+            <summary aria-label="Open navigation menu">&#8942;</summary>
+            <div class="mal-mobile-menu-panel">
+              <a class="gallery-nav-link chapter-link" href="./about.html">meet mal</a>
+              <a class="gallery-nav-link chapter-link" href="./index.html">products</a>
+              <a class="gallery-nav-link chapter-link" href="./index.html">open tools</a>
+            </div>
+          </details>
+        </div>
+      </header>
+    </div>
     <main class="infiniteCanvasViewport" aria-label="Gallery page" tabindex="0">
       <section class="infiniteCanvasContainer" role="list" aria-label="Spread-out gallery">
         <figure class="mediaItem item-a" role="listitem">
@@ -225,7 +224,6 @@
         <h1 id="gallery-title">gallery <br>& clients</h1>
       </section>
     </main>
-    </div>
 
     <script type="module">
       import { initMalLogos, setPageFavicon } from "./public/mal-logo.js";
