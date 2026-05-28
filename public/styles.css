@@ -854,6 +854,20 @@ body.gallery-mode .galleryPage {
   letter-spacing: 0.08em;
 }
 
+body.gallery-mode .mediaItem .attribution {
+  display: none;
+}
+
+body.gallery-mode .mediaItem--layout-spacer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.gallery-mode .attribution--rich {
+  gap: 2px;
+  line-height: 1.35;
+}
+
 .attribution--rich {
   display: flex;
   flex-direction: column;
@@ -873,6 +887,93 @@ body.gallery-mode .galleryPage {
   display: block;
   font-size: 11px;
   font-weight: 400;
+}
+
+.attribution:empty {
+  display: none;
+  margin: 0;
+}
+
+.gallery-cluster-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.gallery-cluster-label {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  font-family: var(--font-family-code) !important;
+  font-size: var(--gallery-label-font-size, 12px);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: var(--gallery-label-line-height, 1.4);
+  color: var(--text-color);
+}
+
+.gallery-cluster-label-title {
+  display: block;
+  font: inherit;
+  color: inherit;
+  text-transform: none;
+}
+
+.gallery-cluster-label-desc {
+  display: block;
+  font: inherit;
+  color: inherit;
+  text-transform: none;
+}
+
+.gallery-float-logos {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.gallery-float-logo {
+  position: absolute;
+  display: block;
+  opacity: 1;
+  animation: gallery-float-drift 12s ease-in-out infinite;
+}
+
+.gallery-float-logo:nth-child(2) {
+  animation-delay: -4s;
+  animation-duration: 16s;
+}
+
+.gallery-float-logo:nth-child(3) {
+  animation-delay: -8s;
+  animation-duration: 18s;
+}
+
+.gallery-float-logo:nth-child(4) {
+  animation-delay: -11s;
+  animation-duration: 15s;
+}
+
+@keyframes gallery-float-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(3px, -4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-float-logo {
+    animation: none;
+  }
 }
 
 .title {
