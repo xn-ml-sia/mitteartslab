@@ -16,9 +16,9 @@ if (canvas) {
     const effectActive = state.isEffectActive(nowMs, prefersReducedMotion);
     const effectElapsedSec = state.getEffectElapsedSec(nowMs, prefersReducedMotion);
     return {
-      tSec: state.getRenderTimeSec(prefersReducedMotion),
+      tSec: state.getRenderTimeSec(nowMs, prefersReducedMotion),
       mouse: [0, 0, 0, effectActive ? 1 + effectElapsedSec : 0],
-      continuous: effectActive,
+      continuous: !prefersReducedMotion || effectActive,
     };
   });
 

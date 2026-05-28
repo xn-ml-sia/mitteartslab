@@ -2,6 +2,7 @@ export class HomeState {
   constructor(config) {
     this.config = config;
     this.scrollRot = window.scrollY * this.config.scrollRotationScale;
+    this.autoStartMs = performance.now();
     this.lastScrollY = window.scrollY;
     this.isScrollLooping = false;
     this.effectStartMs = 0;
@@ -66,13 +67,16 @@ export class HomeState {
     return (nowMs - this.effectStartMs) / 1000;
   }
 
-  getRenderTimeSec(prefersReducedMotion) {
-    return prefersReducedMotion ? 0 : this.scrollRot;
+  getRenderTimeSec(nowMs, prefersReducedMotion) {
+    if (prefersReducedMotion) return 0;
+    const autoElapsedSec = Math.max(0, (nowMs - this.autoStartMs) / 1000);
+    return this.scrollRot + autoElapsedSec * this.config.autoRotationSpeed;
   }
 
   restart() {
     this.lastScrollY = window.scrollY;
     this.scrollRot = 0;
+    this.autoStartMs = performance.now();
     this.effectStartMs = 0;
     this.effectUntilMs = 0;
     this.lastTriggerIndex = 0;
