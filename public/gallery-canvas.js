@@ -9,6 +9,15 @@ if (viewport && container && title && mediaItems.length > 0) {
   const IMG_SIZE_MOBILE = 600;
   const wheelSpeed = 1.5;
   const captionHeight = 28;
+  const richCaptionHeight = 104;
+  const richCaptionHeightMobile = 120;
+
+  const getCaptionHeightForItem = (item) => {
+    if (item?.querySelector('.attribution--rich')) {
+      return state.isMobile ? richCaptionHeightMobile : richCaptionHeight;
+    }
+    return captionHeight;
+  };
   const minCardHeight = 420;
   const maxCardHeight = 630;
   const minGap = 76;
@@ -144,7 +153,8 @@ if (viewport && container && title && mediaItems.length > 0) {
       h = maxCardHeight;
       w = Math.round(h * aspectRatio);
     }
-    return { w, h, fullH: h + captionHeight };
+    const capH = getCaptionHeightForItem(mediaItems[i]);
+    return { w, h, fullH: h + capH };
   };
 
   const placeByRules = () => {

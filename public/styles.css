@@ -138,6 +138,12 @@ body,
   margin: 0 auto;
 }
 
+body.gallery-mode .galleryPage {
+  max-width: none;
+  margin: 0;
+  width: 100%;
+}
+
 .chapter-header {
   border-bottom: none;
   box-shadow: none;
@@ -724,15 +730,23 @@ body,
 }
 
 /* Gallery page layout (reference-inspired infinite canvas) */
+body.gallery-mode {
+  background: #fff;
+}
+
 .infiniteCanvasViewport {
   position: relative;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
   overflow: hidden;
   cursor: pointer;
-  background-color: var(--rubin-ivory-med);
+  background-color: #fff;
   user-select: none;
   touch-action: none;
+}
+
+.infiniteCanvasViewport .mediaBlock {
+  background: #fff;
 }
 
 .infiniteCanvasContainer {
@@ -826,6 +840,10 @@ body,
 .tone-o { background: #d3d3d3; }
 .tone-p { background: #e4e4e4; }
 
+.mediaBlock.logo-view-card {
+  background: #fff;
+}
+
 .attribution {
   margin: 8px 0 0 0;
   font-size: 12px;
@@ -833,6 +851,27 @@ body,
   color: var(--text-color);
   font-weight: 400;
   letter-spacing: 0.08em;
+}
+
+.attribution--rich {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+.gallery-caption-title {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.gallery-caption-desc {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
 }
 
 .title {
