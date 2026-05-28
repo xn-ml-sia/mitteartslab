@@ -66,11 +66,17 @@ if (viewport && container && title && mediaItems.length > 0) {
 
   const ease = (t) => 1 - Math.pow(1 - t, 3);
 
+  const getViewSize = () => ({
+    w: viewport.clientWidth || window.innerWidth,
+    h: viewport.clientHeight || window.innerHeight,
+  });
+
   const applyBounds = (x, y) => {
+    const { w: viewW, h: viewH } = getViewSize();
     const maxX = 0;
     const maxY = 0;
-    const minX = Math.min(window.innerWidth - state.canvasWidth * state.zoom, 0);
-    const minY = Math.min(window.innerHeight - state.canvasHeight * state.zoom, 0);
+    const minX = Math.min(viewW - state.canvasWidth * state.zoom, 0);
+    const minY = Math.min(viewH - state.canvasHeight * state.zoom, 0);
     return {
       x: Math.min(maxX, Math.max(minX, x)),
       y: Math.min(maxY, Math.max(minY, y)),
@@ -114,8 +120,9 @@ if (viewport && container && title && mediaItems.length > 0) {
   );
 
   const computeWorldViewport = () => {
-    const vw = window.innerWidth / state.zoom;
-    const vh = window.innerHeight / state.zoom;
+    const { w: viewW, h: viewH } = getViewSize();
+    const vw = viewW / state.zoom;
+    const vh = viewH / state.zoom;
     return {
       left: state.canvasWidth * 0.5 - vw * 0.5,
       top: state.canvasHeight * 0.5 - vh * 0.5,
@@ -382,6 +389,15 @@ if (viewport && container && title && mediaItems.length > 0) {
     viewport.style.cursor = 'grab';
   };
 
+  const resetInteraction = () => {
+    state.isDragging = false;
+    viewport.style.cursor = 'grab';
+    if (state.raf) {
+      cancelAnimationFrame(state.raf);
+      state.raf = 0;
+    }
+  };
+
   const onWheel = (e) => {
     e.preventDefault();
     const bounded = applyBounds(
@@ -399,16 +415,21 @@ if (viewport && container && title && mediaItems.length > 0) {
   viewport.addEventListener('pointerdown', onPointerDown);
   window.addEventListener('pointermove', onPointerMove, { passive: true });
   window.addEventListener('pointerup', onPointerUp, { passive: true });
+  window.addEventListener('pointercancel', onPointerUp, { passive: true });
   viewport.addEventListener('wheel', onWheel, { passive: false });
   window.addEventListener('resize', refreshForViewport, { passive: true });
 
-  window.addEventListener('beforeunload', () => {
-    viewport.removeEventListener('pointerdown', onPointerDown);
-    window.removeEventListener('pointermove', onPointerMove);
-    window.removeEventListener('pointerup', onPointerUp);
-    viewport.removeEventListener('wheel', onWheel);
-    window.removeEventListener('resize', refreshForViewport);
-    if (state.raf) cancelAnimationFrame(state.raf);
-  });
+  // Back/forward cache restores the page without re-running this script; do not
+  // tear down listeners on beforeunload or pan/zoom stops working after navigation.
+  window.addEventListener('pageshow', (event) => {
+    resetInteraction();
+    refreshForViewport();
+  }, { passive: true });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    resetInteraction();
+    refreshForViewport();
+  }, { passive: true });
 }
 
