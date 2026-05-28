@@ -43,6 +43,91 @@ vec3 hash31(float p) {
     return fract(sin(h)*435.543);
 }
 
+float voxelThc(float a, float b) {
+    return tanh(a * cos(b)) / tanh(a);
+}
+
+float voxelThs(float a, float b) {
+    return tanh(a * sin(b)) / tanh(a);
+}
+
+vec3 voxelPal(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
+    return a + b * cos(6.28318 * (c * t + d));
+}
+
+float voxelH21(vec2 a) {
+    return fract(sin(dot(a.xy, vec2(12.9898, 78.233))) * 43758.5453123);
+}
+
+float voxelMLength(vec2 uv) {
+    return max(abs(uv.x), abs(uv.y));
+}
+
+float voxelEffectStrength() {
+    float effectActive = step(0.5, iMouse.w);
+    float effectElapsed = max(0.0, iMouse.w - 1.0);
+    float fadeIn = smoothstep(0.0, 0.22, effectElapsed);
+    float fadeOut = 1.0 - smoothstep(1.35, 2.0, effectElapsed);
+    return effectActive * clamp(fadeIn * fadeOut, 0.0, 1.0);
+}
+
+float voxelEffectElapsed() {
+    return max(0.0, iMouse.w - 1.0);
+}
+
+float voxelDissolveProgress() {
+    float e = voxelEffectElapsed();
+    return clamp((e - 0.12) / 1.68, 0.0, 1.0);
+}
+
+float voxelCellNoise(vec3 p) {
+    vec3 c = floor(p * 18.0 + 0.5);
+    return fract(sin(dot(c, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+}
+
+vec3 voxelBreakOffset(vec3 cellPos, float progress, float elapsed) {
+    float seed = fract(sin(dot(cellPos, vec3(91.3, 17.7, 43.1))) * 43758.5453);
+    float ang = seed * 6.28318 + elapsed * (0.65 + seed * 0.85);
+    vec3 dir = normalize(vec3(cos(ang), 0.35 + seed * 0.75, sin(ang * 1.13)));
+    float spread = (0.04 + 0.2 * seed) * progress * progress;
+    return dir * spread;
+}
+
+vec3 voxelizeStoneColor(vec3 pos, float elapsed) {
+    float sc = 24.0;
+    vec3 grid = pos * sc;
+    vec3 ip = floor(grid) + 0.5;
+    vec3 fp = fract(grid) - 0.5;
+    vec2 ipos = ip.xy;
+    vec2 fpos = fp.xy;
+
+    float h = voxelH21(ipos);
+    float time = 0.2 * h + 0.3 * voxelMLength(fpos) + elapsed;
+    float edge = max(abs(fpos.x), abs(fpos.y));
+    float borderDist = abs(edge - 0.48);
+    float squareMask = 1.0 - smoothstep(0.015, 0.05, borderDist);
+
+    float t = voxelThs(3.0, time) + voxelThc(3.0, time);
+    vec3 palA = voxelPal(
+        t + h * 0.35 + elapsed * 0.4,
+        vec3(0.58, 0.20, 0.24),
+        vec3(0.86, 0.32, 0.38),
+        vec3(1.0),
+        vec3(0.02, 0.06, 0.12)
+    );
+    vec3 palB = voxelPal(
+        t * 1.35 - h * 0.2 + elapsed * 0.55,
+        vec3(0.18, 0.30, 0.62),
+        vec3(0.30, 0.44, 0.96),
+        vec3(1.0),
+        vec3(0.52, 0.72, 0.94)
+    );
+    float rbMix = 0.5 + 0.5 * sin(elapsed * 4.2 + h * 6.28318);
+    vec3 neonMix = mix(palA, palB, rbMix);
+    neonMix *= vec3(1.1, 0.85, 1.18);
+    return squareMask * neonMix * 1.52;
+}
+
 float fxRsq(float x) {
     float sx = sin(x);
     return pow(abs(sx), 3.0) * sign(sx);
@@ -323,17 +408,35 @@ float fractalShape(vec3 p, float time) {
 }
 
 float map(vec3 p) {
+    float voxelize = voxelEffectStrength();
+    float dissolveP = voxelDissolveProgress();
+    float elapsed = voxelEffectElapsed();
+    vec3 pCell = floor(p * 14.0 + 0.5) / 14.0;
+    vec3 pVoxel = pCell + voxelBreakOffset(pCell, dissolveP, elapsed);
+    p = mix(p, pVoxel, voxelize);
     float stoneD = rock(p) + fbm3(p*4.0,0.4,2.96) * DISPLACEMENT;
     float fractalD = fractalShape(p, iTime);
     float d = mix(stoneD, fractalD, morphAmount());
+    float cell = voxelCellNoise(pCell);
+    float dissolveMask = smoothstep(cell - 0.18, cell + 0.18, dissolveP);
+    d += voxelize * dissolveMask * 0.65;
     d = boolUnion(d,plane(p,vec4(0.0,1.0,0.0,1.0)));
     return d;
 }
 
 float map_detailed(vec3 p) {
+    float voxelize = voxelEffectStrength();
+    float dissolveP = voxelDissolveProgress();
+    float elapsed = voxelEffectElapsed();
+    vec3 pCell = floor(p * 16.0 + 0.5) / 16.0;
+    vec3 pVoxel = pCell + voxelBreakOffset(pCell, dissolveP, elapsed);
+    p = mix(p, pVoxel, voxelize);
     float stoneD = rock(p) + fbm3_high(p*4.0,0.4,2.96) * DISPLACEMENT;
     float fractalD = fractalShape(p * 1.03, iTime);
     float d = mix(stoneD, fractalD, morphAmount());
+    float cell = voxelCellNoise(pCell);
+    float dissolveMask = smoothstep(cell - 0.18, cell + 0.18, dissolveP);
+    d += voxelize * dissolveMask * 0.75;
     d = boolUnion(d,plane(p,vec4(0.0,1.0,0.0,1.0)));
     return d;
 }
@@ -344,7 +447,10 @@ vec3 getNormal(vec3 p, float dens) {
     n.x = map_detailed(vec3(p.x+EPSILON,p.y,p.z));
     n.y = map_detailed(vec3(p.x,p.y+EPSILON,p.z));
     n.z = map_detailed(vec3(p.x,p.y,p.z+EPSILON));
-    return normalize(n-map_detailed(p));
+    vec3 grad = n - map_detailed(p);
+    float gradLen = length(grad);
+    if (gradLen < 1e-6) return vec3(0.0, 1.0, 0.0);
+    return grad / gradLen;
 }
 vec2 getOcclusion(vec3 p, vec3 n) {
     vec2 r = vec2(0.0);
@@ -425,11 +531,9 @@ vec3 getPixel(in vec2 coord, float time) {
     vec2 occ = getOcclusion(p,n);
     vec3 light = normalize(vec3(0.0,1.0,0.0)); 
          
-    float effectActive = step(0.5, iMouse.w);
     float effectElapsed = max(0.0, iMouse.w - 1.0);
     vec3 defaultBg = vec3(0.9, 0.86, 0.8);
-    vec3 effectBg = getAltBackground(coord, effectElapsed);
-    vec3 color = mix(defaultBg, effectBg, effectActive);
+    vec3 color = defaultBg;
 
     if(td.x < 3.5 && p.y > -0.89) {
       color = getStoneColor(p,occ.y,light,n,dir,time);
@@ -438,6 +542,16 @@ vec3 getPixel(in vec2 coord, float time) {
       float keepOriginal = smoothstep(0.0, 0.22, darkest);
       vec3 brownShadow = vec3(0.17, 0.16, 0.15);
       color = mix(brownShadow, color, keepOriginal);
+
+      float voxelMix = voxelEffectStrength();
+      if (voxelMix > 0.001) {
+        vec3 voxelColor = voxelizeStoneColor(p, effectElapsed);
+        float voxelLuma = dot(voxelColor, vec3(0.2126, 0.7152, 0.0722));
+        if (voxelLuma > 0.01) {
+          float dominantMix = clamp(voxelMix * 1.8, 0.0, 1.0);
+          color = mix(color, voxelColor, dominantMix);
+        }
+      }
     }
     return color;
 }
