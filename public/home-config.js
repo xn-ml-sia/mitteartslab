@@ -3,7 +3,7 @@ export const HOME_CONFIG = Object.freeze({
   autoRotationSpeed: 0.68,
   scrollEdgeBuffer: 72,
   scrollLoopPadding: 48,
-  rotationTriggerMultiplier: 4,
+  rotationTriggerMultiplier: 3,
   effectDurationMs: 2000,
   fullRotation: Math.PI * 2,
 });
