@@ -80,6 +80,11 @@ float voxelDissolveProgress() {
     return clamp((e - 0.12) / 1.68, 0.0, 1.0);
 }
 
+float voxelCompressionAmount() {
+    float p = voxelDissolveProgress();
+    return smoothstep(0.0, 0.85, p);
+}
+
 float voxelCellNoise(vec3 p) {
     vec3 c = floor(p * 18.0 + 0.5);
     return fract(sin(dot(c, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
@@ -105,7 +110,7 @@ vec3 voxelizeStoneColor(vec3 pos, float elapsed) {
     float time = 0.2 * h + 0.3 * voxelMLength(fpos) + elapsed;
     float edge = max(abs(fpos.x), abs(fpos.y));
     float borderDist = abs(edge - 0.48);
-    float squareMask = 1.0 - smoothstep(0.015, 0.05, borderDist);
+    float squareMask = 1.0 - smoothstep(0.028, 0.085, borderDist);
 
     float t = voxelThs(3.0, time) + voxelThc(3.0, time);
     vec3 palA = voxelPal(
@@ -410,9 +415,10 @@ float fractalShape(vec3 p, float time) {
 float map(vec3 p) {
     float voxelize = voxelEffectStrength();
     float dissolveP = voxelDissolveProgress();
+    float compress = voxelCompressionAmount();
     float elapsed = voxelEffectElapsed();
     vec3 pCell = floor(p * 14.0 + 0.5) / 14.0;
-    vec3 pVoxel = pCell + voxelBreakOffset(pCell, dissolveP, elapsed);
+    vec3 pVoxel = (pCell + voxelBreakOffset(pCell, dissolveP, elapsed)) * mix(1.0, 0.82, compress);
     p = mix(p, pVoxel, voxelize);
     float stoneD = rock(p) + fbm3(p*4.0,0.4,2.96) * DISPLACEMENT;
     float fractalD = fractalShape(p, iTime);
@@ -427,9 +433,10 @@ float map(vec3 p) {
 float map_detailed(vec3 p) {
     float voxelize = voxelEffectStrength();
     float dissolveP = voxelDissolveProgress();
+    float compress = voxelCompressionAmount();
     float elapsed = voxelEffectElapsed();
     vec3 pCell = floor(p * 16.0 + 0.5) / 16.0;
-    vec3 pVoxel = pCell + voxelBreakOffset(pCell, dissolveP, elapsed);
+    vec3 pVoxel = (pCell + voxelBreakOffset(pCell, dissolveP, elapsed)) * mix(1.0, 0.82, compress);
     p = mix(p, pVoxel, voxelize);
     float stoneD = rock(p) + fbm3_high(p*4.0,0.4,2.96) * DISPLACEMENT;
     float fractalD = fractalShape(p * 1.03, iTime);
