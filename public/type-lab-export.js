@@ -524,7 +524,7 @@ export function createExportApi({ store, engine }) {
     const state = store.getState();
     const doc = createTypeLabDocument(state);
     const { params, runtime } = state;
-    const text = (params.text || 'JAZZ').toUpperCase();
+    const text = (params.text || 'SKEWED').toUpperCase();
     const font = `700 ${params.fontSize}px "IBM Plex Mono", monospace`;
     engine.setMask({
       text,

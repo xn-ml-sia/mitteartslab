@@ -713,8 +713,8 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (pathname === '/type-lab' || pathname === '/type-lab.html') {
-    serveFile(res, path.join(ROOT, 'type-lab.html'));
+  if (pathname === '/skewed' || pathname === '/skewed.html' || pathname === '/type-lab' || pathname === '/type-lab.html') {
+    serveFile(res, path.join(ROOT, 'skewed.html'));
     return;
   }
 

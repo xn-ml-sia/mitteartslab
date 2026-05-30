@@ -8,7 +8,7 @@ export function createTypeLabPipeline({ engine, store }) {
     const state = store.getState();
     const { params, runtime } = state;
     const font = `700 ${params.fontSize}px "IBM Plex Mono", monospace`;
-    const text = (params.text || 'JAZZ').toUpperCase();
+    const text = (params.text || 'SKEWED').toUpperCase();
     const maskKey = `${text}|${font}|${width}|${height}|${runtime.textX.toFixed(2)}|${runtime.textY.toFixed(2)}`;
     if (maskKey !== lastMaskKey) {
       engine.setMask({

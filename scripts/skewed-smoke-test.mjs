@@ -39,14 +39,14 @@ async function run() {
     'getEmbedSnippet',
     'getConfigJson',
   ]);
-  await assertFileContains('type-lab.html', [
+  await assertFileContains('skewed.html', [
     'path-smoothness-input',
     'skew-x-input',
     'skew-y-input',
   ]);
 
   const urls = [
-    ['http://localhost:3000/type-lab', ['path-smoothness-input', 'skew-x-input', 'skew-y-input']],
+    ['http://localhost:3000/skewed', ['path-smoothness-input', 'skew-x-input', 'skew-y-input']],
     ['http://localhost:3000/public/type-lab.js', ['createTypeLabPipeline', 'createCommandPalette']],
     ['http://localhost:3000/public/type-lab-export.js', ['createTypeLabAnimation', 'buildExportScene']],
   ];
@@ -55,10 +55,10 @@ async function run() {
     await assertUrlContains(url, needles);
   }
 
-  console.log('TYPE_LAB_SMOKE_TEST_PASSED');
+  console.log('SKEWED_SMOKE_TEST_PASSED');
 }
 
 run().catch((error) => {
-  console.error(`TYPE_LAB_SMOKE_TEST_FAILED: ${error.message}`);
+  console.error(`SKEWED_SMOKE_TEST_FAILED: ${error.message}`);
   process.exit(1);
 });

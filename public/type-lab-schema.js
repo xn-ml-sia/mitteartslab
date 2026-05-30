@@ -12,7 +12,7 @@ export const TYPE_LAB_GROUPS = [
 ];
 
 export const TYPE_LAB_PARAMS = [
-  { key: 'text', id: 'text-input', type: 'text', default: 'JAZZ', group: 'source', tier: 'basic', animatable: false },
+  { key: 'text', id: 'text-input', type: 'text', default: 'SKEWED', group: 'source', tier: 'basic', animatable: false },
   { key: 'fontSize', id: 'font-size-input', type: 'number', default: 380, group: 'source', tier: 'basic', animatable: false },
   { key: 'lineCount', id: 'line-count-input', type: 'number', default: 120, group: 'slices', tier: 'basic', animatable: false },
   { key: 'transformMode', id: null, type: 'enum', default: 'pivot', group: 'transformMode', tier: 'basic', animatable: false },
