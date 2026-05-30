@@ -208,9 +208,11 @@ class HomeAscii {
     this.running = false;
     this.rafId = null;
     this.mouse = { x: 1, y: 1 };
+    this.rotationLimit = 0.48;
+    this.baseMeshSize = { width: 40, height: 10 };
 
     this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 1, 1000);
-    this.camera.position.z = 35;
+    this.camera.position.z = 42;
     this.scene = new THREE.Scene();
 
     this.setMesh();
@@ -248,7 +250,32 @@ class HomeAscii {
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(this.width, this.height);
     this.filter.setSize(this.width, this.height);
+    this.fitMeshToViewport();
   };
+
+  fitMeshToViewport() {
+    if (!(this.mesh instanceof THREE.Mesh)) return;
+    const textAspect = Math.max(1, this.text.width / Math.max(1, this.text.height));
+    const visibleHeight = 2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) * this.camera.position.z;
+    const visibleWidth = visibleHeight * this.camera.aspect;
+
+    // Keep the animated plane comfortably inside the frame.
+    const maxWidth = visibleWidth * 0.78;
+    const maxHeight = visibleHeight * 0.34;
+
+    let targetWidth = maxWidth;
+    let targetHeight = targetWidth / textAspect;
+    if (targetHeight > maxHeight) {
+      targetHeight = maxHeight;
+      targetWidth = targetHeight * textAspect;
+    }
+
+    this.mesh.scale.set(
+      targetWidth / this.baseMeshSize.width,
+      targetHeight / this.baseMeshSize.height,
+      1,
+    );
+  }
 
   get material() {
     return new THREE.ShaderMaterial({
@@ -267,9 +294,15 @@ class HomeAscii {
     this.text = new CanvasTxt(this.textValue);
     this.texture = new THREE.CanvasTexture(this.text.texture);
     this.texture.minFilter = THREE.NearestFilter;
-    this.geometry = new THREE.PlaneGeometry(40, 10, 36, 36);
+    this.geometry = new THREE.PlaneGeometry(
+      this.baseMeshSize.width,
+      this.baseMeshSize.height,
+      36,
+      36,
+    );
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.scene.add(this.mesh);
+    this.fitMeshToViewport();
   }
 
   setRenderer() {
@@ -289,8 +322,8 @@ class HomeAscii {
   }
 
   updateRotation() {
-    const x = Math.map(this.mouse.y, 0, this.height, 0.5, -0.5);
-    const y = Math.map(this.mouse.x, 0, this.width, -0.5, 0.5);
+    const x = Math.map(this.mouse.y, 0, this.height, this.rotationLimit, -this.rotationLimit);
+    const y = Math.map(this.mouse.x, 0, this.width, -this.rotationLimit, this.rotationLimit);
     this.mesh.rotation.x += (x - this.mesh.rotation.x) * 0.05;
     this.mesh.rotation.y += (y - this.mesh.rotation.y) * 0.05;
   }
