@@ -117,7 +117,7 @@ html, body {
 
 /* Enforce single-font system across all rendered chapter surfaces */
 body,
-.galleryPage,
+.chapter-page-shell,
 .header,
 .main,
 .poem-section,
@@ -724,18 +724,18 @@ body,
 }
 
 /* Gallery page layout (reference-inspired infinite canvas) */
-body.gallery-mode {
+body.stoneface-mode {
   background: #fff;
   overflow: hidden;
 }
 
-body.gallery-mode .galleryPage {
+body.stoneface-mode .chapter-page-shell {
   height: auto;
   min-height: 0;
   display: block;
 }
 
-.infiniteCanvasViewport {
+.stonefaceViewport {
   position: relative;
   width: 100%;
   height: calc(100vh - 60px);
@@ -746,11 +746,11 @@ body.gallery-mode .galleryPage {
   touch-action: none;
 }
 
-.infiniteCanvasViewport .mediaBlock {
+.stonefaceViewport .mediaBlock {
   background: #fff;
 }
 
-.infiniteCanvasContainer {
+.stonefaceCanvas {
   position: absolute;
   transform: translate(0px, 0px);
   transition: none;
@@ -758,7 +758,7 @@ body.gallery-mode .galleryPage {
   height: 180vh;
 }
 
-#gallery-title {
+#stoneface-title {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -854,16 +854,16 @@ body.gallery-mode .galleryPage {
   letter-spacing: 0.08em;
 }
 
-body.gallery-mode .mediaItem .attribution {
+body.stoneface-mode .mediaItem .attribution {
   display: none;
 }
 
-body.gallery-mode .mediaItem--layout-spacer {
+body.stoneface-mode .mediaItem--layout-spacer {
   visibility: hidden;
   pointer-events: none;
 }
 
-body.gallery-mode .attribution--rich {
+body.stoneface-mode .attribution--rich {
   gap: 2px;
   line-height: 1.35;
 }
@@ -892,88 +892,6 @@ body.gallery-mode .attribution--rich {
 .attribution:empty {
   display: none;
   margin: 0;
-}
-
-.gallery-cluster-labels {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 5;
-}
-
-.gallery-cluster-label {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 0;
-  padding: 0;
-  text-align: left;
-  font-family: var(--font-family-code) !important;
-  font-size: var(--gallery-label-font-size, 12px);
-  font-weight: 400;
-  letter-spacing: 0.08em;
-  line-height: var(--gallery-label-line-height, 1.4);
-  color: var(--text-color);
-}
-
-.gallery-cluster-label-title {
-  display: block;
-  font: inherit;
-  color: inherit;
-  text-transform: none;
-}
-
-.gallery-cluster-label-desc {
-  display: block;
-  font: inherit;
-  color: inherit;
-  text-transform: none;
-}
-
-.gallery-float-logos {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 6;
-}
-
-.gallery-float-logo {
-  position: absolute;
-  display: block;
-  opacity: 1;
-  animation: gallery-float-drift 12s ease-in-out infinite;
-}
-
-.gallery-float-logo:nth-child(2) {
-  animation-delay: -4s;
-  animation-duration: 16s;
-}
-
-.gallery-float-logo:nth-child(3) {
-  animation-delay: -8s;
-  animation-duration: 18s;
-}
-
-.gallery-float-logo:nth-child(4) {
-  animation-delay: -11s;
-  animation-duration: 15s;
-}
-
-@keyframes gallery-float-drift {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(3px, -4px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .gallery-float-logo {
-    animation: none;
-  }
 }
 
 .title {
@@ -1006,7 +924,7 @@ body.gallery-mode .attribution--rich {
 .item-h { left: 128vw; top: 68vh; width: 14vw; }
 
 @media (max-width: 1024px) {
-  .infiniteCanvasContainer {
+  .stonefaceCanvas {
     width: 280vw;
     height: 220vh;
   }
@@ -1024,7 +942,7 @@ body.gallery-mode .attribution--rich {
   .item-g { left: 108vw; top: 71vh; width: 28vw; }
   .item-h { left: 162vw; top: 76vh; width: 26vw; }
 
-  #gallery-title {
+  #stoneface-title {
     top: 49%;
     font-size: clamp(46px, 10vw, 68px);
   }
@@ -1035,7 +953,7 @@ body.gallery-mode .attribution--rich {
 }
 
 @media (max-width: 767px) {
-  #gallery-title {
+  #stoneface-title {
     /* 3× the title scale from the max-width 1024px gallery rule (clamp 46–68px band). */
     font-size: calc(3 * clamp(46px, 10vw, 68px));
     line-height: 0.9;
@@ -1435,3 +1353,4 @@ body.gallery-mode .attribution--rich {
     grid-template-columns: 1fr;
   }
 }
+

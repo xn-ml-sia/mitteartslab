@@ -1,6 +1,6 @@
 # Generative Rock Concept Documentation
 
-This repository currently contains a lightweight static web experience (`index.html`, `gallery.html`, and assets in `public/`).
+This repository currently contains a lightweight static web experience (`index.html`, `about.html`, and assets in `public/`).
 
 This documentation package defines a full product concept direction for a new initiative: **Generative Rock**.
 

@@ -17,11 +17,20 @@ export const initHomeMenus = () => {
     closeMenus();
   };
 
-  menus.forEach((menu) => {
+  const onDocumentKeydown = (event) => {
+    if (event.key !== 'Escape') return;
+    closeMenus();
+  };
+
+  menus.forEach((menu, index) => {
     const trigger = menu.querySelector('[data-menu-trigger]');
+    const submenu = menu.querySelector('.home-submenu');
     if (!trigger) return;
-    trigger.addEventListener('click', (event) => {
-      event.preventDefault();
+
+    if (submenu && !submenu.id) submenu.id = `home-submenu-${index + 1}`;
+    if (submenu) trigger.setAttribute('aria-controls', submenu.id);
+
+    trigger.addEventListener('click', () => {
       const isOpen = menu.classList.contains('is-open');
       closeMenus();
       if (!isOpen) {
@@ -32,8 +41,11 @@ export const initHomeMenus = () => {
   });
 
   document.addEventListener('click', onDocumentClick);
+  document.addEventListener('keydown', onDocumentKeydown);
+
   return () => {
     document.removeEventListener('click', onDocumentClick);
+    document.removeEventListener('keydown', onDocumentKeydown);
     closeMenus();
   };
 };

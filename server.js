@@ -698,11 +698,6 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (pathname === '/gallery' || pathname === '/gallery.html') {
-    serveFile(res, path.join(ROOT, 'gallery.html'));
-    return;
-  }
-
   if (pathname === '/landing' || pathname === '/landing.html') {
     serveFile(res, path.join(ROOT, 'landing.html'));
     return;

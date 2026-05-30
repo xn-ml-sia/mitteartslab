@@ -1,7 +1,7 @@
 import { SHADER_SOURCES } from './shader-deck-shaders.js';
 
-const viewport = document.querySelector('.infiniteCanvasViewport');
-const container = document.querySelector('.infiniteCanvasContainer');
+const viewport = document.querySelector('.stonefaceViewport');
+const container = document.querySelector('.stonefaceCanvas');
 const template = document.getElementById('stone-card-template');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const motionPaused = true;
@@ -257,7 +257,7 @@ void main(){ vec4 fragColor = vec4(0.0); mainImage(fragColor, gl_FragCoord.xy); 
 };
 
 if (!viewport || !container || !template) {
-  throw new Error('landing gallery mount not found');
+  throw new Error('landing stoneface mount not found');
 }
 
 const expressions = STONEFACE_SET.map((entry, idx) => buildExpression(entry, idx));
