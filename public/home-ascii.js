@@ -53,7 +53,10 @@ class AsciiFilter {
     this.domElement.appendChild(this.canvas);
     this.deg = 0;
 
-    this.fontSize = args.fontSize || 14;
+    this.desktopFontSize = args.fontSize || 12;
+    this.mobileFontSize = args.mobileFontSize || 14;
+    this.fontSize = this.desktopFontSize;
+    this.enableHue = args.enableHue ?? true;
     this.fontFamily = args.fontFamily || "'Courier New', Consolas, monospace";
     this.charset =
       args.charset ||
@@ -61,6 +64,14 @@ class AsciiFilter {
 
     this.setup();
     document.addEventListener('mousemove', this.onMouseMove, false);
+  }
+
+  setMobileMode(isMobile) {
+    this.enableHue = !isMobile;
+    const nextSize = isMobile ? this.mobileFontSize : this.desktopFontSize;
+    if (nextSize === this.fontSize) return;
+    this.fontSize = nextSize;
+    if (this.width && this.height) this.reset();
   }
 
   onMouseMove = (event) => {
@@ -124,6 +135,10 @@ class AsciiFilter {
   }
 
   hue() {
+    if (!this.enableHue) {
+      this.domElement.style.filter = 'none';
+      return;
+    }
     const deg = (Math.atan2(this.dy, this.dx) * 180) / Math.PI;
     this.deg += (deg - this.deg) * 0.075;
     this.domElement.style.filter = `hue-rotate(${this.deg.toFixed(1)}deg)`;
@@ -162,12 +177,23 @@ class CanvasTxt {
   constructor(txt, args = {}) {
     this.canvas = document.createElement('canvas');
     this.context = this.canvas.getContext('2d');
-    this.fontSize = 200;
-    this.lineHeight = this.fontSize * 0.88;
+    this.fontSize = args.fontSize || 170;
+    this.lineHeight = this.fontSize * 0.96;
     this.fontFamily = args.fontFamily || 'Arial, Helvetica, sans-serif';
-    this.font = `600 ${this.fontSize}px ${this.fontFamily}`;
+    this.fontWeight = args.fontWeight || 600;
+    this.font = `${this.fontWeight} ${this.fontSize}px ${this.fontFamily}`;
     this.color = args.color || '#fdf9f3';
     this.txt = txt || 'Lorem Ipsum';
+  }
+
+  setFontSize(size) {
+    this.fontSize = size;
+    this.lineHeight = this.fontSize * 0.96;
+    this.font = `${this.fontWeight} ${this.fontSize}px ${this.fontFamily}`;
+  }
+
+  get lines() {
+    return String(this.txt).split('\n');
   }
 
   get texture() {
@@ -181,23 +207,26 @@ class CanvasTxt {
 
   get width() {
     this.context.font = this.font;
-    return ~~this.context.measureText(this.txt).width;
+    return ~~Math.max(...this.lines.map((line) => this.context.measureText(line).width));
   }
 
   get metrics() {
     this.context.font = this.font;
-    return this.context.measureText(this.txt);
+    return this.context.measureText(this.lines[0] || '');
   }
 
   get height() {
-    return ~~((this.metrics.actualBoundingBoxAscent + this.metrics.actualBoundingBoxDescent) * 1.42);
+    return ~~(this.lineHeight * this.lines.length + this.metrics.actualBoundingBoxDescent * 0.4);
   }
 
   render() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.context.fillStyle = this.color;
     this.context.font = this.font;
-    this.context.fillText(this.txt, 0, this.metrics.actualBoundingBoxAscent * 1.2);
+    this.context.textBaseline = 'top';
+    this.lines.forEach((line, index) => {
+      this.context.fillText(line, 0, index * this.lineHeight);
+    });
   }
 }
 
@@ -210,6 +239,8 @@ class HomeAscii {
     this.mouse = { x: 1, y: 1 };
     this.rotationLimit = 0.48;
     this.baseMeshSize = { width: 40, height: 10 };
+    this.isMobile = this.isMobileViewport();
+    if (this.isMobile) this.rotationLimit = 0.24;
 
     this.camera = new THREE.PerspectiveCamera(45, this.width / this.height, 1, 1000);
     this.camera.position.z = 42;
@@ -232,6 +263,10 @@ class HomeAscii {
     return window.innerHeight;
   }
 
+  isMobileViewport() {
+    return window.innerWidth <= 768 || window.matchMedia('(pointer: coarse)').matches;
+  }
+
   onMouseMove = (event) => {
     const point = event.touches ? event.touches[0] : event;
     this.mouse = {
@@ -241,10 +276,17 @@ class HomeAscii {
   };
 
   onWindowResize = () => {
+    const nextMobile = this.isMobileViewport();
+    if (nextMobile !== this.isMobile) {
+      this.isMobile = nextMobile;
+      this.rotationLimit = this.isMobile ? 0.24 : 0.48;
+      this.filter.setMobileMode(this.isMobile);
+    }
     this.center = {
       x: this.width / 2,
       y: this.height / 2,
     };
+    this.text.setFontSize(this.isMobile ? 132 : 210);
     this.text.resize();
     this.camera.aspect = this.width / this.height;
     this.camera.updateProjectionMatrix();
@@ -260,8 +302,8 @@ class HomeAscii {
     const visibleWidth = visibleHeight * this.camera.aspect;
 
     // Keep the animated plane comfortably inside the frame.
-    const maxWidth = visibleWidth * 0.78;
-    const maxHeight = visibleHeight * 0.34;
+    const maxWidth = visibleWidth * (this.isMobile ? 0.72 : 0.78);
+    const maxHeight = visibleHeight * (this.isMobile ? 0.28 : 0.34);
 
     let targetWidth = maxWidth;
     let targetHeight = targetWidth / textAspect;
@@ -291,14 +333,16 @@ class HomeAscii {
   }
 
   setMesh() {
-    this.text = new CanvasTxt(this.textValue);
+    this.text = new CanvasTxt(this.textValue, {
+      fontSize: this.isMobile ? 132 : 210,
+    });
     this.texture = new THREE.CanvasTexture(this.text.texture);
     this.texture.minFilter = THREE.NearestFilter;
     this.geometry = new THREE.PlaneGeometry(
       this.baseMeshSize.width,
       this.baseMeshSize.height,
-      36,
-      36,
+      24,
+      24,
     );
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.scene.add(this.mesh);
@@ -316,8 +360,11 @@ class HomeAscii {
       fontFamily: 'IBM Plex Mono',
       blendMode: 'hue',
       fontSize: 12,
+      mobileFontSize: 14,
+      enableHue: !this.isMobile,
       color: true,
     });
+    this.filter.setMobileMode(this.isMobile);
     this.container.appendChild(this.filter.domElement);
   }
 
@@ -376,7 +423,7 @@ export const initHomeAscii = () => {
   const layer = document.querySelector('[data-home-ascii]');
   if (!(layer instanceof HTMLElement)) return;
 
-  const homeAscii = new HomeAscii(layer, 'Hello_world');
+  const homeAscii = new HomeAscii(layer, 'hello\nworld');
   let toolsMenuActive = false;
 
   const syncVisibility = () => {
