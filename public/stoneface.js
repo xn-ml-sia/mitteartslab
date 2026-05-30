@@ -3,6 +3,7 @@ import { SHADER_SOURCES } from './shader-deck-shaders.js';
 const viewport = document.querySelector('.stonefaceViewport');
 const container = document.querySelector('.stonefaceCanvas');
 const template = document.getElementById('stone-card-template');
+const titleNode = document.getElementById('stoneface-title');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const motionPaused = true;
 const disableCardMotion = reduceMotion || motionPaused;
@@ -389,8 +390,16 @@ const placeCards = () => {
 };
 
 const recenter = () => {
-  const targetX = window.innerWidth * 0.22 - state.canvasWidth * state.zoom * 0.5;
-  const targetY = window.innerHeight * 0.2 - state.canvasHeight * state.zoom * 0.5;
+  let focusX = state.canvasWidth * 0.5;
+  let focusY = state.canvasHeight * 0.5;
+  if (titleNode) {
+    const cssLeft = parseFloat(titleNode.style.left || '0');
+    const cssTop = parseFloat(titleNode.style.top || '0');
+    if (Number.isFinite(cssLeft) && cssLeft > 0) focusX = cssLeft;
+    if (Number.isFinite(cssTop) && cssTop > 0) focusY = cssTop;
+  }
+  const targetX = window.innerWidth * 0.5 - focusX * state.zoom;
+  const targetY = window.innerHeight * 0.5 - focusY * state.zoom;
   const bounded = applyBounds(targetX, targetY);
   state.targetX = bounded.x;
   state.targetY = bounded.y;

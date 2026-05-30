@@ -9,23 +9,19 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./public/styles.css" />
-    <link rel="stylesheet" href="./public/landing.css" />
+    <link rel="stylesheet" href="./public/stoneface.css" />
   </head>
   <body class="stoneface-mode">
-    <header class="header chapter-header">
-      <div class="mal-header-left">
-        <span class="mal-logo" data-mal-logo="left" aria-hidden="true"></span>
-        <span>mitte arts lab</span>
-      </div>
-      <div class="mal-header-right">
-        <span class="mal-header-label">stoneface</span>
-        <span class="mal-header-sep" aria-hidden="true">·</span>
-        <a class="chapter-link" href="./index.html">home</a>
-      </div>
-    </header>
+    <script type="module" src="./public/chapter-header.js"></script>
+    <div class="chapter-page-shell chapter-page">
+      <mal-chapter-header label="stoneface" logo-variant="left"></mal-chapter-header>
+    </div>
     <main class="stonefaceViewport" aria-label="Stone canvas page" tabindex="0">
       <section class="stonefaceCanvas" role="list" aria-label="Expressive stone cards">
-        <h1 id="stoneface-title">stoneface <br>& co</h1>
+        <h1 id="stoneface-title">
+          <span class="stoneface-title-main">stoneface</span>
+          <span class="stoneface-title-sub">an expressive surface for AI agents</span>
+        </h1>
       </section>
     </main>
     <div id="stoneface-drawer-backdrop" class="stoneface-drawer-backdrop" hidden></div>
@@ -65,6 +61,6 @@
       initMalLogos();
       setPageFavicon("left");
     </script>
-    <script type="module" src="./public/landing.js"></script>
+    <script type="module" src="./public/stoneface.js"></script>
   </body>
 </html>

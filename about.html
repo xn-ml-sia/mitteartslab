@@ -11,27 +11,9 @@
     <link rel="stylesheet" href="./public/styles.css" />
   </head>
   <body>
+    <script type="module" src="./public/chapter-header.js"></script>
     <div class="chapter-page-shell chapter-page">
-      <header class="header chapter-header">
-        <div class="mal-header-left">
-          <span class="mal-logo" data-mal-logo="bottom" aria-hidden="true"></span>
-          <span>mitte arts lab</span>
-        </div>
-        <div class="mal-header-right">
-          <span class="mal-header-label">meet mal</span>
-          <span class="mal-header-sep mal-header-sep-desktop" aria-hidden="true">·</span>
-          <a class="chapter-link mal-header-desktop-link" href="./index.html">products</a>
-          <span class="mal-header-sep mal-header-sep-desktop" aria-hidden="true">·</span>
-          <a class="chapter-link mal-header-desktop-link" href="./index.html">open tools</a>
-          <details class="mal-mobile-menu">
-            <summary aria-label="Open navigation menu">&#8942;</summary>
-            <div class="mal-mobile-menu-panel">
-              <a class="chapter-link" href="./index.html">products</a>
-              <a class="chapter-link" href="./index.html">open tools</a>
-            </div>
-          </details>
-        </div>
-      </header>
+      <mal-chapter-header label="meet mal" logo-variant="bottom"></mal-chapter-header>
 
       <main class="main chapter-main">
         <section id="chapter-1" class="poem-section chapter-poem-section chapter-observe">
@@ -49,6 +31,14 @@
           <div class="artwork-container">
             <div id="chapter-1-artwork" class="artwork chapter-artwork chapter-secondary-artwork" aria-label="Chapter 1 artwork">
               <canvas id="ascii-canvas" class="chapter-canvas" width="560" height="560"></canvas>
+              <figure class="chapter-hero-source" aria-label="Source portrait">
+                <img
+                  src="./public/assets/about/mal-kuma-mask.png"
+                  alt="Circular portrait used as generator source"
+                  loading="eager"
+                  decoding="async"
+                />
+              </figure>
             </div>
           </div>
         </section>
@@ -64,36 +54,24 @@
             </li>
           </ol>
         </section>
-        <section id="chapter-2" class="poem-section chapter-poem-section chapter-observe">
+        <section id="chapter-4" class="poem-section chapter-poem-section chapter-observe">
           <div class="column-1">
             <div class="poem">
               <div class="poem-number">
                 <p>2</p>
               </div>
               <div class="poem-text">
-                <p>The five colors blind the eye.<br/>The five sounds deafen the ear.<br/>The five flavors dull the taste.</p>
-                <p>Thoughts weaken the mind.<br/>Craving withers the heart.</p>
-                <p>The Vibe Coder attends to<br/>the inner, not the outer.<br/>He allows things to come and go.<br/>His heart is open as the sky.</p>
+                <p>How do we decide which experiment to craft?</p>
+                <p>We follow hints of excitement. If several directions seem captivating, consider more than one experiment. </p>
+                <p>The Craft is not just a building up. It is also a breaking down. We decide which details to remove, so that more energy can be used to feed the core elements.</p>
               </div>
             </div>
           </div>
           <div class="artwork-container">
-            <div class="artwork chapter-artwork chapter-secondary-artwork" aria-label="Chapter 2 artwork">
-              <div id="chapter-2-particles" class="chapter-particles-mount chapter-canvas" aria-hidden="true"></div>
+            <div id="chapter-4-artwork" class="artwork chapter-artwork chapter-secondary-artwork" aria-label="Chapter 4 artwork">
+              <canvas id="chapter-4-tree-canvas" class="chapter-canvas chapter-4-tree-canvas" width="700" height="700"></canvas>
             </div>
           </div>
-        </section>
-        <section id="interlude-2" class="shader-deck-section chapter-observe" aria-label="Shader interlude duplicate">
-          <ol class="shader-deck" role="list">
-            <li class="shader-card" data-shader="s4c" data-pos="0" tabindex="0" aria-label="Card 1 of 2, section 4 earth shader. Tap to cycle on a small screen.">
-              <canvas class="shader-canvas" width="1" height="1" aria-label=""></canvas>
-              <span class="shader-caption" aria-hidden="true">i. បបុហ</span>
-            </li>
-            <li class="shader-card" data-shader="s4f" data-pos="1" tabindex="0" aria-label="Card 2 of 2, section 4 glitch poly shader. Tap to cycle on a small screen.">
-              <canvas class="shader-canvas" width="1" height="1" aria-label=""></canvas>
-              <span class="shader-caption" aria-hidden="true">ii. ប្តូររាង</span>
-            </li>
-          </ol>
         </section>
         <section id="chapter-3" class="poem-section chapter-poem-section chapter-observe">
           <div class="column-1">
@@ -113,22 +91,32 @@
             </div>
           </div>
         </section>
-        <section id="chapter-4" class="poem-section chapter-poem-section chapter-observe">
+        <section id="interlude-2" class="shader-deck-section chapter-observe" aria-label="Shader interlude duplicate">
+          <ol class="shader-deck" role="list">
+            <li class="shader-card" data-shader="s4c" data-pos="0" tabindex="0" aria-label="Card 1 of 2, section 4 earth shader. Tap to cycle on a small screen.">
+              <canvas class="shader-canvas" width="1" height="1" aria-label=""></canvas>
+              <span class="shader-caption" aria-hidden="true">i. បបុហ</span>
+            </li>
+            <li class="shader-card" data-shader="s4f" data-pos="1" tabindex="0" aria-label="Card 2 of 2, section 4 glitch poly shader. Tap to cycle on a small screen.">
+              <canvas class="shader-canvas" width="1" height="1" aria-label=""></canvas>
+              <span class="shader-caption" aria-hidden="true">ii. ប្តូររាង</span>
+            </li>
+          </ol>
+        </section>
+        <section id="chapter-2" class="poem-section chapter-poem-section chapter-observe">
           <div class="column-1">
             <div class="poem">
               <div class="poem-number">
                 <p>4</p>
               </div>
               <div class="poem-text">
-                <p>How do we decide which experiment to craft?</p>
-                <p>We follow hints of excitement. If several directions seem captivating, consider more than one experiment. </p>
-                <p>The Craft is not just a building up. It is also a breaking down. We decide which details to remove, so that more energy can be used to feed the core elements.</p>
+                <p>Mal Som is an artist made in Cambodia, planted in LA, and currently based in Berlin. Growing up in the US as a first generation Cambodian with Buddhist upbringings, his personal philosophies have married ancient Eastern views with modern Western pop-culture beliefs. This has touched all aspects of his work.</p><p>Now based in Berlin, he has begun to explore the uncharted realm of Al-generated art. While other Al artists explore the expansive and infinite possibilities this medium represents, Mal has concentrated his focus on something he described as "the collapse of diversity in a system."</p>
               </div>
             </div>
           </div>
           <div class="artwork-container">
-            <div id="chapter-4-artwork" class="artwork chapter-artwork chapter-secondary-artwork" aria-label="Chapter 4 artwork">
-              <canvas id="chapter-4-tree-canvas" class="chapter-canvas chapter-4-tree-canvas" width="700" height="700"></canvas>
+            <div class="artwork chapter-artwork chapter-secondary-artwork" aria-label="Chapter 2 artwork">
+              <div id="chapter-2-particles" class="chapter-particles-mount chapter-canvas" aria-hidden="true"></div>
             </div>
           </div>
         </section>

@@ -52,7 +52,7 @@ This repository now includes a Phase 1 prototype implementation aligned to the r
    - `npm start`
 3. Open:
    - `http://localhost:3000/phase1.html`
-   - `http://localhost:3000/landing.html`
+   - `http://localhost:3000/stoneface.html`
 
 ### Environment note
 
@@ -125,9 +125,9 @@ The prototype now includes the next product-operational layer:
 
 The landing route is now a stone-gallery experience cloned from the gallery interaction model:
 
-- `landing.html`
-- `public/landing.css`
-- `public/landing.js`
+- `stoneface.html`
+- `public/stoneface.css`
+- `public/stoneface.js`
 
 ### Landing + Shader behavior
 
@@ -141,7 +141,7 @@ The landing route is now a stone-gallery experience cloned from the gallery inte
 
 ### Sixth pass: Stoneface narrative layer
 
-- `landing.html` now includes a fixed `Stoneface` title, tagline, drag helper text, and pun-dial legend overlay.
+- `stoneface.html` now includes a fixed `Stoneface` title, tagline, drag helper text, and pun-dial legend overlay.
 - Landing card set uses the current 12-card count with curated Stoneface voice/pun examples.
 - Captions now render as two lines:
   - metadata (`emotion / pun level / mode`)
@@ -157,7 +157,7 @@ The landing route is now a stone-gallery experience cloned from the gallery inte
 
 Access it directly at:
 
-- `http://localhost:3000/landing.html`
+- `http://localhost:3000/stoneface.html`
 
 Navigation link:
 

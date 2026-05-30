@@ -7,7 +7,40 @@ import { initHomeMenus } from './home-menu.js';
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 document.documentElement.classList.add('home-mode-root');
 
+const PORTFOLIO_PASSWORD = 'AX';
+
+const initPasswordGate = (selector, options = {}) => {
+  const { allowHashHref = true } = options;
+  const link = document.querySelector(selector);
+  if (!(link instanceof HTMLAnchorElement)) return;
+
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    const value = window.prompt('Enter portfolio password');
+    if (value === null) return;
+    if (value !== PORTFOLIO_PASSWORD) {
+      window.alert('Unverified access');
+      return;
+    }
+
+    const href = link.getAttribute('href');
+    if (!href) return;
+    if (!allowHashHref && href === '#') return;
+    window.location.assign(href);
+  });
+};
+
+const initPortfolioGate = () => {
+  initPasswordGate('[data-portfolio-link]');
+};
+
+const initBaseSystemGate = () => {
+  initPasswordGate('[data-base-system-link]', { allowHashHref: false });
+};
+
 initHomeMenus();
+initPortfolioGate();
+initBaseSystemGate();
 
 const canvas = document.getElementById('home-rock-canvas');
 if (canvas) {

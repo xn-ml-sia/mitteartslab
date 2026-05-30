@@ -29,39 +29,6 @@
   border-bottom: none;
 }
 
-.sl-header {
-  justify-content: flex-start;
-  padding: 18px 24px 10px;
-  overflow: visible;
-}
-
-.sl-page .mal-header-left {
-  align-items: center;
-  gap: 12px;
-}
-
-.sl-brand-name {
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: lowercase;
-  line-height: 1;
-}
-
-.sl-logo-link {
-  display: inline-flex;
-  flex-shrink: 0;
-  padding: 2px;
-  text-decoration: none;
-  color: inherit;
-  border-bottom: none !important;
-  padding-bottom: 2px !important;
-}
-
-.sl-logo-link:focus-visible {
-  outline: 2px solid var(--mono-700);
-  outline-offset: 2px;
-}
-
 .sl-main {
   overflow-x: hidden;
 }

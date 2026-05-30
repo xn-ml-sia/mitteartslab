@@ -698,8 +698,8 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (pathname === '/landing' || pathname === '/landing.html') {
-    serveFile(res, path.join(ROOT, 'landing.html'));
+  if (pathname === '/stoneface' || pathname === '/stoneface.html' || pathname === '/landing' || pathname === '/landing.html') {
+    serveFile(res, path.join(ROOT, 'stoneface.html'));
     return;
   }
 
