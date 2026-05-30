@@ -75,6 +75,7 @@ float voxelEffectElapsed() {
     return max(0.0, iMouse.w - 1.0);
 }
 
+
 float voxelDissolveProgress() {
     float e = voxelEffectElapsed();
     return clamp((e - 0.12) / 1.68, 0.0, 1.0);
@@ -132,6 +133,8 @@ vec3 voxelizeStoneColor(vec3 pos, float elapsed) {
     neonMix *= vec3(1.1, 0.85, 1.18);
     return squareMask * neonMix * 1.52;
 }
+
+
 
 float fxRsq(float x) {
     float sx = sin(x);
@@ -542,7 +545,9 @@ vec3 getPixel(in vec2 coord, float time) {
     vec3 defaultBg = vec3(0.9, 0.86, 0.8);
     vec3 color = defaultBg;
 
-    if(td.x < 3.5 && p.y > -0.89) {
+    bool stoneHit = (td.x < 3.5 && p.y > -0.89);
+
+    if(stoneHit) {
       color = getStoneColor(p,occ.y,light,n,dir,time);
       color *= occ.x;
       float darkest = min(color.r, min(color.g, color.b));
@@ -559,7 +564,9 @@ vec3 getPixel(in vec2 coord, float time) {
           color = mix(color, voxelColor, dominantMix);
         }
       }
+
     }
+
     return color;
 }
 
