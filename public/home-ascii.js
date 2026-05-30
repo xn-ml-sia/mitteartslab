@@ -344,10 +344,11 @@ export const initHomeAscii = () => {
   if (!(layer instanceof HTMLElement)) return;
 
   const homeAscii = new HomeAscii(layer, 'Hello_world');
+  let toolsMenuActive = false;
 
-  const syncVisibility = (isOpen) => {
-    layer.classList.toggle('is-active', isOpen);
-    if (isOpen) {
+  const syncVisibility = () => {
+    layer.classList.toggle('is-active', toolsMenuActive);
+    if (toolsMenuActive) {
       homeAscii.onWindowResize();
       homeAscii.start();
       return;
@@ -355,14 +356,23 @@ export const initHomeAscii = () => {
     homeAscii.stop();
   };
 
-  const onMenuState = (event) => {
-    syncVisibility(Boolean(event?.detail?.isOpen));
+  const onMenuOpen = (event) => {
+    toolsMenuActive = Boolean(event?.detail?.isToolsMenu);
+    syncVisibility();
   };
 
+  const onMenuState = (event) => {
+    const isOpen = Boolean(event?.detail?.isOpen);
+    if (!isOpen) toolsMenuActive = false;
+    syncVisibility();
+  };
+
+  document.addEventListener('home-menu:open', onMenuOpen);
   document.addEventListener('home-menu:state', onMenuState);
-  syncVisibility(document.body.classList.contains('home-menu-open'));
+  syncVisibility();
 
   return () => {
+    document.removeEventListener('home-menu:open', onMenuOpen);
     document.removeEventListener('home-menu:state', onMenuState);
     homeAscii.dispose();
   };

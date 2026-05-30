@@ -79,6 +79,73 @@
   mix-blend-mode: multiply;
 }
 
+.home-tooltip-smaug {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  display: grid;
+  place-items: center;
+}
+
+.home-tooltip-smaug.is-active {
+  opacity: 1;
+}
+
+.home-tooltip-smaug-base {
+  position: relative;
+  bottom: -0.9em;
+  width: max-content;
+  max-width: 600px;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(0deg);
+  transform-origin: 50% 100%;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #141514;
+  z-index: 2;
+  opacity: 0;
+  box-sizing: border-box;
+}
+
+.home-tooltip-smaug-base::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 20px;
+  height: 20px;
+  background: #141514;
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 4px;
+  z-index: -1;
+}
+
+.home-tooltip-smaug-content {
+  color: #f2efe7;
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  max-width: 100%;
+  padding: 8px 16px;
+  margin: 0;
+  opacity: 0;
+  font-size: 0.85em;
+  text-align: center;
+  font-family: "Overpass Mono", "IBM Plex Mono", "Courier Prime", monospace;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+}
+
 .home-brand {
   position: absolute;
   top: clamp(10px, 1.2vw, 22px);
