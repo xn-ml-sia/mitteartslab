@@ -3,6 +3,7 @@ import { HOME_CONFIG } from './home-config.js';
 import { HomeState } from './home-state.js';
 import { HomeRenderer } from './home-renderer.js';
 import { initHomeMenus } from './home-menu.js';
+import { initHomeAscii } from './home-ascii.js';
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 document.documentElement.classList.add('home-mode-root');
@@ -39,6 +40,7 @@ const initBaseSystemGate = () => {
 };
 
 initHomeMenus();
+initHomeAscii();
 initPortfolioGate();
 initBaseSystemGate();
 

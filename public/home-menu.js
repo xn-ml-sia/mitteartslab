@@ -2,12 +2,35 @@ export const initHomeMenus = () => {
   const menus = Array.from(document.querySelectorAll('[data-menu]'));
   if (menus.length === 0) return () => {};
 
+  const emitMenuOpen = (menu) => {
+    document.dispatchEvent(
+      new CustomEvent('home-menu:open', {
+        detail: {
+          isToolsMenu: menu.classList.contains('home-quadrant-tools'),
+        },
+      }),
+    );
+  };
+
+  const updateOpenState = () => {
+    const hasOpenMenu = menus.some((menu) => menu.classList.contains('is-open'));
+    document.body.classList.toggle('home-menu-open', hasOpenMenu);
+    document.dispatchEvent(
+      new CustomEvent('home-menu:state', {
+        detail: {
+          isOpen: hasOpenMenu,
+        },
+      }),
+    );
+  };
+
   const closeMenus = () => {
     menus.forEach((menu) => {
       menu.classList.remove('is-open');
       const trigger = menu.querySelector('[data-menu-trigger]');
       if (trigger) trigger.setAttribute('aria-expanded', 'false');
     });
+    updateOpenState();
   };
 
   const onDocumentClick = (event) => {
@@ -36,6 +59,8 @@ export const initHomeMenus = () => {
       if (!isOpen) {
         menu.classList.add('is-open');
         trigger.setAttribute('aria-expanded', 'true');
+        updateOpenState();
+        emitMenuOpen(menu);
       }
     });
   });
