@@ -316,6 +316,12 @@ class HomeAscii {
       targetWidth = targetHeight * textAspect;
     }
 
+    if (this.isMobile) {
+      // Mobile art-direction: keep the computed width, but stretch to 9:16.
+      const stretchedHeight = targetWidth * (16 / 9);
+      targetHeight = Math.min(stretchedHeight, visibleHeight * 0.92);
+    }
+
     this.mesh.scale.set(
       targetWidth / this.baseMeshSize.width,
       targetHeight / this.baseMeshSize.height,

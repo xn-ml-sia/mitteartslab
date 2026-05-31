@@ -156,6 +156,11 @@
   align-items: center;
   gap: 8px;
   pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.home-mode.home-menu-open .home-brand {
+  opacity: 0;
 }
 
 .home-brand-name {
@@ -372,6 +377,10 @@
 }
 
 @media (max-width: 768px) {
+  .home-brand-name {
+    display: none;
+  }
+
   .home-tooltip-smaug-base {
     bottom: -0.6em;
     padding: 8px 12px;
