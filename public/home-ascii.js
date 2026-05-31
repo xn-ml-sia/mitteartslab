@@ -286,7 +286,7 @@ class HomeAscii {
       x: this.width / 2,
       y: this.height / 2,
     };
-    this.text.setFontSize(this.isMobile ? 132 : 210);
+    this.text.setFontSize(this.isMobile ? 200 : 300);
     this.text.resize();
     this.camera.aspect = this.width / this.height;
     this.camera.updateProjectionMatrix();
@@ -300,10 +300,14 @@ class HomeAscii {
     const textAspect = Math.max(1, this.text.width / Math.max(1, this.text.height));
     const visibleHeight = 2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) * this.camera.position.z;
     const visibleWidth = visibleHeight * this.camera.aspect;
+    const baselineFontSize = 170;
+    const sizeFactor = THREE.MathUtils.clamp(this.text.fontSize / baselineFontSize, 0.3, 2.4);
 
-    // Keep the animated plane comfortably inside the frame.
-    const maxWidth = visibleWidth * (this.isMobile ? 0.72 : 0.78);
-    const maxHeight = visibleHeight * (this.isMobile ? 0.28 : 0.34);
+    // Keep the animated plane comfortably inside frame, but let font-size influence target footprint.
+    const nominalWidth = visibleWidth * (this.isMobile ? 0.72 : 0.78) * sizeFactor;
+    const nominalHeight = visibleHeight * (this.isMobile ? 0.28 : 0.34) * sizeFactor;
+    const maxWidth = Math.min(visibleWidth * 0.9, nominalWidth);
+    const maxHeight = Math.min(visibleHeight * 0.5, nominalHeight);
 
     let targetWidth = maxWidth;
     let targetHeight = targetWidth / textAspect;
@@ -334,7 +338,7 @@ class HomeAscii {
 
   setMesh() {
     this.text = new CanvasTxt(this.textValue, {
-      fontSize: this.isMobile ? 132 : 210,
+      fontSize: this.isMobile ? 200 : 300,
     });
     this.texture = new THREE.CanvasTexture(this.text.texture);
     this.texture.minFilter = THREE.NearestFilter;
