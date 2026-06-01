@@ -70,6 +70,14 @@
           <div class="artwork-container">
             <div id="chapter-4-artwork" class="artwork chapter-artwork chapter-secondary-artwork" aria-label="Chapter 4 artwork">
               <canvas id="chapter-4-tree-canvas" class="chapter-canvas chapter-4-tree-canvas" width="700" height="700"></canvas>
+              <figure class="chapter-4-edge-photo" aria-label="Chapter 2 photo">
+                <img
+                  src="./public/assets/about/chapter-2-edge-photo.png"
+                  alt="Mal standing beside a potted tree in a bright room."
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
             </div>
           </div>
         </section>
@@ -95,11 +103,12 @@
           <ol class="shader-deck" role="list">
             <li class="shader-card" data-shader="s4c" data-pos="0" tabindex="0" aria-label="Card 1 of 2, section 4 earth shader. Tap to cycle on a small screen.">
               <canvas class="shader-canvas" width="1" height="1" aria-label=""></canvas>
+              <div class="orbit-text-mount" data-interlude-orbit-text aria-hidden="true"></div>
               <span class="shader-caption" aria-hidden="true">i. បបុហ</span>
             </li>
-            <li class="shader-card" data-shader="s4f" data-pos="1" tabindex="0" aria-label="Card 2 of 2, section 4 glitch poly shader. Tap to cycle on a small screen.">
-              <canvas class="shader-canvas" width="1" height="1" aria-label=""></canvas>
-              <span class="shader-caption" aria-hidden="true">ii. ប្តូររាង</span>
+            <li class="shader-card shader-card--torus" data-pos="1" tabindex="0" aria-label="Card 2 of 2, glass torus with 3D text. Tap to cycle on a small screen.">
+              <div class="torus-card-mount" data-interlude2-torus aria-hidden="true"></div>
+              <span class="shader-caption" aria-hidden="true">ii. MITTE ARTS LAB</span>
             </li>
           </ol>
         </section>
@@ -122,7 +131,6 @@
         </section>
       </main>
     </div>
-
     <script type="module">
       import { initMalLogos, setPageFavicon } from "./public/mal-logo.js";
 

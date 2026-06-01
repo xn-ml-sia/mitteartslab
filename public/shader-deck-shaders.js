@@ -1571,7 +1571,7 @@ float noise(in vec3 x)
 
 float distfield(vec3 pos)
 {
-    return length(pos)-1.125 + noise((pos + vec3(0, 0, iTime/3.0)) * 2.0) * 0.153;
+    return length(pos)-0.95 + noise((pos + vec3(0, 0, iTime/3.0)) * 2.0) * 0.12;
 }
 
 vec3 soap_p(in vec3 p)
@@ -1596,7 +1596,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     vec2 uv = -1.0 + 2.0 * fragCoord.xy / iResolution.xy;
     uv.x *= iResolution.x / iResolution.y;
 
-    vec3 rayOrigin = vec3(0.0, 0.0, 1.6);
+    vec3 rayOrigin = vec3(0.0, 0.0, 1.76);
     vec3 rayDir = normalize(vec3(uv.x, -uv.y, -1.0));
 
     float totalDist = 0.0;
@@ -1639,7 +1639,8 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
         soap_col = iridescent(soap_col.x);
         soap_col = pow(fresnel, 0.85) * pow(soap_col, vec3(0.985));
 
-        fragColor = vec4(spec + soap_col, 1.0);
+        float glassAlpha = clamp(0.68 + fresnel * 0.22, 0.0, 0.9);
+        fragColor = vec4(spec + soap_col, glassAlpha);
     }
 }
 `,

@@ -1,5 +1,7 @@
 import { SHADER_SOURCES } from './shader-deck-shaders.js';
 import { createShaderToyRunner as createSharedShaderToyRunner } from './shader-runner.js';
+import { initInterludeTwoTorusCard } from './interlude-torus-card.js';
+import { initInterludeOrbitTextCard } from './interlude-orbit-text-card.js';
 
 /** ESM build for chapter 2 particle vessel (vanilla port of EmptyParticles). */
 const THREE_CDN_MODULE = 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
@@ -2808,6 +2810,8 @@ const createAppRuntimeController = () => {
       initChapterThreeArtwork(),
       initChapterFourTreeArtwork(),
       initShaderDeck(),
+      initInterludeOrbitTextCard(),
+      initInterludeTwoTorusCard(),
       initChapterFlow(),
     ].filter(Boolean);
     started = true;
