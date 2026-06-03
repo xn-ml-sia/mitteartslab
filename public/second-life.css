@@ -609,7 +609,7 @@
   line-height: 1.25;
   letter-spacing: 0.02em;
   font-weight: 300;
-  max-width: 22ch;
+  max-width: fit-content;
 }
 
 .sl-pullquote footer {
