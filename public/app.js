@@ -1,7 +1,6 @@
 import { SHADER_SOURCES } from './shader-deck-shaders.js';
 import { createShaderToyRunner as createSharedShaderToyRunner } from './shader-runner.js';
 import { initInterludeTwoTorusCard } from './interlude-torus-card.js';
-import { initInterludeOrbitTextCard } from './interlude-orbit-text-card.js';
 
 /** ESM build for chapter 2 particle vessel (vanilla port of EmptyParticles). */
 const THREE_CDN_MODULE = 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
@@ -2312,6 +2311,102 @@ void main() {
 
 const isShaderDeckMobile = () => window.matchMedia('(max-width: 1024px)').matches;
 
+const initShaderDeckCardOrder = (section, cards) => {
+  if (!section || cards.length === 0) return null;
+
+  const order = cards.map((_, i) => i);
+  const applyOrder = () => {
+    order.forEach((ci, pos) => {
+      cards[ci].setAttribute('data-pos', String(pos));
+    });
+  };
+  applyOrder();
+
+  const setActiveRenderCardClass = () => {
+    if (!isShaderDeckMobile()) {
+      cards.forEach((card) => card.classList.remove('is-active-render'));
+      return;
+    }
+    const topCard = cards[order[0]];
+    cards.forEach((card) => {
+      if (card === topCard) card.classList.add('is-active-render');
+      else card.classList.remove('is-active-render');
+    });
+  };
+  setActiveRenderCardClass();
+
+  const cycle = () => {
+    if (!isShaderDeckMobile()) return;
+    const topI = order[0];
+    const top = cards[topI];
+    if (prefersReducedMotion) {
+      order.push(order.shift());
+      applyOrder();
+      setActiveRenderCardClass();
+      return;
+    }
+    top.classList.add('is-leaving');
+    window.setTimeout(() => {
+      top.classList.remove('is-leaving');
+      order.push(order.shift());
+      applyOrder();
+      setActiveRenderCardClass();
+    }, 360);
+  };
+
+  const onCardClick = (ev) => {
+    if (!isShaderDeckMobile()) return;
+    const idx = cards.indexOf(ev.currentTarget);
+    if (order[0] === idx) cycle();
+  };
+  cards.forEach((c) => c.addEventListener('click', onCardClick));
+
+  const onCardKey = (ev) => {
+    if (!isShaderDeckMobile() || (ev.key !== 'Enter' && ev.key !== ' ')) return;
+    const idx = cards.indexOf(ev.currentTarget);
+    if (order[0] === idx) {
+      ev.preventDefault();
+      cycle();
+    }
+  };
+  cards.forEach((c) => c.addEventListener('keydown', onCardKey));
+
+  return () => {
+    cards.forEach((c) => {
+      c.removeEventListener('click', onCardClick);
+      c.removeEventListener('keydown', onCardKey);
+    });
+  };
+};
+
+const initShaderDeckVideos = () => {
+  const section = document.getElementById('interlude-2');
+  if (!section) return null;
+  const videos = Array.from(section.querySelectorAll('.shader-card-video'));
+  if (videos.length === 0) return null;
+
+  const playAll = () => {
+    videos.forEach((video) => {
+      if (video.readyState >= 2) video.play().catch(() => {});
+      else video.addEventListener('loadeddata', () => video.play().catch(() => {}), { once: true });
+    });
+  };
+  const pauseAll = () => videos.forEach((video) => video.pause());
+
+  const tracker = createSectionVisibilityTracker(section, 0.15);
+  const unsubscribe = tracker.subscribe((isVisible) => {
+    if (isVisible) playAll();
+    else pauseAll();
+  });
+  if (tracker.isVisible()) playAll();
+
+  return () => {
+    unsubscribe();
+    tracker.dispose();
+    pauseAll();
+  };
+};
+
 const initSingleShaderDeck = (section) => {
   if (!section) return null;
   if (!section.classList.contains('shader-deck-section')) return null;
@@ -2328,7 +2423,7 @@ const initSingleShaderDeck = (section) => {
       return { card, canvas, key, runner, lastDrawMs: 0 };
     })
     .filter(Boolean);
-  if (entries.length === 0) return null;
+  if (entries.length === 0) return initShaderDeckCardOrder(section, cards);
 
   // Unify monochrome family with per-shader value balancing.
   const monochromeFilterByShader = {
@@ -2810,7 +2905,7 @@ const createAppRuntimeController = () => {
       initChapterThreeArtwork(),
       initChapterFourTreeArtwork(),
       initShaderDeck(),
-      initInterludeOrbitTextCard(),
+      initShaderDeckVideos(),
       initInterludeTwoTorusCard(),
       initChapterFlow(),
     ].filter(Boolean);

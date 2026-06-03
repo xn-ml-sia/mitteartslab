@@ -663,6 +663,29 @@ body,
   user-select: none;
 }
 
+.shader-card--video {
+  padding: 24px;
+  background: #000;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shader-card--video .shader-card-video {
+  position: relative;
+  width: 75%;
+  height: 75%;
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  object-fit: contain;
+  border: none;
+  background: #000;
+  pointer-events: none;
+  filter: grayscale(1);
+}
+
 .shader-card--torus .torus-card-mount {
   position: absolute;
   inset: 0;

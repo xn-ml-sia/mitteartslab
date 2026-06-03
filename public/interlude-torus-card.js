@@ -2,7 +2,38 @@ const THREE_URL = 'https://esm.sh/three@0.170.0';
 const FONT_LOADER_URL = 'https://esm.sh/three@0.170.0/examples/jsm/loaders/FontLoader.js';
 const TEXT_GEOMETRY_URL = 'https://esm.sh/three@0.170.0/examples/jsm/geometries/TextGeometry.js';
 const FONT_URL = 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/fonts/helvetiker_regular.typeface.json';
-const TORUS_TEXT = ' MEET MAL  MEET MAL  MEET MAL ';
+const TORUS_TEXT = 'MITTE ARTS LAB MITTE ARTS LAB ';
+
+const FUNHOUSE_NORMAL_SIZE = 64;
+
+/** Radial bulge + ripple normals — magnifies / warps sphere reflections like convex funhouse glass. */
+const fillFunhouseNormalMap = (data, size, time) => {
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const u = x / (size - 1);
+      const v = y / (size - 1);
+      const px = (u - 0.5) * 2;
+      const py = (v - 0.5) * 2;
+      const r = Math.sqrt(px * px + py * py);
+      const convex = 1 + 0.72 * Math.pow(Math.max(0, 1 - r * 1.05), 2.1);
+      const ripple =
+        Math.sin(r * 10.5 - time * 2.6) * 0.16 +
+        Math.sin(px * 8 + time * 1.9) * 0.09 +
+        Math.sin(py * 7 - time * 1.4) * 0.08;
+      let nx = px * (convex + ripple);
+      let ny = py * (convex + ripple);
+      const len = Math.hypot(nx, ny, 1);
+      nx /= len;
+      ny /= len;
+      const nz = 1 / len;
+      const i = (y * size + x) * 4;
+      data[i] = Math.floor((nx * 0.5 + 0.5) * 255);
+      data[i + 1] = Math.floor((ny * 0.5 + 0.5) * 255);
+      data[i + 2] = Math.floor((nz * 0.5 + 0.5) * 255);
+      data[i + 3] = 255;
+    }
+  }
+};
 
 const disposeObjectTree = (root) => {
   root.traverse((node) => {
@@ -47,27 +78,41 @@ export const initInterludeTwoTorusCard = () => {
       fillLight.position.set(-2.2, -1.2, -2.8);
       scene.add(fillLight);
 
-      const torus = new THREE.Mesh(
-        new THREE.SphereGeometry(0.9, 64, 64),
+      const funhouseNormalData = new Uint8Array(FUNHOUSE_NORMAL_SIZE * FUNHOUSE_NORMAL_SIZE * 4);
+      fillFunhouseNormalMap(funhouseNormalData, FUNHOUSE_NORMAL_SIZE, 0);
+      const funhouseNormalMap = new THREE.DataTexture(
+        funhouseNormalData,
+        FUNHOUSE_NORMAL_SIZE,
+        FUNHOUSE_NORMAL_SIZE,
+      );
+      funhouseNormalMap.wrapS = THREE.RepeatWrapping;
+      funhouseNormalMap.wrapT = THREE.RepeatWrapping;
+      funhouseNormalMap.needsUpdate = true;
+
+      const glassCube = new THREE.Mesh(
+        new THREE.BoxGeometry(1.18, 1.18, 1.18),
         new THREE.MeshPhysicalMaterial({
           color: 0xd9e9ff,
-          metalness: 0.02,
-          roughness: 0.06,
+          metalness: 0.04,
+          roughness: 0.03,
           transmission: 1,
-          ior: 1.2,
-          thickness: 1.1,
+          ior: 1.28,
+          thickness: 1.15,
           transparent: true,
           opacity: 0.94,
-          envMapIntensity: 1.2,
+          envMap: null,
+          envMapIntensity: 0,
           clearcoat: 1,
-          clearcoatRoughness: 0.06,
+          clearcoatRoughness: 0.18,
+          normalMap: funhouseNormalMap,
+          normalScale: new THREE.Vector2(1.15, 1.15),
           attenuationDistance: 1.1,
           attenuationColor: 0xdde8ff,
         }),
       );
-      // Keep torus aligned with the existing text ring (do not move text).
-      torus.position.y = 0.30;
-      scene.add(torus);
+      // Keep cube aligned with the existing text ring (do not move text).
+      glassCube.position.y = 0.30;
+      scene.add(glassCube);
 
       const textGroup = new THREE.Group();
       textGroup.rotation.x = 0.2;
@@ -100,10 +145,9 @@ export const initInterludeTwoTorusCard = () => {
             geometry.center();
             const letter = new THREE.Mesh(
               geometry,
-              new THREE.MeshStandardMaterial({
-                color: 0xf4f7ff,
-                metalness: 0.14,
-                roughness: 0.28,
+              new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                toneMapped: false,
               }),
             );
             const angle = index * angleStep;
@@ -115,7 +159,7 @@ export const initInterludeTwoTorusCard = () => {
         },
         undefined,
         () => {
-          // Keep torus even if the font fails to load.
+          // Keep cube even if the font fails to load.
         },
       );
 
@@ -143,10 +187,16 @@ export const initInterludeTwoTorusCard = () => {
       const tick = (time) => {
         if (running) {
           const t = time * 0.001;
+          fillFunhouseNormalMap(funhouseNormalData, FUNHOUSE_NORMAL_SIZE, t);
+          funhouseNormalMap.needsUpdate = true;
+          glassCube.rotation.x = t * 0.58;
+          glassCube.rotation.y = t * 0.91;
+          glassCube.rotation.z = t * 0.37;
           if (fontLoaded) {
+            const tiltUpDown = Math.sin(t * 0.44) * 0.28;
             textGroup.rotation.y = -t * 0.51;
-            textGroup.rotation.z = Math.sin(t * 0.37 + 1.35) * 0.06;
-            textGroup.rotation.x = 0.2 + Math.sin(t * 0.29 + 0.4) * 0.022;
+            textGroup.rotation.x = 0.22 + tiltUpDown;
+            textGroup.rotation.z = Math.sin(t * 0.37 + 1.35) * 0.05;
           }
           renderer.render(scene, camera);
         }
@@ -166,6 +216,7 @@ export const initInterludeTwoTorusCard = () => {
         intersectionObserver.disconnect();
         document.removeEventListener('visibilitychange', updateVisibility);
         disposeObjectTree(scene);
+        funhouseNormalMap.dispose();
         renderer.dispose();
         mount.replaceChildren();
       };
