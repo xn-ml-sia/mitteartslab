@@ -572,7 +572,14 @@ body,
     box-sizing: border-box;
     margin-left: 0;
     margin-right: 0;
-    padding: 14px 14px 8px;
+    padding: 0 14px 8px;
+    transform: translateY(-28px);
+  }
+
+  #chapter-2 .chapter-4-edge-photo {
+    top: auto;
+    bottom: 48px;
+    transform: none;
   }
 
   .chapter-4-edge-photo {
@@ -585,7 +592,9 @@ body,
     display: block;
     width: clamp(140px, 40vw, 200px);
     right: calc(50% - 50vw - 1px);
-    top: 40%;
+    top: auto;
+    bottom: 48px;
+    transform: none;
   }
 
   #chapter-4 .chapter-4-edge-photo {
