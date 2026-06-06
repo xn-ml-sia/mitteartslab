@@ -1,6 +1,9 @@
 import { SHADER_SOURCES } from './shader-deck-shaders.js';
 import { createShaderToyRunner as createSharedShaderToyRunner } from './shader-runner.js';
 import { initInterludeTwoTorusCard } from './interlude-torus-card.js';
+import { initInterludeOrbitTextCard } from './interlude-orbit-text-card.js';
+
+const isArchivePage = () => document.body.classList.contains('archive-page');
 
 /** ESM build for chapter 2 particle vessel (vanilla port of EmptyParticles). */
 const THREE_CDN_MODULE = 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
@@ -2379,9 +2382,7 @@ const initShaderDeckCardOrder = (section, cards) => {
   };
 };
 
-const initShaderDeckVideos = () => {
-  const section = document.getElementById('interlude-2');
-  if (!section) return null;
+const initShaderDeckVideosForSection = (section) => {
   const videos = Array.from(section.querySelectorAll('.shader-card-video'));
   if (videos.length === 0) return null;
 
@@ -2405,6 +2406,14 @@ const initShaderDeckVideos = () => {
     tracker.dispose();
     pauseAll();
   };
+};
+
+const initShaderDeckVideos = () => {
+  const cleanups = Array.from(document.querySelectorAll('.shader-deck-section'))
+    .map((section) => initShaderDeckVideosForSection(section))
+    .filter(Boolean);
+  if (cleanups.length === 0) return null;
+  return () => cleanups.forEach((cleanup) => cleanup());
 };
 
 const initSingleShaderDeck = (section) => {
@@ -2800,14 +2809,26 @@ const initSingleShaderDeck = (section) => {
   };
 };
 
+const mountShaderDecks = (root = document) => {
+  const sections = Array.from(root.querySelectorAll('.shader-deck-section'));
+  if (sections.length === 0) return () => {};
+
+  const shaderCleanups = sections.map((section) => initSingleShaderDeck(section)).filter(Boolean);
+  const videoCleanups = sections
+    .map((section) => initShaderDeckVideosForSection(section))
+    .filter(Boolean);
+
+  return () => {
+    shaderCleanups.forEach((cleanup) => cleanup());
+    videoCleanups.forEach((cleanup) => cleanup());
+  };
+};
+
 const initShaderDeck = () => {
   const sections = Array.from(document.querySelectorAll('.shader-deck-section'));
   if (sections.length === 0) return null;
-  const cleanups = sections.map((section) => initSingleShaderDeck(section)).filter(Boolean);
-  if (cleanups.length === 0) return null;
-  return () => {
-    cleanups.forEach((cleanup) => cleanup());
-  };
+  const cleanup = mountShaderDecks(document);
+  return cleanup;
 };
 
 const initChapterFlow = () => {
@@ -2899,16 +2920,23 @@ const createAppRuntimeController = () => {
   const start = () => {
     if (started || destroyed) return;
     debugOverlay?.setApp({ phase: 'starting' });
-    cleanups = [
-      initChapterOneArtwork(),
-      initChapterTwoArtwork(),
-      initChapterThreeArtwork(),
-      initChapterFourTreeArtwork(),
-      initShaderDeck(),
-      initShaderDeckVideos(),
-      initInterludeTwoTorusCard(),
-      initChapterFlow(),
-    ].filter(Boolean);
+    cleanups = isArchivePage()
+      ? [
+          initShaderDeck(),
+          initShaderDeckVideos(),
+          initInterludeOrbitTextCard(),
+        ].filter(Boolean)
+      : [
+          initChapterOneArtwork(),
+          initChapterTwoArtwork(),
+          initChapterThreeArtwork(),
+          initChapterFourTreeArtwork(),
+          initShaderDeck(),
+          initShaderDeckVideos(),
+          initInterludeOrbitTextCard(),
+          initInterludeTwoTorusCard(),
+          initChapterFlow(),
+        ].filter(Boolean);
     started = true;
     debugOverlay?.setApp({ phase: 'running' });
     wake();
@@ -2962,9 +2990,15 @@ const createAppRuntimeController = () => {
   return { start, pause, resume, destroy };
 };
 
-if (window.__malAppRuntime && typeof window.__malAppRuntime.resume === 'function') {
-  window.__malAppRuntime.resume();
-} else {
-  window.__malAppRuntime = createAppRuntimeController();
-  window.__malAppRuntime.start();
+const isServicesPage = () => document.body.classList.contains('services-page');
+
+if (!isServicesPage()) {
+  if (window.__malAppRuntime && typeof window.__malAppRuntime.resume === 'function') {
+    window.__malAppRuntime.resume();
+  } else {
+    window.__malAppRuntime = createAppRuntimeController();
+    window.__malAppRuntime.start();
+  }
 }
+
+export { mountShaderDecks };

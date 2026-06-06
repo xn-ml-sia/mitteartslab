@@ -698,6 +698,21 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === '/archive' || pathname === '/archive.html') {
+    serveFile(res, path.join(ROOT, 'archive.html'));
+    return;
+  }
+
+  if (pathname === '/services' || pathname === '/services.html') {
+    serveFile(res, path.join(ROOT, 'services.html'));
+    return;
+  }
+  if (pathname.startsWith('/services/') && !pathname.slice('/services/'.length).includes('.')) {
+    res.writeHead(301, { Location: '/services' });
+    res.end();
+    return;
+  }
+
   if (pathname === '/stoneface' || pathname === '/stoneface.html' || pathname === '/landing' || pathname === '/landing.html') {
     serveFile(res, path.join(ROOT, 'stoneface.html'));
     return;

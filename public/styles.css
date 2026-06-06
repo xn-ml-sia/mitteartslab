@@ -1567,3 +1567,72 @@ body.stoneface-mode .attribution--rich {
   }
 }
 
+/* --- Archive page: sectioned two-card decks --- */
+.archive-page .chapter-main,
+.archive-page .archive-main {
+  height: auto;
+  min-height: calc(100dvh - 60px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: none;
+}
+
+.archive-main {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  padding: 28px 72px 64px;
+  box-sizing: border-box;
+}
+
+.archive-intro {
+  max-width: 42rem;
+}
+
+.archive-intro-text {
+  margin: 0;
+  line-height: 1.5;
+  opacity: 0.88;
+}
+
+.archive-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.archive-section-head h2 {
+  margin: 0 0 6px;
+  font-family: var(--font-family-code) !important;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  font-weight: 400;
+}
+
+.archive-section-head p {
+  margin: 0;
+  max-width: 40rem;
+  line-height: 1.45;
+  opacity: 0.82;
+  font-size: 0.94em;
+}
+
+.archive-page .shader-deck-section {
+  min-height: auto;
+  padding: 0;
+  background: transparent;
+  border-top: none;
+}
+
+.archive-page .shader-deck {
+  max-width: 1280px;
+}
+
+@media (max-width: 1024px) {
+  .archive-main {
+    padding: 20px 14px 48px;
+    gap: 44px;
+  }
+}
+

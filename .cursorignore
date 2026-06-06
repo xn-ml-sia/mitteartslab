@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Vendor bundles (minified, indexed poorly)
+public/vendor/
+
+# Git
+.git/
+
+# OS
+.DS_Store

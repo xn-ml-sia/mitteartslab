@@ -1,4 +1,14 @@
 class MalChapterHeader extends HTMLElement {
+  static get observedAttributes() {
+    return ['label'];
+  }
+
+  attributeChangedCallback(name, _oldValue, newValue) {
+    if (name !== 'label') return;
+    const labelEl = this.querySelector('.mal-header-label');
+    if (labelEl) labelEl.textContent = newValue || '';
+  }
+
   connectedCallback() {
     const label = this.getAttribute('label') || '';
     const logoVariant = this.getAttribute('logo-variant') || 'bottom';

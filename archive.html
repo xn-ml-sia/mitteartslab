@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mitte arts lab : archive</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%3E%3C%2Frect%3E%3Cellipse%20cx%3D%227.641%22%20cy%3D%228.29%22%20rx%3D%222.565%22%20ry%3D%223.208%22%20fill%3D%22none%22%20stroke%3D%22%23603553%22%20stroke-width%3D%221%22%3E%3C%2Fellipse%3E%3Cellipse%20cx%3D%228.279%22%20cy%3D%227.774%22%20rx%3D%221.214%22%20ry%3D%221.342%22%20fill%3D%22none%22%20stroke%3D%22%23603553%22%20stroke-width%3D%221%22%3E%3C%2Fellipse%3E%3C%2Fsvg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./public/styles.css" />
+  </head>
+  <body class="archive-page">
+    <script type="module" src="./public/chapter-header.js"></script>
+    <div class="chapter-page-shell chapter-page">
+      <mal-chapter-header
+        label="archive"
+        logo-variant="bottom"
+        home-href="./about.html"
+        home-label="meet mal"
+      ></mal-chapter-header>
+
+      <main class="main archive-main">
+        <header class="archive-intro">
+          <p class="archive-intro-text">
+            Experiments removed or replaced on the About page — two cards per section.
+          </p>
+        </header>
+
+        <section class="archive-section" aria-labelledby="archive-interlude-2-title">
+          <header class="archive-section-head">
+            <h2 id="archive-interlude-2-title">Interlude 2</h2>
+            <p>Earth bubble shader (removed from About) beside the easing video that replaced it.</p>
+          </header>
+          <section id="archive-interlude-2" class="shader-deck-section" aria-label="Interlude 2 archive deck">
+            <ol class="shader-deck" role="list">
+              <li
+                class="shader-card"
+                data-shader="s4c"
+                data-pos="0"
+                tabindex="0"
+                aria-label="Card 1 of 2, earth bubble shader with orbit text."
+              >
+                <canvas class="shader-canvas" width="1" height="1" aria-label=""></canvas>
+                <div class="orbit-text-mount" data-interlude-orbit-text aria-hidden="true"></div>
+              </li>
+              <li
+                class="shader-card shader-card--video"
+                data-pos="1"
+                tabindex="0"
+                aria-label="Card 2 of 2, easing animation video."
+              >
+                <video
+                  class="shader-card-video"
+                  src="./public/assets/about/easing-ds.mp4"
+                  autoplay
+                  muted
+                  loop
+                  playsinline
+                  preload="metadata"
+                  aria-label="Easing design system animation"
+                ></video>
+              </li>
+            </ol>
+          </section>
+        </section>
+
+        <section class="archive-section" aria-labelledby="archive-interlude-1-title">
+          <header class="archive-section-head">
+            <h2 id="archive-interlude-1-title">Interlude 1</h2>
+            <p>Water and rock shader pair from the first About interlude.</p>
+          </header>
+          <section id="archive-interlude-1" class="shader-deck-section" aria-label="Interlude 1 archive deck">
+            <ol class="shader-deck" role="list">
+              <li
+                class="shader-card"
+                data-shader="sec2_goo"
+                data-pos="0"
+                tabindex="0"
+                aria-label="Card 1 of 2, goo shader."
+              >
+                <canvas class="shader-canvas" width="1" height="1" aria-label=""></canvas>
+              </li>
+              <li
+                class="shader-card"
+                data-shader="sec2_rock"
+                data-pos="1"
+                tabindex="0"
+                aria-label="Card 2 of 2, rock shader."
+              >
+                <canvas class="shader-canvas" width="1" height="1" aria-label=""></canvas>
+              </li>
+            </ol>
+          </section>
+        </section>
+      </main>
+    </div>
+    <script type="module">
+      import { initMalLogos, setPageFavicon } from "./public/mal-logo.js";
+
+      initMalLogos();
+      setPageFavicon("bottom");
+    </script>
+    <script type="module" src="./public/app.js"></script>
+  </body>
+</html>
