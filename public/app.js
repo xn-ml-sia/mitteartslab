@@ -4,6 +4,7 @@ import { initInterludeTwoTorusCard } from './interlude-torus-card.js';
 import { initInterludeOrbitTextCard } from './interlude-orbit-text-card.js';
 
 const isArchivePage = () => document.body.classList.contains('archive-page');
+const isAboutPage = () => document.body.classList.contains('about-page');
 
 /** ESM build for chapter 2 particle vessel (vanilla port of EmptyParticles). */
 const THREE_CDN_MODULE = 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
@@ -1287,15 +1288,15 @@ const ch4DrawTree = (ctx, sysData, alpha, time, options = {}) => {
   }
 };
 
-const initChapterFourTreeArtwork = () => {
-  const canvas = document.getElementById('chapter-4-tree-canvas');
+const initAboutTreeArtwork = () => {
+  const canvas = document.getElementById('about-tree-canvas');
   if (!canvas) return null;
   const ctx = canvas.getContext('2d', { alpha: true });
   if (!ctx) return null;
-  const section = canvas.closest('.chapter-observe');
+  const section = canvas.closest('[data-about-section]');
   const visibilityNode = resolveVisibilityNode(section, canvas);
   const sectionTracker = createSectionVisibilityTracker(visibilityNode, 0.2);
-  const debug = createDebugModuleProbe('chapter4');
+  const debug = createDebugModuleProbe('aboutTree');
   debug?.set({ running: false, visible: sectionTracker.isVisible(), renderState: 'init' });
 
   let logicalW = 1;
@@ -1409,11 +1410,19 @@ const initChapterFourTreeArtwork = () => {
     const b = CH4_GLOBAL_BOUNDS;
     const bw = Math.max(b.maxX - b.minX, 1e-6);
     const bh = Math.max(b.maxY - b.minY, 1e-6);
-    const baseScale = Math.min((cw - 2 * pad) / bw, (ch - 2 * pad) / bh);
+    const bottomAlign = window.matchMedia('(max-width: 1024px)').matches;
+    const mobilePad = bottomAlign ? 8 : pad;
+    const baseScale = bottomAlign
+      ? (cw - 2 * mobilePad) / bw
+      : Math.min((cw - 2 * pad) / bw, (ch - 2 * pad) / bh);
     const breathing = prefersReducedMotion || isTransitioning ? 1 : (1 + Math.sin(drawTime * 0.35) * 0.012);
     const scale = baseScale * breathing;
-    const tx = pad + (cw - 2 * pad - bw * scale) / 2 - b.minX * scale;
-    const ty = pad + (ch - 2 * pad - bh * scale) / 2 - b.minY * scale;
+    const tx = bottomAlign
+      ? cw / 2 - (CH4_REF_W / 2) * scale
+      : pad + (cw - 2 * pad - bw * scale) / 2 - b.minX * scale;
+    const ty = bottomAlign
+      ? ch - mobilePad - CH4_REF_H * 0.92 * scale
+      : pad + (ch - 2 * pad - bh * scale) / 2 - b.minY * scale;
     ctx.setTransform(scale * dpr, 0, 0, scale * dpr, tx * dpr, ty * dpr);
 
     if (prefersReducedMotion) {
@@ -2434,27 +2443,6 @@ const initSingleShaderDeck = (section) => {
     .filter(Boolean);
   if (entries.length === 0) return initShaderDeckCardOrder(section, cards);
 
-  // Unify monochrome family with per-shader value balancing.
-  const monochromeFilterByShader = {
-    // Section 2 deck
-    sec2_goo: 'grayscale(1) contrast(1.12) brightness(0.90)',
-    sec2_rock: 'grayscale(1) contrast(1.08) brightness(0.94)',
-    ftcyzn: 'grayscale(1) contrast(1.10) brightness(0.92)',
-    ldSSzV: 'grayscale(1) contrast(1.06) brightness(0.96)',
-    ldyXRw: 'grayscale(1) contrast(1.06) brightness(0.96)',
-    // Section 4 deck
-    s4a: 'grayscale(1) contrast(1.16) brightness(0.90)',
-    s4b: 'grayscale(1) contrast(1.14) brightness(0.92)',
-    // Keep shader A/B in color for Section 4.
-    s4c: 'none',
-    s4f: 'none',
-  };
-
-  entries.forEach((entry) => {
-    entry.canvas.style.filter =
-      monochromeFilterByShader[entry.key] || 'grayscale(1) contrast(1.08) brightness(0.94)';
-  });
-
   const order = cards.map((_, i) => i);
   const applyOrder = () => {
     order.forEach((ci, pos) => {
@@ -2831,82 +2819,6 @@ const initShaderDeck = () => {
   return cleanup;
 };
 
-const initChapterFlow = () => {
-  if (window.matchMedia('(max-width: 1024px)').matches) return null;
-  const container = document.querySelector('.chapter-main');
-  const sections = Array.from(document.querySelectorAll('.chapter-observe'));
-  if (!container || sections.length === 0) return null;
-
-  const applyInitialVisibility = () => {
-    let anyVisible = false;
-    sections.forEach((section) => {
-      if (computeVisibilityRatio(section) >= 0.12) {
-        section.classList.add('in-view');
-        anyVisible = true;
-      }
-    });
-    if (!anyVisible && sections[0]) sections[0].classList.add('in-view');
-  };
-  applyInitialVisibility();
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
-        }
-      });
-    },
-    {
-      threshold: 0.55,
-    },
-  );
-
-  sections.forEach((section) => observer.observe(section));
-  const initialVisibilityTick = requestAnimationFrame(applyInitialVisibility);
-
-  // Match the smoother original behavior: let native scrolling + CSS snap
-  // handle wheel/trackpad momentum. Keep JS only for keyboard step navigation.
-  const jumpTo = (next) => {
-    if (next < 0 || next >= sections.length) return;
-    sections[next].scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  const getCurrentIndex = () => {
-    const top = container.getBoundingClientRect().top;
-    let best = 0;
-    let bestDist = Infinity;
-    sections.forEach((s, i) => {
-      const d = Math.abs(s.getBoundingClientRect().top - top);
-      if (d < bestDist) {
-        bestDist = d;
-        best = i;
-      }
-    });
-    return best;
-  };
-
-  const onKey = (e) => {
-    const tag = document.activeElement?.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
-    if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) return;
-    e.preventDefault();
-    const current = getCurrentIndex();
-    const delta = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
-    const next = Math.max(0, Math.min(sections.length - 1, current + delta));
-    if (next === current) return;
-    jumpTo(next);
-  };
-
-  window.addEventListener('keydown', onKey);
-
-  return () => {
-    cancelAnimationFrame(initialVisibilityTick);
-    observer.disconnect();
-    window.removeEventListener('keydown', onKey);
-  };
-};
-
 const createAppRuntimeController = () => {
   let cleanups = [];
   let started = false;
@@ -2922,21 +2834,15 @@ const createAppRuntimeController = () => {
     debugOverlay?.setApp({ phase: 'starting' });
     cleanups = isArchivePage()
       ? [
-          initShaderDeck(),
-          initShaderDeckVideos(),
-          initInterludeOrbitTextCard(),
-        ].filter(Boolean)
-      : [
           initChapterOneArtwork(),
-          initChapterTwoArtwork(),
           initChapterThreeArtwork(),
-          initChapterFourTreeArtwork(),
+          initChapterTwoArtwork(),
           initShaderDeck(),
           initShaderDeckVideos(),
           initInterludeOrbitTextCard(),
           initInterludeTwoTorusCard(),
-          initChapterFlow(),
-        ].filter(Boolean);
+        ].filter(Boolean)
+      : [];
     started = true;
     debugOverlay?.setApp({ phase: 'running' });
     wake();
@@ -2992,7 +2898,9 @@ const createAppRuntimeController = () => {
 
 const isServicesPage = () => document.body.classList.contains('services-page');
 
-if (!isServicesPage()) {
+export { mountShaderDecks, initAboutTreeArtwork };
+
+if (!isServicesPage() && !isAboutPage()) {
   if (window.__malAppRuntime && typeof window.__malAppRuntime.resume === 'function') {
     window.__malAppRuntime.resume();
   } else {
@@ -3000,5 +2908,3 @@ if (!isServicesPage()) {
     window.__malAppRuntime.start();
   }
 }
-
-export { mountShaderDecks };

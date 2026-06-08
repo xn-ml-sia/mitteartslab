@@ -18,13 +18,13 @@ class MalChapterHeader extends HTMLElement {
 
     const rightContent = homeHref
       ? `
-        <span class="mal-header-label">${label}</span>
-        <span class="mal-header-sep" aria-hidden="true">·</span>
+        ${label ? `<span class="mal-header-label">${label}</span>` : ''}
+        ${label ? `<span class="mal-header-sep" aria-hidden="true">·</span>` : ''}
         <a class="chapter-link" href="${homeHref}">${homeLabel}</a>
       `
-      : `
-        <span class="mal-header-label">${label}</span>
-      `;
+      : label
+        ? `<span class="mal-header-label">${label}</span>`
+        : '';
 
     this.innerHTML = `
       <header class="header chapter-header">
@@ -32,9 +32,7 @@ class MalChapterHeader extends HTMLElement {
           <span class="mal-logo" data-mal-logo="${logoVariant}" aria-hidden="true"></span>
           <span>${brand}</span>
         </div>
-        <div class="mal-header-right">
-          ${rightContent}
-        </div>
+        ${rightContent ? `<div class="mal-header-right">${rightContent}</div>` : ''}
       </header>
     `;
   }

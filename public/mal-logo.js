@@ -103,7 +103,7 @@ function mountMalLogo(el) {
     }
     const dt = now - lastTime;
     lastTime = now;
-    theta = (theta + (dt / periodMs) * TWO_PI) % TWO_PI;
+    theta = (theta - (dt / periodMs) * TWO_PI + TWO_PI) % TWO_PI;
     updateDot(svg, safeView, theta);
     rafId = window.requestAnimationFrame(step);
   };

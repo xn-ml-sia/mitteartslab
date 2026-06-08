@@ -1,0 +1,399 @@
+/* About page — three full-viewport sections, document scroll */
+
+.about-page {
+  --about-gutter: 72px;
+  --about-gutter-mobile: 14px;
+  --about-text-max: 576px;
+  --about-gap: 40px;
+  --about-art-slot: min(75.2vw, 420px);
+  --about-photo-width: clamp(210px, 25vw, 360px);
+}
+
+html:has(body.about-page) {
+  scroll-snap-type: y proximity;
+  overflow-x: clip;
+}
+
+body.about-page {
+  overflow-x: clip;
+}
+
+.about-shell {
+  max-width: 1400px;
+  margin: 0 auto;
+  background-color: var(--rubin-ivory);
+}
+
+.about-page .chapter-header {
+  padding: 0 22px;
+  height: 60px;
+  box-sizing: border-box;
+}
+
+.about-main {
+  background-color: var(--rubin-ivory);
+  overflow: visible;
+}
+
+.about-copy,
+.about-copy p {
+  font-family: var(--font-family-code) !important;
+  font-weight: 300;
+  line-height: var(--line-height-base);
+  letter-spacing: var(--letter-spacing-base);
+  font-size: 15px;
+}
+
+.about-copy p {
+  margin: 0 0 1em;
+}
+
+.about-copy p:last-child {
+  margin-bottom: 0;
+}
+
+/* --- Shared section rhythm --- */
+
+.about-section {
+  position: relative;
+  box-sizing: border-box;
+  min-height: 100vh;
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+  overflow: visible;
+}
+
+.about-copy {
+  color: var(--text-color);
+  max-width: var(--about-text-max);
+}
+
+.about-section:not(.about-section--bio) .about-copy {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity var(--motion-slow) var(--motion-ease-standard),
+    transform var(--motion-slow) var(--motion-ease-standard);
+}
+
+.about-section.is-visible .about-copy,
+.about-section--bio .about-copy {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.about-photo {
+  margin: 0;
+  pointer-events: none;
+}
+
+.about-photo img {
+  display: block;
+  width: 100%;
+}
+
+/* --- Intro: text + portrait pinned to viewport right --- */
+
+.about-section--intro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--about-gap);
+  padding-inline: var(--about-gutter);
+}
+
+.about-section--intro::after {
+  content: '';
+  display: block;
+  width: var(--about-art-slot);
+  flex-shrink: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.about-section--intro .about-copy {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+
+.about-section--intro .about-photo--portrait {
+  position: absolute;
+  top: 50%;
+  right: calc(50% - 50vw);
+  width: var(--about-photo-width);
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  z-index: 2;
+  transform: translateY(calc(-50% + 18px)) scale(0.985);
+  transition:
+    opacity var(--motion-slow) var(--motion-ease-standard) 80ms,
+    transform var(--motion-slow) var(--motion-ease-standard) 80ms;
+}
+
+.about-section--intro.is-visible .about-photo--portrait {
+  transform: translateY(-50%) scale(1);
+}
+
+.about-section--intro .about-photo--portrait img {
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+/* --- Craft: copy over generative tree + studio photo --- */
+
+.about-section--craft {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--about-gap);
+  padding-inline: var(--about-gutter);
+  overflow-x: clip;
+  overflow-y: hidden;
+}
+
+.about-section--craft::after {
+  content: '';
+  display: block;
+  width: var(--about-art-slot);
+  flex-shrink: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.about-section--craft .about-copy {
+  position: relative;
+  z-index: 6;
+  width: 100%;
+}
+
+.about-section--craft .about-stage {
+  position: absolute;
+  top: 0;
+  left: calc(50% - 50vw);
+  width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.about-tree-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: none;
+  background: transparent;
+  touch-action: pan-y;
+  pointer-events: none;
+}
+
+.about-photo--studio {
+  position: absolute;
+  right: calc(50% - 50vw - 1px);
+  top: 40%;
+  transform: translateY(-50%);
+  width: var(--about-photo-width);
+  z-index: 5;
+}
+
+.about-section--craft .about-photo--studio {
+  position: absolute;
+}
+
+.about-photo--studio img {
+  height: auto;
+}
+
+/* --- Bio: centered copy only --- */
+
+.about-section--bio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--about-gutter);
+  text-align: center;
+}
+
+.about-section--bio .about-copy {
+  flex: 0 1 var(--about-text-max);
+  width: min(var(--about-text-max), 100%);
+}
+
+/* --- Mobile: three viewport pages, document scroll --- */
+
+@media (max-width: 1024px) {
+  .about-page {
+    --about-gutter: var(--about-gutter-mobile);
+    --about-gap: 20px;
+    --about-photo-width: clamp(154px, 34vw, 240px);
+  }
+
+  html:has(body.about-page) {
+    scroll-snap-type: y mandatory;
+  }
+
+  body.about-page {
+    overflow-x: clip;
+  }
+
+  .about-section {
+    height: 100dvh;
+    min-height: 100dvh;
+    max-height: 100dvh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    overflow: hidden;
+    padding: var(--about-gutter-mobile);
+    box-sizing: border-box;
+  }
+
+  .about-section--intro::after,
+  .about-section--craft::after {
+    display: none;
+  }
+
+  .about-section:not(.about-section--bio) .about-copy,
+  .about-section--intro .about-photo--portrait {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .about-section--intro .about-copy,
+  .about-section--craft .about-copy,
+  .about-section--bio .about-copy {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: none;
+    font-size: 14px;
+    padding: 0;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+  }
+
+  /* Section 1 — copy on top; photo fills remaining space edge to edge */
+  .about-section--intro {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0;
+    padding: 0;
+  }
+
+  .about-section--intro .about-copy {
+    flex-shrink: 0;
+    padding: var(--about-gutter-mobile);
+    padding-bottom: var(--about-gap);
+  }
+
+  .about-section--intro .about-photo--portrait {
+    position: relative;
+    top: auto;
+    right: auto;
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0 var(--about-gutter-mobile) var(--about-gutter-mobile);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .about-section--intro .about-photo--portrait img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: center center;
+  }
+
+  .about-section--intro.is-visible .about-photo--portrait {
+    transform: none;
+  }
+
+  /* Section 2 — text over tree; photo bottom-right on tree */
+  .about-section--craft {
+    display: block;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .about-section--craft .about-copy {
+    position: relative;
+    z-index: 6;
+    padding: var(--about-gutter-mobile);
+  }
+
+  .about-section--craft .about-stage {
+    position: absolute;
+    inset: 0;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .about-section--craft .about-tree-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .about-section--craft .about-photo--studio {
+    display: none;
+  }
+
+  /* Section 3 — centered bio */
+  .about-section--bio {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--about-gutter-mobile);
+    text-align: center;
+  }
+
+  .about-section--bio .about-copy {
+    text-align: center;
+    margin-inline: auto;
+    max-width: 34rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .about-page {
+    --about-photo-width: clamp(140px, 40vw, 200px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:has(body.about-page) {
+    scroll-behavior: auto !important;
+    scroll-snap-type: none;
+  }
+
+  .about-section .about-copy,
+  .about-section--intro .about-photo--portrait {
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .about-section--intro .about-photo--portrait {
+    transform: none !important;
+  }
+}

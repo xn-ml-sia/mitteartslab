@@ -674,35 +674,6 @@
   white-space: nowrap;
 }
 
-.sl-footer-inner .gr-btn-primary {
-  margin-top: 18px;
-  background: var(--mono-0);
-  border-color: var(--mono-0);
-  color: var(--mono-900);
-}
-
-.sl-footer-inner .gr-btn-primary:hover {
-  background: var(--mono-100);
-}
-
-.sl-footer-link {
-  margin: 14px 0 0 !important;
-  font-size: 11px !important;
-  letter-spacing: 0.06em;
-}
-
-.sl-footer-link a {
-  color: var(--mono-300);
-  text-decoration: none;
-  border-bottom: none;
-}
-
-.sl-footer-link a:hover {
-  color: var(--mono-0);
-  text-decoration: none;
-  border-bottom: none;
-}
-
 /* Focus */
 .sl-page a:focus-visible,
 .sl-page button:focus-visible,

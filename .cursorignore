@@ -2,8 +2,32 @@
 node_modules/
 package-lock.json
 
-# Vendor bundles (minified, indexed poorly)
+# Vendor bundles (minified, poor search value)
 public/vendor/
+
+# Media & static assets (~28MB, 200+ files — slow to index, no code value)
+public/assets/
+public/fonts/
+
+# Binary / media by extension (catch-all outside folders above)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.avif
+*.ico
+*.mp4
+*.mov
+*.webm
+*.mp3
+*.wav
+*.pdf
+*.otf
+*.ttf
+*.woff
+*.woff2
+*.eot
 
 # Git
 .git/

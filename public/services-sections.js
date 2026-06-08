@@ -10,7 +10,6 @@ export const SERVICES_SECTIONS = [
     id: 'blockchain',
     effect: 1,
     layout: 'content--left',
-    meta: 'Design for blockchain products',
     image: '/public/assets/services/raw-gradients-ggzjvx-n.png',
     imageLabel: 'blockchain product design',
     caption:
@@ -29,7 +28,6 @@ export const SERVICES_SECTIONS = [
     id: 'motion-ds',
     effect: 2,
     layout: 'content--center',
-    meta: 'Motion design system, agent-first',
     image: '/public/assets/services/raw-gradients-ldrx5uab.png',
     imageLabel: 'motion design system',
     caption:
@@ -50,7 +48,6 @@ export const SERVICES_SECTIONS = [
     id: 'ai-community',
     effect: 3,
     layout: 'content--right',
-    meta: 'The AI design community',
     image: '/public/assets/services/raw-illustrations-n8d3n8zf.png',
     imageLabel: 'AI design community',
     caption:
@@ -69,7 +66,6 @@ export const SERVICES_SECTIONS = [
     id: 'how-we-work',
     effect: 5,
     layout: 'content--line',
-    meta: 'Ways to work together',
     blockClass: 'aleft',
     caption:
       'Project-based for a launch or feature. Retainer for ongoing system work. Workshops for teams leveling up on motion and AI. Tell me what you are building and where you are stuck — we will find the right shape.',
@@ -131,7 +127,6 @@ const renderSection = (section) => {
 
   return `
     <section class="services-codrops-content ${section.layout} services-codrops-content--${section.id}">
-      <h3 class="services-codrops-meta">${escapeHtml(section.meta)}</h3>
       <h2 class="services-codrops-type" data-services-expand="${section.effect}" id="services-section-${section.id}-title">
         ${typeHtml}
       </h2>

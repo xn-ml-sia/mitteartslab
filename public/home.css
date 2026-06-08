@@ -148,9 +148,9 @@
 
 .home-brand {
   position: absolute;
-  top: clamp(10px, 1.2vw, 22px);
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   z-index: 3;
   display: flex;
   align-items: center;
@@ -164,7 +164,7 @@
 }
 
 .home-brand-name {
-  color: rgba(0, 0, 0, 0.9);
+  color: var(--background-color);
   font-family: "IBM Plex Mono", "Courier Prime", monospace;
   font-size: clamp(12px, 1vw, 16px);
   letter-spacing: 0.08em;
@@ -174,6 +174,18 @@
 .home-brand .mal-logo {
   width: 34px;
   height: 34px;
+  color: var(--background-color);
+}
+
+.home-brand .mal-logo .mal-logo-cap,
+.home-brand .mal-logo .mal-logo-cap-base,
+.home-brand .mal-logo .mal-logo-cap-top-inner {
+  stroke: var(--background-color);
+  opacity: 1;
+}
+
+.home-brand .mal-logo .mal-logo-dot {
+  fill: var(--background-color);
 }
 
 .home-quadrant-nav {
@@ -192,12 +204,6 @@
   display: flex;
 }
 
-.home-quadrant-work {
-  justify-content: flex-start;
-  align-items: flex-start;
-  text-align: left;
-}
-
 .home-quadrant-meet {
   justify-content: flex-start;
   align-items: flex-start;
@@ -211,15 +217,15 @@
 }
 
 .home-quadrant-products {
-  justify-content: flex-end;
-  align-items: flex-end;
-  text-align: right;
-}
-
-.home-quadrant-tools {
   justify-content: flex-start;
   align-items: flex-end;
   text-align: left;
+}
+
+.home-quadrant-tools {
+  justify-content: flex-end;
+  align-items: flex-end;
+  text-align: right;
 }
 
 .home-nav-link {

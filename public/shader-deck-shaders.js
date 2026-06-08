@@ -1468,7 +1468,7 @@ vec3 getPixel(in vec2 coord, float time) {
     vec2 occ = getOcclusion(p,n);
     vec3 light = normalize(vec3(0.0,1.0,0.0));
 
-    vec3 color = vec3(1.0);
+    vec3 color = vec3(0.9, 0.86, 0.8);
     if(td.x < 3.5 && p.y > -0.89) color = getStoneColor(p,occ.y,light,n,dir);
     color *= occ.x;
     return color;

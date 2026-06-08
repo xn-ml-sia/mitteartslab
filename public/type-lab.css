@@ -4,16 +4,9 @@
   box-sizing: border-box;
 }
 
-html,
-body {
-  margin: 0;
-  width: 100%;
-  min-height: 100%;
-}
-
 body.typeLabPage {
   font-family: "IBM Plex Mono", monospace;
-  background: #030303;
+  background: var(--rubin-ivory);
   color: #d3d3d3;
   overflow: hidden;
 }

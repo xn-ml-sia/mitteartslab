@@ -542,7 +542,7 @@ vec3 getPixel(in vec2 coord, float time) {
     vec3 light = normalize(vec3(0.0,1.0,0.0)); 
          
     float effectElapsed = max(0.0, iMouse.w - 1.0);
-    vec3 defaultBg = vec3(0.9, 0.86, 0.8);
+    vec3 defaultBg = vec3(0.9, 0.86, 0.8); // CSS: --rubin-ivory (#f5ecde)
     vec3 color = defaultBg;
 
     bool stoneHit = (td.x < 3.5 && p.y > -0.89);
