@@ -92,9 +92,10 @@ body.about-page {
   width: 100%;
 }
 
-/* --- Intro: text + portrait pinned to viewport right --- */
+/* --- Split sections: text left, photo right --- */
 
-.about-section--intro {
+.about-section--intro,
+.about-section--craft {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -102,7 +103,8 @@ body.about-page {
   padding-inline: var(--about-gutter);
 }
 
-.about-section--intro::after {
+.about-section--intro::after,
+.about-section--craft::after {
   content: '';
   display: block;
   width: var(--about-art-slot);
@@ -111,13 +113,15 @@ body.about-page {
   pointer-events: none;
 }
 
-.about-section--intro .about-copy {
+.about-section--intro .about-copy,
+.about-section--craft .about-copy {
   position: relative;
   z-index: 2;
   width: 100%;
 }
 
-.about-section--intro .about-photo--portrait {
+.about-section--intro .about-photo,
+.about-section--craft .about-photo {
   position: absolute;
   top: 50%;
   right: calc(50% - 50vw);
@@ -131,51 +135,28 @@ body.about-page {
     transform var(--motion-slow) var(--motion-ease-standard) 80ms;
 }
 
-.about-section--intro.is-visible .about-photo--portrait {
+.about-section--intro.is-visible .about-photo,
+.about-section--craft.is-visible .about-photo {
   transform: translateY(-50%) scale(1);
 }
 
-.about-section--intro .about-photo--portrait img {
+.about-section--intro .about-photo img,
+.about-section--craft .about-photo img {
   height: 100%;
   object-fit: cover;
   object-position: center center;
 }
 
-/* --- Craft: copy over generative tree + studio photo --- */
-
-.about-section--craft {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--about-gap);
-  padding-inline: var(--about-gutter);
-  overflow-x: clip;
-  overflow-y: hidden;
-}
-
-.about-section--craft::after {
-  content: '';
-  display: block;
-  width: var(--about-art-slot);
-  flex-shrink: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.about-section--craft .about-copy {
-  position: relative;
-  z-index: 6;
-  width: 100%;
-}
+/* --- Craft: generative tree as full-bleed background --- */
 
 .about-section--craft .about-stage {
   position: absolute;
   top: 0;
+  bottom: 0;
   left: calc(50% - 50vw);
   width: 100vw;
-  height: 100vh;
-  max-height: 100vh;
-  z-index: 1;
+  min-height: 100vh;
+  z-index: 0;
   overflow: hidden;
   pointer-events: none;
 }
@@ -188,23 +169,6 @@ body.about-page {
   background: transparent;
   touch-action: pan-y;
   pointer-events: none;
-}
-
-.about-photo--studio {
-  position: absolute;
-  right: calc(50% - 50vw - 1px);
-  top: 40%;
-  transform: translateY(-50%);
-  width: var(--about-photo-width);
-  z-index: 5;
-}
-
-.about-section--craft .about-photo--studio {
-  position: absolute;
-}
-
-.about-photo--studio img {
-  height: auto;
 }
 
 /* --- Bio: centered copy only --- */
@@ -256,7 +220,8 @@ body.about-page {
   }
 
   .about-section:not(.about-section--bio) .about-copy,
-  .about-section--intro .about-photo--portrait {
+  .about-section--intro .about-photo,
+  .about-section--craft .about-photo {
     opacity: 1;
     transform: none;
     transition: none;
@@ -275,8 +240,9 @@ body.about-page {
     overflow-wrap: anywhere;
   }
 
-  /* Section 1 — copy on top; photo fills remaining space edge to edge */
-  .about-section--intro {
+  /* Split sections — copy on top; photo fills remaining space */
+  .about-section--intro,
+  .about-section--craft {
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -285,19 +251,22 @@ body.about-page {
     padding: 0;
   }
 
-  .about-section--intro .about-copy {
+  .about-section--intro .about-copy,
+  .about-section--craft .about-copy {
     flex-shrink: 0;
     padding: var(--about-gutter-mobile);
     padding-bottom: var(--about-gap);
   }
 
-  .about-section--intro .about-photo--portrait {
+  .about-section--intro .about-photo,
+  .about-section--craft .about-photo {
     position: relative;
     top: auto;
     right: auto;
     flex: 1 1 auto;
     width: 100%;
     min-height: 0;
+    aspect-ratio: auto;
     margin: 0;
     padding: 0 var(--about-gutter-mobile) var(--about-gutter-mobile);
     display: flex;
@@ -306,7 +275,8 @@ body.about-page {
     overflow: hidden;
   }
 
-  .about-section--intro .about-photo--portrait img {
+  .about-section--intro .about-photo img,
+  .about-section--craft .about-photo img {
     width: auto;
     height: auto;
     max-width: 100%;
@@ -315,46 +285,21 @@ body.about-page {
     object-position: center center;
   }
 
-  .about-section--intro.is-visible .about-photo--portrait {
+  .about-section--intro.is-visible .about-photo,
+  .about-section--craft.is-visible .about-photo {
     transform: none;
-  }
-
-  /* Section 2 — text over tree; photo bottom-right on tree */
-  .about-section--craft {
-    display: block;
-    padding: 0;
-    overflow: hidden;
-  }
-
-  .about-section--craft .about-copy {
-    position: relative;
-    z-index: 6;
-    padding: var(--about-gutter-mobile);
   }
 
   .about-section--craft .about-stage {
     position: absolute;
     inset: 0;
-    top: 0;
-    bottom: 0;
     left: 0;
-    right: 0;
     width: 100%;
-    height: 100%;
-    z-index: 1;
-    overflow: hidden;
-    pointer-events: none;
+    min-height: 100%;
+    z-index: 0;
   }
 
-  .about-section--craft .about-tree-canvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-  }
-
-  .about-section--craft .about-photo--studio {
+  .about-section--craft .about-photo {
     display: none;
   }
 
@@ -387,13 +332,10 @@ body.about-page {
   }
 
   .about-section .about-copy,
-  .about-section--intro .about-photo--portrait {
+  .about-section--intro .about-photo,
+  .about-section--craft .about-photo {
     transition: none !important;
     transform: none !important;
     opacity: 1 !important;
-  }
-
-  .about-section--intro .about-photo--portrait {
-    transform: none !important;
   }
 }

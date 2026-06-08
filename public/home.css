@@ -18,6 +18,7 @@
 
 .home-page {
   position: relative;
+  text-transform: lowercase;
 }
 
 .home-hero {
@@ -42,6 +43,7 @@
   pointer-events: none;
   opacity: 0;
   transition: opacity 180ms ease;
+  text-transform: none;
 }
 
 .home-ascii-layer.is-active {
