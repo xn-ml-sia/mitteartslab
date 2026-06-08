@@ -1418,7 +1418,7 @@ const initAboutTreeArtwork = () => {
     const breathing = prefersReducedMotion || isTransitioning ? 1 : (1 + Math.sin(drawTime * 0.35) * 0.012);
     const scale = baseScale * breathing;
     const tx = bottomAlign
-      ? cw / 2 - (CH4_REF_W / 2) * scale
+      ? cw - mobilePad - (CH4_REF_W / 2) * scale
       : pad + (cw - 2 * pad - bw * scale) / 2 - b.minX * scale;
     const ty = bottomAlign
       ? ch - mobilePad - CH4_REF_H * 0.92 * scale

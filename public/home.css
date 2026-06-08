@@ -18,7 +18,6 @@
 
 .home-page {
   position: relative;
-  text-transform: lowercase;
 }
 
 .home-hero {
@@ -43,7 +42,6 @@
   pointer-events: none;
   opacity: 0;
   transition: opacity 180ms ease;
-  text-transform: none;
 }
 
 .home-ascii-layer.is-active {
@@ -141,7 +139,6 @@
   font-size: 0.85em;
   text-align: center;
   font-family: "Overpass Mono", "IBM Plex Mono", "Courier Prime", monospace;
-  text-transform: lowercase;
   letter-spacing: 0.02em;
   white-space: normal;
   overflow-wrap: anywhere;
@@ -230,6 +227,11 @@
   text-align: right;
 }
 
+.home-nav-link,
+.home-submenu-link {
+  text-transform: lowercase;
+}
+
 .home-nav-link {
   color: rgba(0, 0, 0, 0.9);
   font-family: "IBM Plex Mono", "Courier Prime", monospace;
@@ -237,7 +239,6 @@
   letter-spacing: 0.08em;
   line-height: 1.1;
   text-decoration: none;
-  text-transform: uppercase;
   background-image: linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.22));
   background-repeat: no-repeat;
   background-size: 0% 0.72em;
@@ -342,7 +343,6 @@
   font-family: "IBM Plex Mono", "Courier Prime", monospace;
   font-size: clamp(12px, 1vw, 16px);
   letter-spacing: 0.08em;
-  text-transform: lowercase;
   text-decoration: none;
   white-space: nowrap;
   background-image: linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.22));
