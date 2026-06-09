@@ -31,19 +31,30 @@
 .portfolio-okpalette-hero-wrap .l-wrap {
   min-height: auto;
   background: transparent;
+  overflow: visible;
+  max-width: none;
 }
 
 .portfolio-okpalette-hero-wrap .l-main {
   background-color: transparent;
   background-image: none;
+  overflow: visible;
 }
 
 .portfolio-okpalette-hero-wrap .l-body,
 .portfolio-okpalette-hero-wrap .has-extracted .l-body {
   background: transparent;
+  overflow: visible;
 }
 
-.portfolio-okpalette-hero-wrap .cta-intro,
+.portfolio-okpalette-hero-wrap .cta-intro {
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  text-align: inherit;
+  pointer-events: none;
+}
+
 .portfolio-okpalette-hero-wrap .upload-area,
 .portfolio-okpalette-hero-wrap .upload-text,
 .portfolio-okpalette-hero-wrap .upload-area__intro,
@@ -51,21 +62,19 @@
   display: none !important;
 }
 
-.portfolio-okpalette-hero-wrap .canvas-image,
-.portfolio-okpalette-hero-wrap .has-image .canvas-image,
-.portfolio-okpalette-hero-wrap .has-extracted .canvas-image {
-  max-height: calc(var(--okpalette-content-height) - calc(var(--s-square) * 2));
+.portfolio-okpalette-hero-wrap .example-images {
+  display: block;
+  z-index: 2;
 }
 
-body.has-image .portfolio-okpalette-hero-wrap .canvas-image,
-body.has-extracted .portfolio-okpalette-hero-wrap .canvas-image {
-  opacity: 1;
-  transform: scale(1);
-  pointer-events: auto;
+.portfolio-okpalette-hero-wrap .example-images__list {
+  top: 72%;
 }
 
 .portfolio-okpalette-hero-wrap .example-image-btn {
   width: calc(var(--okpalette-content-width) * 0.38);
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .portfolio-okpalette-hero-wrap .example-image-btn img,
@@ -88,6 +97,16 @@ body.has-extracted .portfolio-okpalette-hero-wrap .canvas-image {
   display: none;
 }
 
+.portfolio-okpalette-hero-wrap .canvas-image,
+.portfolio-okpalette-hero-wrap .has-extracted .canvas-image {
+  max-height: calc(var(--okpalette-content-height) - calc(var(--s-square) * 2));
+}
+
+.portfolio-okpalette-hero-wrap .has-extracted .example-images {
+  display: block;
+  opacity: 1;
+}
+
 .portfolio-okpalette-hero-wrap .deco-text {
   --r: calc(var(--okpalette-content-width) * 0.62 + 2rem);
 }
@@ -101,7 +120,8 @@ body.has-extracted .portfolio-okpalette-hero-wrap .canvas-image {
 }
 
 .portfolio-okpalette-hero-wrap .example-images__list li {
-  animation-name: portfolio-okpalette-sample-scroll;
+  animation: portfolio-okpalette-sample-scroll 60s linear infinite;
+  animation-delay: calc(var(--i) * -60s);
 }
 
 @keyframes portfolio-okpalette-deco-spin {
