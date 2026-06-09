@@ -52,8 +52,16 @@
 }
 
 .portfolio-okpalette-hero-wrap .canvas-image,
+.portfolio-okpalette-hero-wrap .has-image .canvas-image,
 .portfolio-okpalette-hero-wrap .has-extracted .canvas-image {
   max-height: calc(var(--okpalette-content-height) - calc(var(--s-square) * 2));
+}
+
+body.has-image .portfolio-okpalette-hero-wrap .canvas-image,
+body.has-extracted .portfolio-okpalette-hero-wrap .canvas-image {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
 }
 
 .portfolio-okpalette-hero-wrap .example-image-btn {
