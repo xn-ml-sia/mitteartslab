@@ -5,6 +5,7 @@
   "description": "Phase 1 prototype for Generative Rock",
   "scripts": {
     "start": "node server.js",
+    "sync:portfolio-hero": "node scripts/sync-portfolio-hero.mjs",
     "test:skewed": "node scripts/skewed-smoke-test.mjs"
   }
 }

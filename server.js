@@ -341,32 +341,6 @@ function serveFile(res, filePath) {
   });
 }
 
-const PORTFOLIO_HERO_MARKER = '<!-- PORTFOLIO_OKPALETTE_HERO -->';
-let portfolioHtmlCache = null;
-
-function loadPortfolioHtml() {
-  if (portfolioHtmlCache) return portfolioHtmlCache;
-
-  const template = fs.readFileSync(path.join(ROOT, 'portfolio.html'), 'utf8');
-  if (!template.includes(PORTFOLIO_HERO_MARKER)) {
-    portfolioHtmlCache = template;
-    return portfolioHtmlCache;
-  }
-
-  const hero = fs.readFileSync(
-    path.join(PUBLIC_DIR, 'portfolio-okpalette/hero-body.html'),
-    'utf8',
-  );
-  portfolioHtmlCache = template.replace(PORTFOLIO_HERO_MARKER, hero);
-  return portfolioHtmlCache;
-}
-
-function servePortfolio(res) {
-  const html = loadPortfolioHtml();
-  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-  res.end(html);
-}
-
 function makeSharePayload({ title, rocks, expiresInMinutes }) {
   const id = crypto.randomUUID();
   const token = crypto.randomUUID().replace(/-/g, '');
@@ -740,7 +714,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (pathname === '/portfolio' || pathname === '/portfolio.html') {
-    servePortfolio(res);
+    serveFile(res, path.join(ROOT, 'portfolio.html'));
     return;
   }
 
