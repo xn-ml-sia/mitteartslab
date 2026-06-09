@@ -1,6 +1,6 @@
 import { PORTFOLIO_CASES } from './portfolio-data.js';
 import { initMalLogos, setPageFavicon } from './mal-logo.js';
-import { initPortfolioCardTextHover } from './portfolio-text-hover/init.js';
+import { initPortfolioCardReveal } from './portfolio-card-reveal.js';
 import { initPortfolioFlipCaterpillar } from './portfolio-flip-caterpillar.js';
 
 const escapeHtml = (value) =>
@@ -10,30 +10,24 @@ const escapeHtml = (value) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
-const renderFlipMedia = (item) => `
-  <div class="portfolio-card__media portfolio-card__media--flip">
-    <div class="portfolio-card__flip-container" data-portfolio-flip-container>
-      ${item.slides
-        .map(
-          (slide) =>
-            `<img src="${slide.src}" alt="${escapeHtml(slide.alt)}" loading="lazy" decoding="async" />`,
-        )
-        .join('')}
-    </div>
+const renderCarousel = (item) => `
+  <div class="portfolio-card__carousel">
+    ${item.slides
+      .map(
+        (slide) =>
+          `<img src="${slide.src}" alt="${escapeHtml(slide.alt)}" loading="lazy" decoding="async" />`,
+      )
+      .join('')}
   </div>
 `;
 
 const renderCard = (item) => `
-  <article class="portfolio-card" id="portfolio-${item.id}" data-portfolio-flip>
+  <article class="portfolio-card" id="portfolio-${item.id}">
     <header class="portfolio-card__head">
-      <h2 class="portfolio-card__title">
-        <span class="hover-effect hover-effect--bg-south">${escapeHtml(item.title)}</span>
-      </h2>
-      <p class="portfolio-card__subtitle">
-        <span class="hover-effect hover-effect--bg-south">${escapeHtml(item.subtitle)}</span>
-      </p>
+      <h2 class="portfolio-card__title">${escapeHtml(item.title)}</h2>
+      <p class="portfolio-card__subtitle">${escapeHtml(item.subtitle)}</p>
     </header>
-    ${renderFlipMedia(item)}
+    ${renderCarousel(item)}
   </article>
 `;
 
@@ -56,16 +50,19 @@ const boot = () => {
 
   const cleanups = [];
 
-  if (!prefersReducedMotion()) {
-    if (typeof gsap !== 'undefined' && typeof Flip !== 'undefined') {
-      const flipCleanup = initPortfolioFlipCaterpillar(root);
-      if (flipCleanup) cleanups.push(flipCleanup);
-    }
+  if (prefersReducedMotion()) {
+    root.querySelectorAll('.portfolio-card').forEach((card) => {
+      card.classList.add('is-revealed');
+    });
+    return;
+  }
 
-    if (typeof gsap !== 'undefined' && typeof SplitType !== 'undefined') {
-      const textHoverCleanup = initPortfolioCardTextHover(root);
-      if (textHoverCleanup) cleanups.push(textHoverCleanup);
-    }
+  const revealCleanup = initPortfolioCardReveal(root);
+  if (revealCleanup) cleanups.push(revealCleanup);
+
+  if (typeof gsap !== 'undefined' && typeof Flip !== 'undefined') {
+    const flipCleanup = initPortfolioFlipCaterpillar(root);
+    if (flipCleanup) cleanups.push(flipCleanup);
   }
 
   window.addEventListener(

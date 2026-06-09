@@ -1,33 +1,33 @@
-const updateCaterpillar = (container, forward) =>
+const updateCaterpillar = (track, forward) =>
   new Promise((resolve) => {
-    const cards = gsap.utils.toArray('img', container);
-    if (cards.length < 2) {
+    const slides = gsap.utils.toArray('img', track);
+    if (slides.length < 2) {
       resolve();
       return;
     }
 
-    const first = cards[0];
-    const last = cards[cards.length - 1];
-    const state = Flip.getState(cards);
-    const newCard = document.createElement('img');
-    gsap.set(newCard, { scale: 0, opacity: 0 });
+    const first = slides[0];
+    const last = slides[slides.length - 1];
+    const state = Flip.getState(slides);
+    const newSlide = document.createElement('img');
+    gsap.set(newSlide, { scale: 0, opacity: 0 });
 
     if (forward) {
-      newCard.src = first.src;
-      newCard.alt = first.alt;
-      container.append(newCard);
-      first.classList.add('hide');
+      newSlide.src = first.src;
+      newSlide.alt = first.alt;
+      track.append(newSlide);
+      first.classList.add('is-carousel-hidden');
     } else {
-      newCard.src = last.src;
-      newCard.alt = last.alt;
-      container.prepend(newCard);
-      last.classList.add('hide');
+      newSlide.src = last.src;
+      newSlide.alt = last.alt;
+      track.prepend(newSlide);
+      last.classList.add('is-carousel-hidden');
     }
 
-    const nextCards = gsap.utils.toArray('img', container);
+    const nextSlides = gsap.utils.toArray('img', track);
 
     Flip.from(state, {
-      targets: nextCards,
+      targets: nextSlides,
       fade: true,
       absoluteOnLeave: true,
       onEnter: (els) => {
@@ -61,9 +61,9 @@ export const initPortfolioFlipCaterpillar = (root = document) => {
 
   const disposers = [];
 
-  root.querySelectorAll('[data-portfolio-flip]').forEach((card) => {
-    const container = card.querySelector('[data-portfolio-flip-container]');
-    if (!container) return;
+  root.querySelectorAll('.portfolio-card').forEach((card) => {
+    const track = card.querySelector('.portfolio-card__carousel');
+    if (!track) return;
 
     let isAnimating = false;
     let hoverTimeout = 0;
@@ -72,7 +72,7 @@ export const initPortfolioFlipCaterpillar = (root = document) => {
     const step = async (forward = true) => {
       if (isAnimating) return;
       isAnimating = true;
-      await updateCaterpillar(container, forward);
+      await updateCaterpillar(track, forward);
       isAnimating = false;
     };
 
@@ -80,9 +80,7 @@ export const initPortfolioFlipCaterpillar = (root = document) => {
       hoverTimeout = window.setTimeout(() => {
         hoverTimeout = 0;
         step(true);
-        hoverInterval = window.setInterval(() => {
-          step(true);
-        }, STEP_INTERVAL_MS);
+        hoverInterval = window.setInterval(() => step(true), STEP_INTERVAL_MS);
       }, INITIAL_DELAY_MS);
     };
 

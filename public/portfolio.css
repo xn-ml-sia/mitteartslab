@@ -1,4 +1,4 @@
-/* Portfolio — case study card grid */
+/* Portfolio — OKPalette hero + case study card grid */
 
 .portfolio-page {
   --portfolio-page-bg: #ececec;
@@ -8,6 +8,7 @@
   --portfolio-inner-radius: 14px;
   --portfolio-card-max-height: 420px;
   --portfolio-card-height: min(var(--portfolio-card-max-height), 72dvh);
+  --portfolio-reveal-duration: 3s;
   background: var(--portfolio-page-bg);
   color: #111;
   text-transform: lowercase;
@@ -55,6 +56,16 @@
   gap: 6px;
   padding-inline: 2px;
   flex: 0 0 auto;
+  position: relative;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity var(--portfolio-reveal-duration) ease;
+  pointer-events: none;
+}
+
+.portfolio-card.is-revealed .portfolio-card__head {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .portfolio-card__title {
@@ -75,43 +86,39 @@
   letter-spacing: 0.01em;
 }
 
-.portfolio-card__media {
+.portfolio-card__carousel {
+  --portfolio-flip-visible: 1.2;
   position: relative;
   flex: 1 1 0;
+  display: flex;
+  gap: var(--portfolio-gap);
   min-height: 0;
   max-height: 100%;
   overflow: hidden;
-  border-radius: var(--portfolio-inner-radius);
-  background: #eef3fb;
   touch-action: pan-y;
 }
 
-.portfolio-card__media--flip {
-  --portfolio-flip-visible: 1.2;
-  background: #eef3fb;
+.portfolio-card:not(.is-revealed) .portfolio-card__carousel {
+  background: #fff;
 }
 
-.portfolio-card__flip-container {
-  display: flex;
-  gap: var(--portfolio-gap);
-  width: 100%;
-  height: 100%;
-  padding: 5px;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.portfolio-card__flip-container img {
+.portfolio-card__carousel img {
   position: relative;
   flex: 0 0 calc((100% - var(--portfolio-gap)) / var(--portfolio-flip-visible));
   min-width: 0;
   height: 100%;
-  border-radius: calc(var(--portfolio-inner-radius) - 2px);
+  border-radius: var(--portfolio-inner-radius);
   object-fit: cover;
   object-position: center center;
+  opacity: 0;
+  transition: opacity var(--portfolio-reveal-duration) ease;
 }
 
-.portfolio-card__flip-container img.hide {
+.portfolio-card.is-revealed .portfolio-card__carousel img {
+  opacity: 1;
+}
+
+.portfolio-card__carousel img.is-carousel-hidden {
   display: none;
 }
 

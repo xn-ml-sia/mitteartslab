@@ -1,0 +1,842 @@
+<div class="l-wrap">
+      <div class="l-layout">
+        <div class="l-main">
+          <article class="l-app" aria-label="OKpalette Extraction">
+            <div class="l-app__header">
+              <div class="menu">
+                <!--<h1 class="menu-logo">OKPalette</h1>-->
+                <!-- <button class="button button--icon button--mask" id="drawSelectionBtn">
+                  <span>Draw Mask</span>
+                </button> -->
+                <div class="menu__item">
+                  <div class="button button--label button--count" id="colorCountLabel">
+                    <label for="colorCountInput">Colors</label>
+
+                    <div class="button__group">
+                      <span class="numberslider" style="--relval: 0.33">
+                        <button class="numberslider__button">-</button>
+                        <input
+                          class="numberslider__input"
+                          type="number"
+                          id="colorCountInput"
+                          min="2"
+                          max="25"
+                          value="8"
+                        />
+                        <button class="numberslider__button">+</button>
+                      </span>
+                      <label class="checkbox checkbox--button">
+                        <input type="checkbox" id="lockColorCount" />
+                        <span class="reset__icon"> </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div class="menu__item">
+                  <label class="button button--label">
+                    <span>Auto-Detect Bias</span>
+                    <span class="checkbox checkbox--toggle">
+                      <input type="checkbox" id="autoDetect" checked />
+                      <span class="checkbox__toggle" aria-hidden="true"></span>
+                    </span>
+                  </label>
+                </div>
+                <div class="menu__item">
+                  <button
+                    class="button button--end button--icon button--upload"
+                    id="replaceImageBtn"
+                  >
+                    <svg
+                      class="button__icon"
+                      stroke-width="1.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M6 20L18 20"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></path>
+                      <path
+                        d="M12 16V4M12 4L15.5 7.5M12 4L8.5 7.5"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></path>
+                    </svg>
+                    <span>Replace Image</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="l-app__drawers l-app__drawers--top">
+              <div class="l-app__drawer">
+                <aside class="drawer" aria-label="Bias Settings">
+                  <div class="drawer__section drawer__section--half">
+                    <div class="field field--range">
+                      <div class="field__header">
+                        <span class="field__header-start">Muted</span>
+                        <span class="field__header-center"><i id="colorfulnessValue">0.00</i></span>
+                        <span class="field__header-end">Saturated</span>
+                      </div>
+                      <div class="range" style="--graduations: 5; --progress: 0.5; --center: 0.5">
+                        <input
+                          type="range"
+                          id="colorfulnessSlider"
+                          min="-100"
+                          max="100"
+                          value="0"
+                        />
+                        <div class="range-highlight"></div>
+                        <i class="range-marker"></i>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="drawer__section drawer__section--half">
+                    <div class="field field--range">
+                      <div class="field__header">
+                        <span class="field__header-start">Dark</span>
+                        <span class="field__header-center"><i id="biasValue">0.00</i></span>
+                        <span class="field__header-end">Light</span>
+                      </div>
+                      <div class="range" style="--graduations: 5; --progress: 0.5; --center: 0.5">
+                        <input type="range" id="biasSlider" min="-100" max="100" value="0" />
+                        <div class="range-highlight"></div>
+                        <i class="range-marker"></i>
+                      </div>
+                    </div>
+                  </div>
+                </aside>
+              </div>
+            </div>
+            <div class="l-app__drawers l-app__drawers--bottom">
+              <div class="l-app__drawer">
+                <aside class="drawer" aria-label="Image Stats">
+                  <div class="drawer__section">
+                    <div class="distribution-bar" id="distributionBar"></div>
+                  </div>
+                  <div class="drawer__section drawer__section--half">
+                    <ul class="stats">
+                      <li class="stats__row">
+                        <span class="stats__label">Avg Lightness</span>
+                        <div class="stats__bar">
+                          <div class="stats__bar-fill lightness" id="barLightness"></div>
+                        </div>
+                        <span
+                          class="stats__value"
+                          id="statLightness"
+                          title="Average perceived brightness of the palette (0% = black, 100% = white)"
+                          >36.6%</span
+                        >
+                      </li>
+                      <li class="stats__row">
+                        <span class="stats__label">Avg Chroma</span>
+                        <div class="stats__bar">
+                          <div class="stats__bar-fill chroma" id="barChroma"></div>
+                        </div>
+                        <span
+                          class="stats__value"
+                          id="statChroma"
+                          title="Average color intensity or saturation (0 = gray, higher = more vibrant)"
+                          >0.020</span
+                        >
+                      </li>
+                      <li class="stats__row">
+                        <span class="stats__label">Colorfulness</span>
+                        <div class="stats__bar stats__bar--centered">
+                          <div
+                            class="stats__bar-fill stats__bar-fill--centered"
+                            id="barColorfulnessBias"
+                          ></div>
+                        </div>
+                        <span
+                          class="stats__value"
+                          id="statColorfulness"
+                          title="Tendency towards muted (-1) or saturated (+1) colors"
+                          >0.50</span
+                        >
+                      </li>
+                      <li class="stats__row">
+                        <span class="stats__label">Light/Dark</span>
+                        <div class="stats__bar stats__bar--centered">
+                          <div
+                            class="stats__bar-fill stats__bar-fill--centered"
+                            id="barLightDarkBias"
+                          ></div>
+                        </div>
+                        <span
+                          class="stats__value"
+                          id="statBias"
+                          title="Tendency towards darker (-1) or lighter (+1) colors"
+                          >-0.09</span
+                        >
+                      </li>
+                      <li class="stats__row">
+                        <span class="stats__label">Sparse Color</span>
+                        <span class="stats__bar"></span>
+                        <span
+                          class="stats__value"
+                          id="statSparse"
+                          title="Indicates whether the image has limited color variation"
+                          >Yes</span
+                        >
+                      </li>
+                    </ul>
+                    <div class="drawer__hint" title="Open 3D debug visualization">
+                      ⌘/Ctrl+I for <button class="link" id="debugViewLink">debug view</button>
+                    </div>
+                  </div>
+                  <div class="drawer__section drawer__section--half">
+                    <svg
+                      id="colorSpaceSvg"
+                      viewBox="0 0 200 200"
+                      preserveAspectRatio="xMidYMid meet"
+                      style="touch-action: none"
+                    ></svg>
+                    <a
+                      class="spectrum-section__link"
+                      href="https://amandahinton.com/blog/generating-a-color-spectrum-for-an-image"
+                      target="_blank"
+                      rel="noopener"
+                      aria-label="Color spectrum — read about the technique by Amanda Hinton"
+                    >
+                      <canvas class="spectrum-section__canvas" id="spectrumCanvas"></canvas>
+                      <span class="spectrum-section__readout" id="spectrumReadout" hidden></span>
+                    </a>
+                  </div>
+                  <div class="menu menu--end menu--drawer">
+                    <div class="menu__item">
+                      <button class="button button--icon" id="btnHsvCylinder">
+                        <svg
+                          class="button__icon"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1"
+                        >
+                          <circle cx="12" cy="12" r="9" vector-effect="non-scaling-stroke" />
+                        </svg>
+                        <span>HSV Cylinder</span>
+                      </button>
+                    </div>
+                    <div class="menu__item">
+                      <button class="button button--icon button--end" id="btnHsvCube">
+                        <svg
+                          class="button__icon"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1"
+                        >
+                          <rect
+                            x="3"
+                            y="3"
+                            width="18"
+                            height="18"
+                            vector-effect="non-scaling-stroke"
+                          />
+                        </svg>
+                        <span>HSV Cube</span>
+                      </button>
+                    </div>
+                    <div class="menu__item">
+                      <button class="button button--icon button--end" id="btnSpectrum">
+                        <svg
+                          class="button__icon"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1"
+                        >
+                          <polygon
+                            points="12,3.3 22,20.7 2,20.7"
+                            vector-effect="non-scaling-stroke"
+                          />
+                        </svg>
+                        <span>Spectrum</span>
+                      </button>
+                    </div>
+                  </div>
+                </aside>
+              </div>
+            </div>
+            <div class="l-body">
+              <div class="extractor" id="imageContainer">
+                <div class="extractor__markers-bg" id="markersBg"></div>
+                <canvas class="canvas-image" id="canvas"></canvas>
+                <div class="extractor__loupe" id="loupe">
+                  <canvas id="loupeCanvas" width="160" height="160"></canvas>
+                  <div class="canvas_copy">
+                    <canvas id="loupeCanvasCopy" width="160" height="160"></canvas>
+                  </div>
+                </div>
+                <div class="extractor__markers" id="markers"></div>
+              </div>
+
+              <div class="cta-intro">
+                <label class="upload-area" for="fileInput" id="uploadArea" hidden aria-hidden="true"></label>
+                <input type="file" id="fileInput" accept="image/*" hidden />
+
+                <div class="example-images" id="examples">
+                  <ul class="example-images__list">
+                    <li>
+                      <button
+                        class="example-image-btn"
+                        data-src="/public/assets/portfolio-hero-carousel/bonsai.png"
+                        aria-label="Load Bonsai"
+                      >
+                        <img src="/public/assets/portfolio-hero-carousel/bonsai.png" alt="Bonsai" loading="lazy" decoding="async" />
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="example-image-btn"
+                        data-src="/public/assets/portfolio-hero-carousel/protea.png"
+                        aria-label="Load Protea flower"
+                      >
+                        <img src="/public/assets/portfolio-hero-carousel/protea.png" alt="Protea flower" loading="lazy" decoding="async" />
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="example-image-btn"
+                        data-src="/public/assets/portfolio-hero-carousel/honey-jar.png"
+                        aria-label="Load Honey jar"
+                      >
+                        <img src="/public/assets/portfolio-hero-carousel/honey-jar.png" alt="Honey jar" loading="lazy" decoding="async" />
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="example-image-btn"
+                        data-src="/public/assets/portfolio-hero-carousel/dutch-oven.png"
+                        aria-label="Load Dutch oven"
+                      >
+                        <img src="/public/assets/portfolio-hero-carousel/dutch-oven.png" alt="Dutch oven" loading="lazy" decoding="async" />
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="example-image-btn"
+                        data-src="/public/assets/portfolio-hero-carousel/wooden-bowl.png"
+                        aria-label="Load Wooden bowl"
+                      >
+                        <img src="/public/assets/portfolio-hero-carousel/wooden-bowl.png" alt="Wooden bowl" loading="lazy" decoding="async" />
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="example-image-btn"
+                        data-src="/public/assets/portfolio-hero-carousel/bonsai.png"
+                        aria-label="Load Bonsai"
+                      >
+                        <img src="/public/assets/portfolio-hero-carousel/bonsai.png" alt="Bonsai" loading="lazy" decoding="async" />
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="example-image-btn"
+                        data-src="/public/assets/portfolio-hero-carousel/protea.png"
+                        aria-label="Load Protea flower"
+                      >
+                        <img src="/public/assets/portfolio-hero-carousel/protea.png" alt="Protea flower" loading="lazy" decoding="async" />
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="example-image-btn"
+                        data-src="/public/assets/portfolio-hero-carousel/honey-jar.png"
+                        aria-label="Load Honey jar"
+                      >
+                        <img src="/public/assets/portfolio-hero-carousel/honey-jar.png" alt="Honey jar" loading="lazy" decoding="async" />
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="example-image-btn"
+                        data-src="/public/assets/portfolio-hero-carousel/dutch-oven.png"
+                        aria-label="Load Dutch oven"
+                      >
+                        <img src="/public/assets/portfolio-hero-carousel/dutch-oven.png" alt="Dutch oven" loading="lazy" decoding="async" />
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="example-image-btn"
+                        data-src="/public/assets/portfolio-hero-carousel/wooden-bowl.png"
+                        aria-label="Load Wooden bowl"
+                      >
+                        <img src="/public/assets/portfolio-hero-carousel/wooden-bowl.png" alt="Wooden bowl" loading="lazy" decoding="async" />
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <svg
+                class="mask"
+                id="selectionOverlay"
+                aria-hidden="true"
+                preserveAspectRatio="none"
+                viewBox="0 0 1000 1000"
+                style="display: none; pointer-events: none"
+              >
+                <defs>
+                  <pattern
+                    id="selectionHatch"
+                    width="3"
+                    height="3"
+                    patternUnits="userSpaceOnUse"
+                    patternTransform="rotate(45)"
+                  >
+                    <line
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2=".5"
+                      stroke="var(--c-surface-on)"
+                      stroke-width="2"
+                      vector-effect="non-scaling-stroke"
+                    ></line>
+                  </pattern>
+
+                  <mask
+                    id="selectionOutsideMask"
+                    maskUnits="userSpaceOnUse"
+                    maskContentUnits="userSpaceOnUse"
+                  >
+                    <rect
+                      id="selectionMaskBg"
+                      x="0"
+                      y="0"
+                      width="1000"
+                      height="1000"
+                      fill="white"
+                    ></rect>
+                    <rect
+                      id="selectionMaskCutout"
+                      x="150"
+                      y="150"
+                      width="700"
+                      height="700"
+                      fill="black"
+                    ></rect>
+                  </mask>
+
+                  <rect
+                    id="cornerMarker"
+                    width="8"
+                    height="8"
+                    fill="var(--c-surface)"
+                    stroke="currentColor"
+                    stroke-width="1"
+                    vector-effect="non-scaling-stroke"
+                  ></rect>
+                  <rect id="cornerMarkerInner" width="5" height="6" fill="currentColor"></rect>
+                </defs>
+
+                <rect
+                  id="selectionBgRect"
+                  x="0"
+                  y="0"
+                  width="1000"
+                  height="1000"
+                  fill="var(--c-surface)"
+                  mask="url(#selectionOutsideMask)"
+                  opacity="0.2"
+                ></rect>
+                <rect
+                  id="selectionHatchRect"
+                  x="0"
+                  y="0"
+                  width="1000"
+                  height="1000"
+                  fill="url(#selectionHatch)"
+                  mask="url(#selectionOutsideMask)"
+                ></rect>
+                <rect
+                  id="selectionOutline"
+                  x="0"
+                  y="0"
+                  width="0"
+                  height="0"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1"
+                  stroke-dasharray="2 2"
+                  vector-effect="non-scaling-stroke"
+                ></rect>
+
+                <use
+                  id="cornerTopLeft"
+                  href="#cornerMarker"
+                  x="0"
+                  y="0"
+                  style="display: none"
+                ></use>
+                <use
+                  id="cornerTopRight"
+                  href="#cornerMarker"
+                  x="0"
+                  y="0"
+                  style="display: none"
+                ></use>
+                <use
+                  id="cornerBottomLeft"
+                  href="#cornerMarker"
+                  x="0"
+                  y="0"
+                  style="display: none"
+                ></use>
+                <use
+                  id="cornerBottomRight"
+                  href="#cornerMarker"
+                  x="0"
+                  y="0"
+                  style="display: none"
+                ></use>
+
+                <use
+                  id="cornerTopLeftInner"
+                  href="#cornerMarkerInner"
+                  x="0"
+                  y="0"
+                  style="display: none"
+                ></use>
+                <use
+                  id="cornerTopRightInner"
+                  href="#cornerMarkerInner"
+                  x="0"
+                  y="0"
+                  style="display: none"
+                ></use>
+                <use
+                  id="cornerBottomLeftInner"
+                  href="#cornerMarkerInner"
+                  x="0"
+                  y="0"
+                  style="display: none"
+                ></use>
+                <use
+                  id="cornerBottomRightInner"
+                  href="#cornerMarkerInner"
+                  x="0"
+                  y="0"
+                  style="display: none"
+                ></use>
+              </svg>
+            </div>
+          </article>
+          <div class="menu menu--overlay">
+            <div class="menu__item">
+              <h2 class="button button--title"><span id="paletteName"></span></h2>
+            </div>
+            <div class="menu__item">
+              <button class="button button--icon button--close button--end" id="closeOverlayBtn">
+                <svg
+                  class="button__icon button__icon--close"
+                  stroke-width="1.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M18 6L6 18M6 6L18 18"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                </svg>
+                <span>Close</span>
+              </button>
+            </div>
+          </div>
+          <div class="l-overlay" id="results">
+            <div class="l-overlay__body">
+              <div class="palette" id="palette"></div>
+            </div>
+            <div class="l-overlay__footer">
+              <div class="menu menu--end menu--export">
+                <div class="menu__item">
+                  <label
+                    class="button button--label button--label-reverse"
+                    title="colorsort-js sort"
+                  >
+                    <span>Auto-Sort</span>
+                    <span class="checkbox checkbox--toggle">
+                      <input type="checkbox" id="autoSort" checked />
+                      <span class="checkbox__toggle" aria-hidden="true"></span>
+                    </span>
+                  </label>
+                </div>
+                <div class="menu__item">
+                  <button class="button button--icon" id="tokenBeamBtn">
+                    <svg
+                      class="button__icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle
+                        cx="6"
+                        cy="12"
+                        r="2.5"
+                        fill="currentColor"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      ></circle>
+                      <path d="M8.5 12H15.5" stroke="currentColor" stroke-width="1.5"></path>
+                      <circle
+                        cx="18"
+                        cy="12"
+                        r="2.5"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      ></circle>
+                    </svg>
+                    <span></span>
+                  </button>
+                </div>
+                <div class="menu__item">
+                  <button class="button button--icon" id="copyPaletteBtn">
+                    <svg
+                      class="button__icon button__icon--copy"
+                      stroke-width="1.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        x="5"
+                        y="7"
+                        width="12"
+                        height="12"
+                        rx="1.8"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      ></rect>
+                      <rect
+                        x="8"
+                        y="4"
+                        width="12"
+                        height="12"
+                        rx="1.8"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        fill="var(--c-surface)"
+                      ></rect>
+                    </svg>
+                    <span>Copy</span>
+                  </button>
+                </div>
+                <div class="menu__item">
+                  <button class="button button--icon" id="downloadPaletteBtnSVG">
+                    <svg
+                      class="button__icon button__icon--svg"
+                      stroke-width="1.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      transform="rotate(45 12 12)"
+                    >
+                      <path
+                        d="M4 12C8 6 16 18 20 12"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></path>
+                      <circle cx="4" cy="12" r="1.5" fill="currentColor"></circle>
+                      <circle cx="20" cy="12" r="1.5" fill="currentColor"></circle>
+                    </svg>
+                    <span>SVG</span>
+                  </button>
+                </div>
+                <div class="menu__item">
+                  <button class="button button--end button--icon" id="downloadPaletteBtnPNG">
+                    <svg
+                      class="button__icon button__icon--png"
+                      stroke-width="1.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M7 3H14L19 8V21H7V3Z"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></path>
+                      <path
+                        d="M14 3V8H19"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      ></path>
+                    </svg>
+                    <span>PNG</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="stats-button">
+            <button class="button button--icon" id="toggleStatsBtn">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="button__icon"
+              >
+                <use href="#colorSpaceSvg" />
+              </svg>
+              <span>Stats</span>
+            </button>
+          </div>
+          <div class="export-button">
+            <button class="button button--end button--icon" id="toggleOverlayBtn">
+              <svg
+                class="button__icon button__icon--export"
+                stroke-width="1.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M6 20L18 20"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+                <path
+                  d="M12 16V4M12 4L15.5 7.5M12 4L8.5 7.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></path>
+              </svg>
+              <span>Export</span>
+            </button>
+          </div>
+        </div>
+        <div class="deco-text">
+          <h1 class="deco-text__type">
+            <i style="--i: 0/34">s</i>
+            <i style="--i: 1/34">o</i>
+            <i style="--i: 2/34">f</i>
+            <i style="--i: 3/34">t</i>
+            <i style="--i: 4/34"> </i>
+            <i style="--i: 5/34">m</i>
+            <i style="--i: 6/34">e</i>
+            <i style="--i: 7/34">d</i>
+            <i style="--i: 8/34">i</i>
+            <i style="--i: 9/34">a</i>
+            <i style="--i: 10/34"> </i>
+            <i style="--i: 11/34">a</i>
+            <i style="--i: 12/34">g</i>
+            <i style="--i: 13/34">e</i>
+            <i style="--i: 14/34">n</i>
+            <i style="--i: 15/34">t</i>
+
+            <i style="--i: 17/34" aria-hidden="hidden">s</i>
+            <i style="--i: 18/34" aria-hidden="hidden">o</i>
+            <i style="--i: 19/34" aria-hidden="hidden">f</i>
+            <i style="--i: 20/34" aria-hidden="hidden">t</i>
+            <i style="--i: 21/34" aria-hidden="hidden"> </i>
+            <i style="--i: 22/34" aria-hidden="hidden">m</i>
+            <i style="--i: 23/34" aria-hidden="hidden">e</i>
+            <i style="--i: 24/34" aria-hidden="hidden">d</i>
+            <i style="--i: 25/34" aria-hidden="hidden">i</i>
+            <i style="--i: 26/34" aria-hidden="hidden">a</i>
+            <i style="--i: 27/34" aria-hidden="hidden"> </i>
+            <i style="--i: 28/34" aria-hidden="hidden">a</i>
+            <i style="--i: 29/34" aria-hidden="hidden">g</i>
+            <i style="--i: 30/34" aria-hidden="hidden">e</i>
+            <i style="--i: 31/34" aria-hidden="hidden">n</i>
+            <i style="--i: 32/34" aria-hidden="hidden">t</i>
+          </h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div>Extracting Palette...</div>
+    </div>
+
+    <template id="colorRowTemplate">
+      <div class="palette__row">
+        <div class="palette__swatch" data-bg></div>
+        <div class="palette__row-info">
+          <div class="palette__row-info-header">
+            <div class="palette__row-name" data-name>...</div>
+            <span class="palette__row-info-deco"></span>
+            <div class="palette__row-hex" data-hex></div>
+          </div>
+          <div class="palette__meta">
+            <span class="palette__color-percent" data-percent></span>
+            <span class="palette__color-oklab" data-oklab></span>
+          </div>
+        </div>
+        <div class="copy-feedback">Copied!</div>
+      </div>
+    </template>
+
+    <template id="colorSampleTemplate">
+      <div class="color-sample">
+        <div class="color-sample__swatch"></div>
+        <div class="color-sample__info">
+          <div class="color-sample__hex" data-hex></div>
+          <div class="color-sample__oklab" data-oklab></div>
+        </div>
+      </div>
+    </template>
+
+    <template id="debugModalTemplate">
+      <dialog id="debugModal" aria-label="Debug Visualization">
+        <div class="debug-modal-content" role="document">
+          <div class="debug-controls-bar">
+            <div class="debug-controls">
+              <label><input type="checkbox" id="debugShowPixels" /> Pixels</label>
+              <label><input type="checkbox" id="debugShowHistogram" /> Histogram</label>
+              <label><input type="checkbox" id="debugShowCandidates" checked /> Candidates</label>
+              <label><input type="checkbox" id="debugShowClusters" /> Clusters</label>
+              <label><input type="checkbox" id="debugShowRepulsion" /> Repulsion</label>
+            </div>
+            <button class="debug-close-btn" aria-label="Close">&times;</button>
+          </div>
+          <canvas id="debugCanvas"></canvas>
+          <div class="debug-info" id="debugInfo"></div>
+        </div>
+      </dialog>
+    </template>
+
+
+    <audio preload="auto" id="sfx-success">
+      <source src="/public/portfolio-okpalette/sfx/Casual_6_7.m4a" type="audio/mp4" />
+    </audio>
+    <audio preload="auto" id="sfx-toggle">
+      <source src="/public/portfolio-okpalette/sfx/ClickAndSlide.m4a" type="audio/mp4" />
+    </audio>
+    <audio preload="auto" id="sfx-tick">
+      <source src="/public/portfolio-okpalette/sfx/HandleDragTick.m4a" type="audio/mp4" />
+    </audio>
+    <audio preload="auto" id="sfx-error">
+      <source src="/public/portfolio-okpalette/sfx/ClickyButton4.m4a" type="audio/mp4" />
+    </audio>

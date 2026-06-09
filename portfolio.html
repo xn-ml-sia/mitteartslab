@@ -8,8 +8,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/Iosevka/6.0.0/iosevka/iosevka.min.css"
+    />
     <link rel="stylesheet" href="/public/styles.css" />
-    <link rel="stylesheet" href="/public/portfolio-text-hover.css" />
+    <link rel="stylesheet" href="/public/portfolio-okpalette/assets/main.css" />
+    <link rel="stylesheet" href="/public/portfolio-okpalette-hero.css" />
     <link rel="stylesheet" href="/public/portfolio.css" />
   </head>
   <body class="portfolio-page">
@@ -17,12 +22,16 @@
     <div class="portfolio-shell">
       <mal-chapter-header logo-variant="bottom"></mal-chapter-header>
 
+      <section class="portfolio-okpalette-hero-wrap" aria-label="Portfolio hero">
+        <!-- PORTFOLIO_OKPALETTE_HERO -->
+      </section>
+
       <main class="portfolio-main" id="portfolio-root" aria-label="Portfolio case studies"></main>
     </div>
 
+    <script type="module" crossorigin src="/public/portfolio-okpalette/assets/main.js"></script>
     <script src="/public/portfolio-hero/js/gsap.min.js"></script>
     <script src="/public/portfolio-flip/Flip.min.js"></script>
-    <script src="/public/portfolio-text-hover/js/split-type.min.js"></script>
     <script type="module" src="/public/portfolio.js"></script>
   </body>
 </html>
