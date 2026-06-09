@@ -70,7 +70,9 @@ html, body {
 .sl-page,
 .sl-main,
 #services-app,
-.services-stage {
+.services-stage,
+.portfolio-page,
+.portfolio-shell {
   background-color: var(--rubin-ivory);
 }
 

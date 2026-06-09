@@ -713,6 +713,11 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === '/portfolio' || pathname === '/portfolio.html') {
+    serveFile(res, path.join(ROOT, 'portfolio.html'));
+    return;
+  }
+
   if (pathname === '/stoneface' || pathname === '/stoneface.html' || pathname === '/landing' || pathname === '/landing.html') {
     serveFile(res, path.join(ROOT, 'stoneface.html'));
     return;
