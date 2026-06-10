@@ -16,3 +16,12 @@ npm-debug.log*
 # Editor / local
 .idea/
 .vscode/
+
+# Local build / experiment artifacts (regenerate locally; not shipped)
+public/portfolio-webgl-hero/
+public/portfolio-webgl-text/
+public/portfolio-webgl-text.bundle.js
+public/portfolio-webgl-text.bundle.mjs
+public/services.bundle.js
+public/**/*.bundle.js
+public/**/*.bundle.mjs
