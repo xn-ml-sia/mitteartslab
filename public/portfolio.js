@@ -10,15 +10,16 @@ const escapeHtml = (value) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
-const renderCarouselMark = (mark) => {
+const renderHeadMark = (mark) => {
   if (!mark?.path) return '';
 
   const fill = escapeHtml(mark.fill || 'currentColor');
   const viewBox = escapeHtml(mark.viewBox || '0 0 70 19');
+  const label = escapeHtml(mark.label || 'Mezo');
 
   return `
-    <div class="portfolio-card__carousel-mark" aria-hidden="true">
-      <svg viewBox="${viewBox}" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <div class="portfolio-card__mark" aria-label="${label}">
+      <svg viewBox="${viewBox}" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="${mark.path}" fill="${fill}" />
       </svg>
     </div>
@@ -27,7 +28,6 @@ const renderCarouselMark = (mark) => {
 
 const renderCarousel = (item) => `
   <div class="portfolio-card__carousel">
-    ${renderCarouselMark(item.mark)}
     ${item.slides
       .map(
         (slide) =>
@@ -40,8 +40,11 @@ const renderCarousel = (item) => `
 const renderCard = (item) => `
   <article class="portfolio-card" id="portfolio-${item.id}">
     <header class="portfolio-card__head">
-      <h2 class="portfolio-card__title">${escapeHtml(item.title)}</h2>
-      <p class="portfolio-card__subtitle">${escapeHtml(item.subtitle)}</p>
+      ${renderHeadMark(item.mark)}
+      <div class="portfolio-card__copy">
+        <h2 class="portfolio-card__title">${escapeHtml(item.title)}</h2>
+        <p class="portfolio-card__subtitle">${escapeHtml(item.subtitle)}</p>
+      </div>
     </header>
     ${renderCarousel(item)}
   </article>

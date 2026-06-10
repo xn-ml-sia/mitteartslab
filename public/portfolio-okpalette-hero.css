@@ -1,8 +1,16 @@
 /* Portfolio hero — moss video + ring text */
 
+@font-face {
+  font-family: 'Kaluar';
+  src: url('/public/fonts/Kaluar-SemiBold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 .portfolio-okpalette-hero-wrap {
   position: relative;
-  isolation: isolate;
+  overflow: visible;
   margin-top: -32px;
   margin-inline: calc(-1 * var(--portfolio-gap));
   margin-bottom: var(--portfolio-gap);
@@ -20,23 +28,26 @@
 .portfolio-okpalette-hero-wrap .portfolio-hero__inner {
   position: relative;
   width: var(--portfolio-hero-diameter);
+  height: var(--portfolio-hero-diameter);
   margin-inline: auto;
   perspective: 1000px;
   perspective-origin: 50% 50%;
+  transform-style: preserve-3d;
+  overflow: visible;
 }
 
 .portfolio-okpalette-hero-wrap .portfolio-hero__circle {
-  position: relative;
-  width: var(--portfolio-hero-diameter);
-  height: var(--portfolio-hero-diameter);
+  position: absolute;
+  inset: 0;
   border-radius: 50%;
   overflow: hidden;
+  transform: translateZ(0);
+  transform-style: preserve-3d;
 }
 
 .portfolio-okpalette-hero-wrap .portfolio-hero-moss {
   position: absolute;
   inset: 0;
-  z-index: 1;
   pointer-events: none;
 }
 
@@ -57,11 +68,12 @@
 
 .portfolio-okpalette-hero-wrap .deco-text {
   position: absolute;
-  top: 54%;
+  top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) translateZ(0);
+  width: 0;
+  height: 0;
   pointer-events: none;
-  --r: calc(var(--portfolio-hero-diameter) * 0.54);
+  --r: calc(var(--portfolio-hero-diameter) * 0.5);
   transform-style: preserve-3d;
   user-select: none;
 }
@@ -76,13 +88,16 @@
 
 .portfolio-okpalette-hero-wrap .deco-text__type i {
   position: absolute;
-  font-family: Iosevka Web, var(--font-family-code), monospace;
+  left: 0;
+  top: 0;
+  font-family: 'Kaluar', var(--font-family-code), serif;
   font-style: normal;
   font-size: max(2.75rem, 5.5vmin);
-  font-weight: 200;
+  font-weight: 600;
+  color: #111;
   backface-visibility: visible;
   transform-style: preserve-3d;
-  transform: translate3d(-50%, -50%, 0) rotateY(calc(var(--i) * 360deg)) translateZ(var(--r));
+  transform: translate(-50%, -50%) rotateY(calc(var(--i) * 360deg)) translateZ(var(--r));
 }
 
 @keyframes portfolio-hero-deco-spin {

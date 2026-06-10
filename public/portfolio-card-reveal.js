@@ -2,8 +2,8 @@ const REVEAL_CLASS = 'is-revealed';
 
 const MOBILE_MAX_WIDTH = 767;
 
-const DESKTOP_SCROLL_OBSERVER = {
-  threshold: 0.2,
+const DESKTOP_IN_VIEW_OBSERVER = {
+  threshold: 0.1,
   rootMargin: '0px 0px -10% 0px',
 };
 
@@ -17,14 +17,6 @@ const isMobileViewport = () =>
 export const initPortfolioCardReveal = (root = document) => {
   const cards = [...root.querySelectorAll('.portfolio-card')];
   if (cards.length === 0) return null;
-
-  let scrollEnabled = false;
-
-  const enableScroll = () => {
-    scrollEnabled = true;
-  };
-
-  window.addEventListener('scroll', enableScroll, { passive: true, once: true });
 
   const disposers = cards.map((card) => {
     let scrollLocked = false;
@@ -53,16 +45,12 @@ export const initPortfolioCardReveal = (root = document) => {
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
-          if (isMobileViewport()) {
-            if (entry.intersectionRatio < 0.5) return;
-          } else if (!scrollEnabled) {
-            return;
-          }
+          if (isMobileViewport() && entry.intersectionRatio < 0.5) return;
           lockAndReveal();
           observer.disconnect();
         });
       },
-      isMobileViewport() ? MOBILE_HALF_IN_VIEW_OBSERVER : DESKTOP_SCROLL_OBSERVER,
+      isMobileViewport() ? MOBILE_HALF_IN_VIEW_OBSERVER : DESKTOP_IN_VIEW_OBSERVER,
     );
 
     observer.observe(card);
@@ -75,7 +63,6 @@ export const initPortfolioCardReveal = (root = document) => {
   });
 
   return () => {
-    window.removeEventListener('scroll', enableScroll);
     disposers.forEach((dispose) => dispose());
   };
 };
