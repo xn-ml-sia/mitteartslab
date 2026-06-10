@@ -3,6 +3,7 @@
 .portfolio-okpalette-hero-wrap {
   position: relative;
   isolation: isolate;
+  margin-top: -32px;
   margin-inline: calc(-1 * var(--portfolio-gap));
   margin-bottom: var(--portfolio-gap);
   text-transform: none;
@@ -17,6 +18,7 @@
   --okpalette-content-height: 75vh;
   --s-maxBodyWidth: min(94vw, 700px);
   --s-maxBodyHeight: 70vh;
+  --portfolio-hero-diameter: min(78vmin, var(--s-maxBodyWidth), var(--s-maxBodyHeight));
 }
 
 @media (max-width: 800px) {
@@ -25,6 +27,7 @@
     --okpalette-content-height: 77vh;
     --s-maxBodyWidth: min(98vw, 1000px);
     --s-maxBodyHeight: 46vh;
+    --portfolio-hero-diameter: min(88vw, 52vh);
   }
 }
 
@@ -39,76 +42,89 @@
   background-color: transparent;
   background-image: none;
   overflow: visible;
+  width: var(--portfolio-hero-diameter);
+  max-width: var(--portfolio-hero-diameter);
+  margin-top: 0;
+  margin-inline: auto;
 }
 
 .portfolio-okpalette-hero-wrap .l-body,
 .portfolio-okpalette-hero-wrap .has-extracted .l-body {
-  background: transparent;
+  width: var(--portfolio-hero-diameter);
+  height: var(--portfolio-hero-diameter);
+  max-height: var(--portfolio-hero-diameter);
+  margin-inline: auto;
+  padding: 0;
+  border-radius: 50%;
   overflow: visible;
+  background: transparent;
+  box-shadow: none;
+}
+
+.portfolio-okpalette-hero-wrap .extractor {
+  overflow: hidden;
+  border-radius: 50%;
 }
 
 .portfolio-okpalette-hero-wrap .cta-intro {
+  position: absolute;
+  inset: 0;
   border: none;
   padding: 0;
   font-size: inherit;
   text-align: inherit;
   pointer-events: none;
+  overflow: visible;
 }
 
 .portfolio-okpalette-hero-wrap .upload-area,
 .portfolio-okpalette-hero-wrap .upload-text,
 .portfolio-okpalette-hero-wrap .upload-area__intro,
-.portfolio-okpalette-hero-wrap .upload-area__after {
-  display: none !important;
-}
-
+.portfolio-okpalette-hero-wrap .upload-area__after,
 .portfolio-okpalette-hero-wrap .example-images {
-  display: block;
-  z-index: 2;
-}
-
-.portfolio-okpalette-hero-wrap .example-images__list {
-  top: 72%;
-}
-
-.portfolio-okpalette-hero-wrap .example-image-btn {
-  width: calc(var(--okpalette-content-width) * 0.38);
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.portfolio-okpalette-hero-wrap .example-image-btn img,
-.portfolio-okpalette-hero-wrap
-  .example-images__list:has(.example-image-btn:hover)
-  .example-image-btn:not(:hover)
-  img {
-  box-shadow: none;
-}
-
-.portfolio-okpalette-hero-wrap .example-image-btn img {
-  transition: transform 0.35s cubic-bezier(0.3, 0.7, 0, 1);
-}
-
-.portfolio-okpalette-hero-wrap .example-image-btn:hover img {
-  transform: scale(2.15) rotate(0) translateY(-50%);
-}
-
-.portfolio-okpalette-hero-wrap .example-image-btn::after {
-  display: none;
+  display: none !important;
 }
 
 .portfolio-okpalette-hero-wrap .canvas-image,
 .portfolio-okpalette-hero-wrap .has-extracted .canvas-image {
-  max-height: calc(var(--okpalette-content-height) - calc(var(--s-square) * 2));
+  max-width: calc(var(--portfolio-hero-diameter) - var(--s-square) * 2);
+  max-height: calc(var(--portfolio-hero-diameter) - var(--s-square) * 2);
+  border-radius: 50%;
 }
 
-.portfolio-okpalette-hero-wrap .has-extracted .example-images {
+.portfolio-okpalette-hero-wrap .portfolio-hero-moss {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.portfolio-okpalette-hero-wrap .portfolio-hero-moss__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
-  opacity: 1;
+  transform: scale(1.25);
+  transform-origin: center center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-okpalette-hero-wrap .portfolio-hero-moss {
+    display: none;
+  }
 }
 
 .portfolio-okpalette-hero-wrap .deco-text {
-  --r: calc(var(--okpalette-content-width) * 0.62 + 2rem);
+  --r: calc(var(--portfolio-hero-diameter) * 0.54);
+  top: 54%;
+  transform: translate(-50%, -50%) translateZ(0);
+}
+
+@media (max-width: 800px) {
+  .portfolio-okpalette-hero-wrap .deco-text {
+    top: 54%;
+  }
 }
 
 .portfolio-okpalette-hero-wrap .deco-text__type {
@@ -116,30 +132,16 @@
 }
 
 .portfolio-okpalette-hero-wrap .deco-text__type i {
-  font-size: max(6rem, 12vmin);
-}
-
-.portfolio-okpalette-hero-wrap .example-images__list li {
-  animation: portfolio-okpalette-sample-scroll 60s linear infinite;
-  animation-delay: calc(var(--i) * -60s);
+  font-size: max(2.75rem, 5.5vmin);
+  font-weight: 200;
 }
 
 @keyframes portfolio-okpalette-deco-spin {
   from {
-    transform: rotateX(20deg) rotate(20deg) rotateY(0deg);
+    transform: rotateX(15deg) rotate(20deg) rotateY(0deg);
   }
 
   to {
-    transform: rotateX(20deg) rotate(20deg) rotateY(360deg);
-  }
-}
-
-@keyframes portfolio-okpalette-sample-scroll {
-  from {
-    transform: translateY(-50%) translate(0);
-  }
-
-  to {
-    transform: translateY(-50%) translate(calc(var(--okpalette-content-width) * 3.8));
+    transform: rotateX(15deg) rotate(20deg) rotateY(-360deg);
   }
 }
