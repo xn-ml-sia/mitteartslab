@@ -35,6 +35,25 @@ export const PORTFOLIO_CASES = [
     id: 'sloo',
     title: 'designops department',
     subtitle: 'make AI more inclusive for design teams',
+    mark: {
+      label: 'DesignOps department',
+      viewBox: '0 0 32 32',
+      innerSvg: `
+        <rect width="32" height="32" rx="4.26667" fill="#111111"/>
+        <rect x="12.8" y="9.60001" width="2.13333" height="2.13333" fill="#1CC8C8"/>
+        <rect x="10.6667" y="7.46667" width="2.13333" height="2.13333" fill="#1CC8C8"/>
+        <rect x="14.9333" y="11.7333" width="2.13333" height="2.13333" fill="#1CC8C8"/>
+        <rect x="17.0667" y="9.60001" width="2.13333" height="2.13333" fill="#1CC8C8"/>
+        <rect x="19.2" y="7.46667" width="2.13333" height="2.13333" fill="#1CC8C8"/>
+        <rect x="14.9333" y="13.8667" width="2.13333" height="2.13333" fill="#1CC8C8"/>
+        <rect x="14.9333" y="16" width="2.13333" height="2.13333" fill="#1CC8C8"/>
+        <rect x="14.9333" y="18.1334" width="2.13333" height="2.13333" fill="#1CC8C8"/>
+        <rect x="17.0667" y="20.2667" width="2.13333" height="2.13333" fill="#1CC8C8"/>
+        <rect x="19.2" y="22.4" width="2.13333" height="2.13333" fill="#1CC8C8"/>
+        <rect x="12.8" y="20.2667" width="2.13333" height="2.13333" fill="#1CC8C8"/>
+        <rect x="10.6667" y="22.4" width="2.13333" height="2.13333" fill="#1CC8C8"/>
+      `,
+    },
     slides: [
       { src: '/public/assets/services/raw-illustrations-lzfqw6-v.png', alt: 'Sloo object ritual screens' },
       { src: '/public/assets/services/raw-gradients-ggzjvx-n.png', alt: 'Repair and reimagine flows' },

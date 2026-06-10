@@ -11,11 +11,24 @@ const escapeHtml = (value) =>
     .replace(/"/g, '&quot;');
 
 const renderHeadMark = (mark) => {
-  if (!mark?.path) return '';
+  if (!mark) return '';
+
+  const viewBox = escapeHtml(mark.viewBox || '0 0 70 19');
+  const label = escapeHtml(mark.label || '');
+
+  if (mark.innerSvg) {
+    return `
+      <div class="portfolio-card__mark" aria-label="${label}">
+        <svg viewBox="${viewBox}" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          ${mark.innerSvg}
+        </svg>
+      </div>
+    `;
+  }
+
+  if (!mark.path) return '';
 
   const fill = escapeHtml(mark.fill || 'currentColor');
-  const viewBox = escapeHtml(mark.viewBox || '0 0 70 19');
-  const label = escapeHtml(mark.label || 'Mezo');
 
   return `
     <div class="portfolio-card__mark" aria-label="${label}">
