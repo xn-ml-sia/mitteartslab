@@ -1,9 +1,18 @@
 const REVEAL_CLASS = 'is-revealed';
 
-const SCROLL_OBSERVER = {
+const MOBILE_MAX_WIDTH = 767;
+
+const DESKTOP_SCROLL_OBSERVER = {
   threshold: 0.2,
   rootMargin: '0px 0px -10% 0px',
 };
+
+const MOBILE_HALF_IN_VIEW_OBSERVER = {
+  threshold: 0.5,
+};
+
+const isMobileViewport = () =>
+  window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`).matches;
 
 export const initPortfolioCardReveal = (root = document) => {
   const cards = [...root.querySelectorAll('.portfolio-card')];
@@ -29,20 +38,32 @@ export const initPortfolioCardReveal = (root = document) => {
       card.classList.remove(REVEAL_CLASS);
     };
 
+    const lockAndReveal = () => {
+      scrollLocked = true;
+      reveal();
+    };
+
     const onEnter = () => reveal();
     const onLeave = () => hide();
 
     card.addEventListener('mouseenter', onEnter);
     card.addEventListener('mouseleave', onLeave);
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting || !scrollEnabled) return;
-        scrollLocked = true;
-        reveal();
-        observer.disconnect();
-      });
-    }, SCROLL_OBSERVER);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          if (isMobileViewport()) {
+            if (entry.intersectionRatio < 0.5) return;
+          } else if (!scrollEnabled) {
+            return;
+          }
+          lockAndReveal();
+          observer.disconnect();
+        });
+      },
+      isMobileViewport() ? MOBILE_HALF_IN_VIEW_OBSERVER : DESKTOP_SCROLL_OBSERVER,
+    );
 
     observer.observe(card);
 

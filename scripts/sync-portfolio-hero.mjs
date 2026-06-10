@@ -6,7 +6,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MARKER = '<!-- PORTFOLIO_OKPALETTE_HERO -->';
 const templatePath = path.join(ROOT, 'portfolio.template.html');
 const outputPath = path.join(ROOT, 'portfolio.html');
-const heroPath = path.join(ROOT, 'public/portfolio-okpalette/hero-body.html');
+const heroPath = path.join(ROOT, 'public/portfolio-hero/hero-body.html');
 
 const template = fs.readFileSync(templatePath, 'utf8');
 const hero = fs.readFileSync(heroPath, 'utf8');
@@ -17,4 +17,4 @@ if (!template.includes(MARKER)) {
 }
 
 fs.writeFileSync(outputPath, template.replace(MARKER, hero.trim()));
-console.log('Synced OKPalette hero into portfolio.html');
+console.log('Synced portfolio hero into portfolio.html');

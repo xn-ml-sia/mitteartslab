@@ -10,8 +10,24 @@ const escapeHtml = (value) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
+const renderCarouselMark = (mark) => {
+  if (!mark?.path) return '';
+
+  const fill = escapeHtml(mark.fill || 'currentColor');
+  const viewBox = escapeHtml(mark.viewBox || '0 0 70 19');
+
+  return `
+    <div class="portfolio-card__carousel-mark" aria-hidden="true">
+      <svg viewBox="${viewBox}" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="${mark.path}" fill="${fill}" />
+      </svg>
+    </div>
+  `;
+};
+
 const renderCarousel = (item) => `
   <div class="portfolio-card__carousel">
+    ${renderCarouselMark(item.mark)}
     ${item.slides
       .map(
         (slide) =>
