@@ -1,4 +1,4 @@
-/* Portfolio hero — moss video + ring text */
+/* Shared page hero — moss video + ring text */
 
 @font-face {
   font-family: 'Kaluar';
@@ -9,6 +9,7 @@
 }
 
 .portfolio-okpalette-hero-wrap {
+  --portfolio-gap: 8px;
   position: relative;
   overflow: visible;
   margin-top: -32px;
@@ -107,5 +108,27 @@
 
   to {
     transform: translate(-50%, -50%) rotateX(15deg) rotate(20deg) rotateY(-360deg);
+  }
+}
+
+.archive-page .portfolio-okpalette-hero-wrap {
+  margin-top: 0;
+  margin-inline: 0;
+  margin-bottom: 40px;
+  --portfolio-hero-diameter: min(72vmin, 92vw, 62vh);
+}
+
+.archive-page .archive-moss-hero-section .portfolio-okpalette-hero-wrap {
+  margin-bottom: 0;
+}
+
+@media (max-width: 800px) {
+  .archive-page .portfolio-okpalette-hero-wrap {
+    --portfolio-hero-diameter: min(86vw, 48vh);
+    margin-bottom: 28px;
+  }
+
+  .archive-page .archive-moss-hero-section .portfolio-okpalette-hero-wrap {
+    margin-bottom: 0;
   }
 }
