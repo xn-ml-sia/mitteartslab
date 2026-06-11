@@ -125,18 +125,6 @@ export const initHomeSmaugTooltip = () => {
     }
   };
 
-  const show = () => {
-    if (hideTimer) {
-      window.clearTimeout(hideTimer);
-      hideTimer = null;
-    }
-    setNextQuote();
-    fitBubbleToText();
-    root.classList.add('is-active');
-    root.setAttribute('aria-hidden', 'false');
-    animate('in');
-  };
-
   const hide = () => {
     if (hideTimer) {
       window.clearTimeout(hideTimer);
@@ -151,13 +139,8 @@ export const initHomeSmaugTooltip = () => {
     }, totalOutDuration);
   };
 
-  const onMenuOpen = (event) => {
-    const isToolsMenu = Boolean(event?.detail?.isToolsMenu);
-    if (isToolsMenu) {
-      hide();
-      return;
-    }
-    show();
+  const onMenuOpen = () => {
+    hide();
   };
 
   const onMenuState = (event) => {

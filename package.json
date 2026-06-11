@@ -13,6 +13,10 @@
     "sync:portfolio": "npm run build:portfolio-sketch501 && npm run sync:portfolio-sketch501",
     "sync:archive-sketch219": "node scripts/sync-archive-sketch219.mjs",
     "sync:archive-moss-hero": "node scripts/sync-archive-moss-hero.mjs",
+    "vendor:gsap": "cp node_modules/gsap/dist/gsap.min.js node_modules/gsap/dist/CustomEase.min.js node_modules/gsap/dist/CustomWiggle.min.js node_modules/gsap/dist/CustomBounce.min.js node_modules/gsap/dist/ScrollTrigger.min.js node_modules/gsap/dist/Physics2DPlugin.min.js node_modules/gsap/dist/SplitText.min.js node_modules/gsap/dist/DrawSVGPlugin.min.js node_modules/gsap/dist/GSDevTools.min.js node_modules/gsap/dist/MotionPathPlugin.min.js node_modules/gsap/dist/MotionPathHelper.min.js node_modules/gsap/dist/Flip.min.js public/vendor/",
     "test:skewed": "node scripts/skewed-smoke-test.mjs"
+  },
+  "devDependencies": {
+    "gsap": "^3.15.0"
   }
 }

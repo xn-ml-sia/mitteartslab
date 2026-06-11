@@ -572,7 +572,7 @@ vec3 getPixel(in vec2 coord, float time) {
 
 // main
 void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
-    float time = iTime * 0.3;
+    float time = iTime * 0.45;
         
 #ifdef AA
     vec3 color = vec3(0.0);

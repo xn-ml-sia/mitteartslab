@@ -1,4 +1,8 @@
 gsap.registerPlugin(
+  CustomEase,
+  CustomWiggle,
+  CustomBounce,
+  Physics2DPlugin,
   SplitText,
   DrawSVGPlugin,
   GSDevTools,

@@ -446,8 +446,8 @@ export const initHomeAscii = () => {
     homeAscii.stop();
   };
 
-  const onMenuOpen = (event) => {
-    toolsMenuActive = Boolean(event?.detail?.isToolsMenu);
+  const onMenuOpen = () => {
+    toolsMenuActive = false;
     syncVisibility();
   };
 
