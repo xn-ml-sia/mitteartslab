@@ -8,8 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/public/styles.css" />
-    <link rel="stylesheet" href="/public/portfolio-okpalette-hero.css" />
+    <link rel="stylesheet" href="/public/portfolio-sketch501/portfolio-sketch501.css" />
     <link rel="stylesheet" href="/public/portfolio.css" />
   </head>
   <body class="portfolio-page">
@@ -17,90 +18,22 @@
     <div class="portfolio-shell">
       <mal-chapter-header logo-variant="bottom"></mal-chapter-header>
 
-      <section class="portfolio-okpalette-hero-wrap" aria-label="Portfolio hero">
-        <div class="portfolio-hero__inner">
-  <div class="portfolio-hero__circle">
-    <div class="portfolio-hero-moss" aria-hidden="true">
-      <video
-        class="portfolio-hero-moss__video"
-        autoplay
-        muted
-        loop
-        playsinline
-        preload="auto"
-      >
-        <source src="/public/assets/portfolio-hero/organic-moss.webm" type="video/webm" />
-      </video>
-    </div>
-  </div>
-  <div class="deco-text">
-    <h1 class="deco-text__type">
-      <i style="--i: 0/56">w</i>
-      <i style="--i: 1/56">e</i>
-      <i style="--i: 2/56">b</i>
-      <i style="--i: 3/56">3</i>
-      <i style="--i: 4/56"> </i>
-      <i style="--i: 5/56">t</i>
-      <i style="--i: 6/56">r</i>
-      <i style="--i: 7/56">u</i>
-      <i style="--i: 8/56">s</i>
-      <i style="--i: 9/56">t</i>
-      <i style="--i: 10/56"> </i>
-      <i style="--i: 11/56">s</i>
-      <i style="--i: 12/56">s</i>
-      <i style="--i: 13/56">i</i>
-      <i style="--i: 14/56"> </i>
-      <i style="--i: 15/56">o</i>
-      <i style="--i: 16/56">n</i>
-      <i style="--i: 17/56">c</i>
-      <i style="--i: 18/56">h</i>
-      <i style="--i: 19/56">a</i>
-      <i style="--i: 20/56">i</i>
-      <i style="--i: 21/56">n</i>
-      <i style="--i: 22/56"> </i>
-      <i style="--i: 23/56">d</i>
-      <i style="--i: 24/56">e</i>
-      <i style="--i: 25/56">f</i>
-      <i style="--i: 26/56">i</i>
-      <i style="--i: 27/56"> </i>
-      <i style="--i: 28/56">w</i>
-      <i style="--i: 29/56">e</i>
-      <i style="--i: 30/56">b</i>
-      <i style="--i: 31/56">3</i>
-      <i style="--i: 32/56"> </i>
-      <i style="--i: 33/56">t</i>
-      <i style="--i: 34/56">r</i>
-      <i style="--i: 35/56">u</i>
-      <i style="--i: 36/56">s</i>
-      <i style="--i: 37/56">t</i>
-      <i style="--i: 38/56"> </i>
-      <i style="--i: 39/56">s</i>
-      <i style="--i: 40/56">s</i>
-      <i style="--i: 41/56">i</i>
-      <i style="--i: 42/56"> </i>
-      <i style="--i: 43/56">o</i>
-      <i style="--i: 44/56">n</i>
-      <i style="--i: 45/56">c</i>
-      <i style="--i: 46/56">h</i>
-      <i style="--i: 47/56">a</i>
-      <i style="--i: 48/56">i</i>
-      <i style="--i: 49/56">n</i>
-      <i style="--i: 50/56"> </i>
-      <i style="--i: 51/56">d</i>
-      <i style="--i: 52/56">e</i>
-      <i style="--i: 53/56">f</i>
-      <i style="--i: 54/56">i</i>
-      <i style="--i: 55/56"> </i>
-    </h1>
-  </div>
-</div>
+      <section class="portfolio-sketch501" aria-label="Portfolio hero">
+        <div class="l-main-wrapper">
+          <div class="l-main"></div>
+          <div class="l-main"></div>
+          <div class="l-main"></div>
+          <div class="l-main"></div>
+          <div class="l-main"></div>
+        </div>
       </section>
 
       <main class="portfolio-main" id="portfolio-root" aria-label="Portfolio case studies"></main>
     </div>
 
-    <script src="/public/portfolio-hero/js/gsap.min.js"></script>
+    <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
     <script src="/public/portfolio-flip/Flip.min.js"></script>
+    <script type="module" src="/public/portfolio-sketch501/portfolio-sketch501.js"></script>
     <script type="module" src="/public/portfolio.js"></script>
   </body>
 </html>
