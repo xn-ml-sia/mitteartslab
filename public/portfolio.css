@@ -132,6 +132,8 @@
   object-position: center center;
   opacity: 0;
   transition: opacity var(--portfolio-reveal-duration) ease;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
 .portfolio-card.is-revealed .portfolio-card__carousel img {
@@ -140,6 +142,7 @@
 
 .portfolio-card__carousel img.is-carousel-hidden {
   display: none;
+  pointer-events: none;
 }
 
 @media (min-width: 768px) {

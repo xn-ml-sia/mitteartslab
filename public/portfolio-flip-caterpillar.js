@@ -12,14 +12,23 @@ const updateCaterpillar = (track, forward) =>
     const newSlide = document.createElement('img');
     gsap.set(newSlide, { scale: 0, opacity: 0 });
 
+    const copySlideAttributes = (from, to) => {
+      to.src = from.currentSrc || from.src;
+      to.alt = from.alt;
+      to.loading = 'lazy';
+      to.decoding = 'async';
+      to.setAttribute('role', 'button');
+      to.tabIndex = 0;
+      const slideIndex = from.dataset.slideIndex;
+      if (slideIndex) to.dataset.slideIndex = slideIndex;
+    };
+
     if (forward) {
-      newSlide.src = first.src;
-      newSlide.alt = first.alt;
+      copySlideAttributes(first, newSlide);
       track.append(newSlide);
       first.classList.add('is-carousel-hidden');
     } else {
-      newSlide.src = last.src;
-      newSlide.alt = last.alt;
+      copySlideAttributes(last, newSlide);
       track.prepend(newSlide);
       last.classList.add('is-carousel-hidden');
     }
@@ -54,6 +63,12 @@ const updateCaterpillar = (track, forward) =>
 const INITIAL_DELAY_MS = 600;
 const STEP_INTERVAL_MS = 1000;
 
+let caterpillarEnabled = true;
+
+export const setPortfolioFlipCaterpillarEnabled = (enabled) => {
+  caterpillarEnabled = enabled;
+};
+
 export const initPortfolioFlipCaterpillar = (root = document) => {
   if (typeof gsap === 'undefined' || typeof Flip === 'undefined') return null;
 
@@ -69,14 +84,22 @@ export const initPortfolioFlipCaterpillar = (root = document) => {
     let hoverTimeout = 0;
     let hoverInterval = 0;
 
+    const normalizeVisibleSlides = () => {
+      track.querySelectorAll('img:not(.is-carousel-hidden)').forEach((img) => {
+        gsap.set(img, { clearProps: 'transform,opacity,scale,pointerEvents' });
+      });
+    };
+
     const step = async (forward = true) => {
       if (isAnimating) return;
       isAnimating = true;
       await updateCaterpillar(track, forward);
+      normalizeVisibleSlides();
       isAnimating = false;
     };
 
     const onEnter = () => {
+      if (!caterpillarEnabled) return;
       hoverTimeout = window.setTimeout(() => {
         hoverTimeout = 0;
         step(true);

@@ -719,6 +719,12 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  const portfolioDetailMatch = pathname.match(/^\/portfolio\/([^/.]+)\/?$/);
+  if (portfolioDetailMatch) {
+    serveFile(res, path.join(ROOT, 'portfolio.html'));
+    return;
+  }
+
   if (pathname === '/stoneface' || pathname === '/stoneface.html' || pathname === '/landing' || pathname === '/landing.html') {
     serveFile(res, path.join(ROOT, 'stoneface.html'));
     return;

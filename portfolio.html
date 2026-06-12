@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/public/styles.css" />
     <link rel="stylesheet" href="/public/portfolio-sketch501/portfolio-sketch501.css" />
     <link rel="stylesheet" href="/public/portfolio.css" />
+    <link rel="stylesheet" href="/public/portfolio-detail.css" />
   </head>
   <body class="portfolio-page">
     <script type="module" src="/public/chapter-header.js"></script>
@@ -23,12 +24,20 @@
           <div class="l-main"></div>
           <div class="l-main"></div>
           <div class="l-main"></div>
-          <div class="l-main"></div>
-          <div class="l-main"></div>
         </div>
       </section>
 
       <main class="portfolio-main" id="portfolio-root" aria-label="Portfolio case studies"></main>
+    </div>
+
+    <div class="portfolio-detail" id="portfolio-detail" hidden aria-hidden="true">
+      <div class="portfolio-detail__img" role="img" aria-hidden="true"></div>
+      <div class="portfolio-detail__content">
+        <button type="button" class="portfolio-detail__close">close</button>
+        <h2 class="portfolio-detail__title"></h2>
+        <p class="portfolio-detail__subtitle"></p>
+        <p class="portfolio-detail__description"></p>
+      </div>
     </div>
 
     <script src="/public/vendor/gsap.min.js"></script>

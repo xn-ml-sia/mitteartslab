@@ -2,6 +2,7 @@ import { PORTFOLIO_CASES } from './portfolio-data.js';
 import { initMalLogos, setPageFavicon } from './mal-logo.js';
 import { initPortfolioCardReveal } from './portfolio-card-reveal.js';
 import { initPortfolioFlipCaterpillar } from './portfolio-flip-caterpillar.js';
+import { initPortfolioRepeatingTransition } from './portfolio-repeating-transition.js';
 
 const escapeHtml = (value) =>
   String(value)
@@ -43,15 +44,15 @@ const renderCarousel = (item) => `
   <div class="portfolio-card__carousel">
     ${item.slides
       .map(
-        (slide) =>
-          `<img src="${slide.src}" alt="${escapeHtml(slide.alt)}" loading="lazy" decoding="async" />`,
+        (slide, index) =>
+          `<img src="${slide.src}" alt="${escapeHtml(slide.alt)}" data-slide-index="${index}" loading="lazy" decoding="async" role="button" tabindex="0" />`,
       )
       .join('')}
   </div>
 `;
 
 const renderCard = (item) => `
-  <article class="portfolio-card" id="portfolio-${item.id}">
+  <article class="portfolio-card" id="portfolio-${item.id}" data-portfolio-id="${escapeHtml(item.id)}">
     <header class="portfolio-card__head">
       ${renderHeadMark(item.mark)}
       <div class="portfolio-card__copy">
@@ -81,21 +82,28 @@ const boot = () => {
   setPageFavicon('bottom');
 
   const cleanups = [];
+  const reducedMotion = prefersReducedMotion();
 
-  if (prefersReducedMotion()) {
+  if (reducedMotion) {
     root.querySelectorAll('.portfolio-card').forEach((card) => {
       card.classList.add('is-revealed');
     });
-    return;
+  } else {
+    const revealCleanup = initPortfolioCardReveal(root);
+    if (revealCleanup) cleanups.push(revealCleanup);
+
+    if (typeof gsap !== 'undefined' && typeof Flip !== 'undefined') {
+      const flipCleanup = initPortfolioFlipCaterpillar(root);
+      if (flipCleanup) cleanups.push(flipCleanup);
+    }
   }
 
-  const revealCleanup = initPortfolioCardReveal(root);
-  if (revealCleanup) cleanups.push(revealCleanup);
-
-  if (typeof gsap !== 'undefined' && typeof Flip !== 'undefined') {
-    const flipCleanup = initPortfolioFlipCaterpillar(root);
-    if (flipCleanup) cleanups.push(flipCleanup);
-  }
+  const transitionCleanup = initPortfolioRepeatingTransition({
+    root,
+    cases: PORTFOLIO_CASES,
+    reducedMotion,
+  });
+  if (transitionCleanup) cleanups.push(transitionCleanup);
 
   window.addEventListener(
     'pagehide',

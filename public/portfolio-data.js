@@ -3,6 +3,8 @@ export const PORTFOLIO_CASES = [
     id: 'motion-ds',
     title: 'powered by blockchain',
     subtitle: 'make web3/defi accessible and safe',
+    description:
+      'Product design for Mezo — onboarding, wallet flows, and trust patterns that make web3 and DeFi feel legible without dumbing down the stakes.',
     mark: {
       label: 'Mezo',
       viewBox: '0 0 70 19',
@@ -19,6 +21,8 @@ export const PORTFOLIO_CASES = [
     id: 'on-chain',
     title: 'motion design system',
     subtitle: 'build trust with a component library that feels alive',
+    description:
+      'A motion-first component library with timing tokens, interaction specs, and agent-assisted extensions so interfaces feel alive and consistent at scale.',
     mark: {
       label: 'Motion design system',
       viewBox: '0 0 26 24',
@@ -35,6 +39,8 @@ export const PORTFOLIO_CASES = [
     id: 'sloo',
     title: 'designops department',
     subtitle: 'make AI more inclusive for design teams',
+    description:
+      'DesignOps tooling and rituals that help teams adopt AI workflows without leaving people behind — object stories, repair flows, and inclusive handoff patterns.',
     mark: {
       label: 'DesignOps department',
       viewBox: '0 0 32 32',
@@ -64,6 +70,8 @@ export const PORTFOLIO_CASES = [
     id: 'generative',
     title: 'Generative Interfaces',
     subtitle: 'Canvas-based interaction modes',
+    description:
+      'Shader decks, ASCII portraits, and particle vessels — canvas-native interaction modes that treat generative media as first-class UI, not decoration.',
     slides: [
       { src: '/public/assets/services/raw-gradients-fscayqib.png', alt: 'Shader deck explorations' },
       { src: '/public/assets/services/raw-gradients-ljs0kzkm.png', alt: 'ASCII portrait pipeline' },
@@ -71,3 +79,5 @@ export const PORTFOLIO_CASES = [
     ],
   },
 ];
+
+export const getPortfolioCase = (id) => PORTFOLIO_CASES.find((item) => item.id === id);
