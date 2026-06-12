@@ -30729,7 +30729,7 @@ class AboutVisual extends Canvas {
     const mx = this._reducedMotion ? 0 : this._easePointer.x;
     const my = this._reducedMotion ? 0 : this._easePointer.y;
     if (vertical) {
-      this._updateVertical(sw, sh, my);
+      this._updateVertical(sw, sh, mx, my);
     } else {
       this._updateHorizontal(sw, sh, mx, my);
     }
@@ -30748,23 +30748,24 @@ class AboutVisual extends Canvas {
     this._right.scale.set(letterW, letterH, 1);
     this._right.position.x = Math.max(this._left.position.x, sw * 0.5 * mx);
     this._right.position.y = sh * 0.5 * my * -1;
-    this._updateConnectors(new Vector2(this._left.position.x, this._left.position.y), new Vector2(this._right.position.x, this._right.position.y), letterW, letterH, false);
+    this._updateConnectors(new Vector2(this._left.position.x, this._left.position.y), new Vector2(this._right.position.x, this._right.position.y), letterW, letterH, "horizontal");
   }
-  _updateVertical(sw, sh, my) {
+  _updateVertical(sw, sh, mx, my) {
     const letterH = Math.min(sw * 0.72, sh * 0.34);
     const letterW = letterH * LETTER_ASPECT;
     const textHalfH = sh * Func.val(0.14, 0.11);
     const topRestY = textHalfH + letterH * 0.04;
+    const bottomRestY = -(textHalfH + letterH * 0.04);
     this._left.scale.set(letterW, letterH, 1);
     this._left.position.x = 0;
     this._left.position.y = topRestY;
     this._right.scale.set(letterW, letterH, 1);
-    this._right.position.x = 0;
-    this._right.position.y = Math.min(topRestY, sh * 0.5 * my * -1);
-    this._updateConnectors(new Vector2(this._left.position.x, this._left.position.y), new Vector2(this._right.position.x, this._right.position.y), letterW, letterH, true);
+    this._right.position.x = sw * 0.5 * mx;
+    this._right.position.y = bottomRestY + sh * 0.5 * my * -1;
+    this._updateConnectors(new Vector2(this._left.position.x, this._left.position.y), new Vector2(this._right.position.x, this._right.position.y), letterW, letterH, "stacked");
   }
-  _updateConnectors(start, end, letterW, letterH, vertical) {
-    const dist = vertical ? Math.abs(start.y - end.y) : Math.abs(start.x - end.x);
+  _updateConnectors(start, end, letterW, letterH, layout) {
+    const dist = layout === "stacked" ? Math.hypot(start.x - end.x, start.y - end.y) : Math.abs(start.x - end.x);
     const it = letterH * 0.01;
     const max = Math.min(~~(dist / it), this._hokan.length - 1);
     this._hokan.forEach((hokan, i) => {
@@ -30773,7 +30774,7 @@ class AboutVisual extends Canvas {
       hokan.position.y = Util.map(i, start.y, end.y, 0, max);
       let zure = Math.sin(Util.radian(this._c * 2 + i * 1)) * letterH * Util.map(dist, 0, 1, letterH * 0.5, letterH * 3);
       zure *= Math.sin(Util.radian(Util.map(i, 0, 180, 0, max)));
-      if (vertical) {
+      if (layout === "stacked") {
         hokan.position.x += zure;
       } else {
         hokan.position.y += zure;
