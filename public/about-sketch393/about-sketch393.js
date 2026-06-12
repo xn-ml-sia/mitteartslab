@@ -5,7 +5,7 @@ var __publicField = (obj, key, value) => {
   return value;
 };
 var vt$1 = "varying vec2 vUv;\n\nvoid main(){\n  vUv = uv;\n  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}";
-var fg$1 = "uniform sampler2D t;\n\nvarying vec2 vUv;\n\nvoid main(void) {\n  vec4 dest = texture2D(t, vUv);\n  float d = 0.002;\n  if(vUv.x < 0.5 - d || vUv.x > 0.5 + d) {\n    discard;\n  }\n  gl_FragColor = dest;\n}";
+var fg$1 = "uniform sampler2D t;\nuniform float connectorVertical;\n\nvarying vec2 vUv;\n\nvoid main(void) {\n  vec4 dest = texture2D(t, vUv);\n  float d = 0.002;\n  if(connectorVertical > 0.5) {\n    if(vUv.y < 0.5 - d || vUv.y > 0.5 + d) {\n      discard;\n    }\n  } else if(vUv.x < 0.5 - d || vUv.x > 0.5 + d) {\n    discard;\n  }\n  gl_FragColor = dest;\n}";
 class ScreenType {
   constructor() {
   }
@@ -22360,7 +22360,7 @@ class Canvas extends MyDisplay {
   }
 }
 var vt = "varying vec2 vUv;\n\nvoid main(){\n  vUv = uv;\n  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}";
-var fg = "uniform sampler2D t;\nuniform vec2 mask;\n\nvarying vec2 vUv;\n\nvoid main(void) {\n  vec4 dest = texture2D(t, vUv);\n  if(vUv.x < mask.x || vUv.x > mask.y) {\n    dest.a = 0.0;\n  }\n  gl_FragColor = dest;\n}";
+var fg = "uniform sampler2D t;\nuniform vec2 mask;\nuniform float maskVertical;\n\nvarying vec2 vUv;\n\nvoid main(void) {\n  vec4 dest = texture2D(t, vUv);\n  float coord = maskVertical > 0.5 ? vUv.y : vUv.x;\n  if(coord < mask.x || coord > mask.y) {\n    dest.a = 0.0;\n  }\n  gl_FragColor = dest;\n}";
 /**
  * @license
  * Copyright 2010-2022 Three.js Authors
@@ -30520,10 +30520,16 @@ class BaseItem extends MyObject3D {
       depthTest: false,
       uniforms: {
         t: { value: tex },
-        mask: { value: mask }
+        mask: { value: mask },
+        maskVertical: { value: 0 }
       }
     }));
     this.add(this._mesh);
+  }
+  setHalfMask(mask, vertical) {
+    const uniforms = this._mesh.material.uniforms;
+    uniforms.mask.value.copy(mask);
+    uniforms.maskVertical.value = vertical ? 1 : 0;
   }
   _update() {
     super._update();
@@ -30616,6 +30622,8 @@ const _TexLoader = class {
 };
 let TexLoader = _TexLoader;
 __publicField(TexLoader, "_instance");
+const LETTER_ASPECT = 207 / 237;
+const MOBILE_BREAKPOINT = 1024;
 class AboutVisual extends Canvas {
   constructor(opt) {
     super({ el: opt.el, transparent: true });
@@ -30623,11 +30631,13 @@ class AboutVisual extends Canvas {
     __publicField(this, "_left");
     __publicField(this, "_right");
     __publicField(this, "_hokan", []);
+    __publicField(this, "_hokanMat");
     __publicField(this, "_container");
     __publicField(this, "_reducedMotion");
     __publicField(this, "_pointer", { x: 0, y: 0 });
     __publicField(this, "_easePointer", { x: 0, y: 0 });
     __publicField(this, "_isActive", false);
+    __publicField(this, "_layoutVertical", false);
     __publicField(this, "_onPointerMove");
     __publicField(this, "_onPointerLeave");
     __publicField(this, "_onVisibility");
@@ -30643,18 +30653,19 @@ class AboutVisual extends Canvas {
     this._right = new BaseItem(new Vector2(0.5, 1), texture);
     this._con.add(this._right);
     const geo = new PlaneGeometry(1, 1);
-    const mat = new ShaderMaterial({
+    this._hokanMat = new ShaderMaterial({
       vertexShader: vt$1,
       fragmentShader: fg$1,
       transparent: true,
       depthTest: false,
       uniforms: {
-        t: { value: texture }
+        t: { value: texture },
+        connectorVertical: { value: 0 }
       }
     });
     const num = Func.val(100, 200);
     for (let i = 0; i < num; i++) {
-      const hokan = new Mesh(geo, mat);
+      const hokan = new Mesh(geo, this._hokanMat);
       this._con.add(hokan);
       this._hokan.push(hokan);
     }
@@ -30688,20 +30699,47 @@ class AboutVisual extends Canvas {
     this._resize();
     this._onVisibility();
   }
+  _isMobileLayout(sw) {
+    return sw <= MOBILE_BREAKPOINT;
+  }
+  _applyLayoutMode(vertical) {
+    if (this._layoutVertical === vertical)
+      return;
+    this._layoutVertical = vertical;
+    this._hokanMat.uniforms.connectorVertical.value = vertical ? 1 : 0;
+    if (vertical) {
+      this._left.setHalfMask(new Vector2(0.5, 1), true);
+      this._right.setHalfMask(new Vector2(0, 0.5), true);
+    } else {
+      this._left.setHalfMask(new Vector2(0, 0.5), false);
+      this._right.setHalfMask(new Vector2(0.5, 1), false);
+    }
+  }
   _update() {
     super._update();
     if (!this._isActive)
       return;
     const sw = this.renderSize.width;
     const sh = this.renderSize.height;
-    const letterAspect = 207 / 237;
-    const letterH = Math.min(sw, sh) * Func.val(0.42, 0.34);
-    const letterW = letterH * letterAspect;
+    const vertical = this._isMobileLayout(sw);
+    this._applyLayoutMode(vertical);
     const ease = this._reducedMotion ? 1 : 0.1;
     this._easePointer.x += (this._pointer.x - this._easePointer.x) * ease;
     this._easePointer.y += (this._pointer.y - this._easePointer.y) * ease;
     const mx = this._reducedMotion ? 0 : this._easePointer.x;
     const my = this._reducedMotion ? 0 : this._easePointer.y;
+    if (vertical) {
+      this._updateVertical(sw, sh, my);
+    } else {
+      this._updateHorizontal(sw, sh, mx, my);
+    }
+    if (this.isNowRenderFrame()) {
+      this._render();
+    }
+  }
+  _updateHorizontal(sw, sh, mx, my) {
+    const letterH = Math.min(sw, sh) * Func.val(0.42, 0.34);
+    const letterW = letterH * LETTER_ASPECT;
     const textHalfW = Math.min(sw * 0.9, 576) * 0.5;
     const leftRestX = -(textHalfW + letterW * 0.04);
     this._left.scale.set(letterW, letterH, 1);
@@ -30710,23 +30748,38 @@ class AboutVisual extends Canvas {
     this._right.scale.set(letterW, letterH, 1);
     this._right.position.x = Math.max(this._left.position.x, sw * 0.5 * mx);
     this._right.position.y = sh * 0.5 * my * -1;
-    const start = new Vector2(this._left.position.x, this._left.position.y);
-    const end = new Vector2(this._right.position.x, this._right.position.y);
-    const dist = Math.abs(start.x - end.x);
+    this._updateConnectors(new Vector2(this._left.position.x, this._left.position.y), new Vector2(this._right.position.x, this._right.position.y), letterW, letterH, false);
+  }
+  _updateVertical(sw, sh, my) {
+    const letterH = Math.min(sw * 0.72, sh * 0.34);
+    const letterW = letterH * LETTER_ASPECT;
+    const textHalfH = sh * Func.val(0.14, 0.11);
+    const topRestY = textHalfH + letterH * 0.04;
+    this._left.scale.set(letterW, letterH, 1);
+    this._left.position.x = 0;
+    this._left.position.y = topRestY;
+    this._right.scale.set(letterW, letterH, 1);
+    this._right.position.x = 0;
+    this._right.position.y = Math.min(topRestY, sh * 0.5 * my * -1);
+    this._updateConnectors(new Vector2(this._left.position.x, this._left.position.y), new Vector2(this._right.position.x, this._right.position.y), letterW, letterH, true);
+  }
+  _updateConnectors(start, end, letterW, letterH, vertical) {
+    const dist = vertical ? Math.abs(start.y - end.y) : Math.abs(start.x - end.x);
     const it = letterH * 0.01;
     const max = Math.min(~~(dist / it), this._hokan.length - 1);
     this._hokan.forEach((hokan, i) => {
       hokan.scale.set(letterW, letterH, 1);
       hokan.position.x = Util.map(i, start.x, end.x, 0, max);
       hokan.position.y = Util.map(i, start.y, end.y, 0, max);
-      let zure = Math.sin(Util.radian(this._c * 2 + i * 1)) * letterH * 1 * Util.map(dist, 0, 1, letterH * 0.5, letterH * 3);
+      let zure = Math.sin(Util.radian(this._c * 2 + i * 1)) * letterH * Util.map(dist, 0, 1, letterH * 0.5, letterH * 3);
       zure *= Math.sin(Util.radian(Util.map(i, 0, 180, 0, max)));
-      hokan.position.y += zure;
+      if (vertical) {
+        hokan.position.x += zure;
+      } else {
+        hokan.position.y += zure;
+      }
       hokan.visible = i * it < dist;
     });
-    if (this.isNowRenderFrame()) {
-      this._render();
-    }
   }
   _render() {
     this.renderer.setClearColor(0, 0);

@@ -21,12 +21,18 @@ export class BaseItem extends MyObject3D {
         uniforms: {
           t: { value: tex },
           mask: { value: mask },
+          maskVertical: { value: 0 },
         },
       })
     );
     this.add(this._mesh);
   }
 
+  setHalfMask(mask: Vector2, vertical: boolean): void {
+    const uniforms = (this._mesh.material as ShaderMaterial).uniforms;
+    uniforms.mask.value.copy(mask);
+    uniforms.maskVertical.value = vertical ? 1 : 0;
+  }
 
   protected _update():void {
     super._update();

@@ -16,16 +16,21 @@ type AboutVisualOptions = {
   reducedMotion?: boolean;
 };
 
+const LETTER_ASPECT = 207 / 237;
+const MOBILE_BREAKPOINT = 1024;
+
 export class AboutVisual extends Canvas {
   private _con: Object3D;
   private _left: BaseItem;
   private _right: BaseItem;
   private _hokan: Array<Mesh> = [];
+  private _hokanMat: ShaderMaterial;
   private _container: HTMLElement;
   private _reducedMotion: boolean;
   private _pointer = { x: 0, y: 0 };
   private _easePointer = { x: 0, y: 0 };
   private _isActive = false;
+  private _layoutVertical = false;
   private _onPointerMove: (event: PointerEvent) => void;
   private _onPointerLeave: () => void;
   private _onVisibility: () => void;
@@ -50,19 +55,20 @@ export class AboutVisual extends Canvas {
     this._con.add(this._right);
 
     const geo = new PlaneGeometry(1, 1);
-    const mat = new ShaderMaterial({
+    this._hokanMat = new ShaderMaterial({
       vertexShader: vt,
       fragmentShader: fg,
       transparent: true,
       depthTest: false,
       uniforms: {
         t: { value: texture },
+        connectorVertical: { value: 0 },
       },
     });
 
     const num = Func.val(100, 200);
     for (let i = 0; i < num; i++) {
-      const hokan = new Mesh(geo, mat);
+      const hokan = new Mesh(geo, this._hokanMat);
       this._con.add(hokan);
       this._hokan.push(hokan);
     }
@@ -105,6 +111,24 @@ export class AboutVisual extends Canvas {
     this._onVisibility();
   }
 
+  private _isMobileLayout(sw: number): boolean {
+    return sw <= MOBILE_BREAKPOINT;
+  }
+
+  private _applyLayoutMode(vertical: boolean): void {
+    if (this._layoutVertical === vertical) return;
+    this._layoutVertical = vertical;
+    this._hokanMat.uniforms.connectorVertical.value = vertical ? 1 : 0;
+
+    if (vertical) {
+      this._left.setHalfMask(new Vector2(0.5, 1), true);
+      this._right.setHalfMask(new Vector2(0, 0.5), true);
+    } else {
+      this._left.setHalfMask(new Vector2(0, 0.5), false);
+      this._right.setHalfMask(new Vector2(0.5, 1), false);
+    }
+  }
+
   protected _update(): void {
     super._update();
 
@@ -112,9 +136,8 @@ export class AboutVisual extends Canvas {
 
     const sw = this.renderSize.width;
     const sh = this.renderSize.height;
-    const letterAspect = 207 / 237;
-    const letterH = Math.min(sw, sh) * Func.val(0.42, 0.34);
-    const letterW = letterH * letterAspect;
+    const vertical = this._isMobileLayout(sw);
+    this._applyLayoutMode(vertical);
 
     const ease = this._reducedMotion ? 1 : 0.1;
     this._easePointer.x += (this._pointer.x - this._easePointer.x) * ease;
@@ -122,6 +145,21 @@ export class AboutVisual extends Canvas {
 
     const mx = this._reducedMotion ? 0 : this._easePointer.x;
     const my = this._reducedMotion ? 0 : this._easePointer.y;
+
+    if (vertical) {
+      this._updateVertical(sw, sh, my);
+    } else {
+      this._updateHorizontal(sw, sh, mx, my);
+    }
+
+    if (this.isNowRenderFrame()) {
+      this._render();
+    }
+  }
+
+  private _updateHorizontal(sw: number, sh: number, mx: number, my: number): void {
+    const letterH = Math.min(sw, sh) * Func.val(0.42, 0.34);
+    const letterW = letterH * LETTER_ASPECT;
 
     const textHalfW = Math.min(sw * 0.9, 576) * 0.5;
     const leftRestX = -(textHalfW + letterW * 0.04);
@@ -134,9 +172,48 @@ export class AboutVisual extends Canvas {
     this._right.position.x = Math.max(this._left.position.x, sw * 0.5 * mx);
     this._right.position.y = sh * 0.5 * my * -1;
 
-    const start = new Vector2(this._left.position.x, this._left.position.y);
-    const end = new Vector2(this._right.position.x, this._right.position.y);
-    const dist = Math.abs(start.x - end.x);
+    this._updateConnectors(
+      new Vector2(this._left.position.x, this._left.position.y),
+      new Vector2(this._right.position.x, this._right.position.y),
+      letterW,
+      letterH,
+      false,
+    );
+  }
+
+  private _updateVertical(sw: number, sh: number, my: number): void {
+    const letterH = Math.min(sw * 0.72, sh * 0.34);
+    const letterW = letterH * LETTER_ASPECT;
+    const textHalfH = sh * Func.val(0.14, 0.11);
+    const topRestY = textHalfH + letterH * 0.04;
+
+    this._left.scale.set(letterW, letterH, 1);
+    this._left.position.x = 0;
+    this._left.position.y = topRestY;
+
+    this._right.scale.set(letterW, letterH, 1);
+    this._right.position.x = 0;
+    this._right.position.y = Math.min(topRestY, sh * 0.5 * my * -1);
+
+    this._updateConnectors(
+      new Vector2(this._left.position.x, this._left.position.y),
+      new Vector2(this._right.position.x, this._right.position.y),
+      letterW,
+      letterH,
+      true,
+    );
+  }
+
+  private _updateConnectors(
+    start: Vector2,
+    end: Vector2,
+    letterW: number,
+    letterH: number,
+    vertical: boolean,
+  ): void {
+    const dist = vertical
+      ? Math.abs(start.y - end.y)
+      : Math.abs(start.x - end.x);
     const it = letterH * 0.01;
     const max = Math.min(~~(dist / it), this._hokan.length - 1);
 
@@ -148,17 +225,17 @@ export class AboutVisual extends Canvas {
       let zure =
         Math.sin(Util.radian(this._c * 2 + i * 1)) *
         letterH *
-        1 *
         Util.map(dist, 0, 1, letterH * 0.5, letterH * 3);
       zure *= Math.sin(Util.radian(Util.map(i, 0, 180, 0, max)));
-      hokan.position.y += zure;
+
+      if (vertical) {
+        hokan.position.x += zure;
+      } else {
+        hokan.position.y += zure;
+      }
 
       hokan.visible = i * it < dist;
     });
-
-    if (this.isNowRenderFrame()) {
-      this._render();
-    }
   }
 
   private _render(): void {
