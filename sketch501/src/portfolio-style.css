@@ -65,10 +65,16 @@
 
 @media screen and (max-width: 768px) {
   .portfolio-sketch501 {
-    min-height: min(52vh, 480px);
+    min-height: 0;
+    margin-bottom: 4px;
   }
 
   .portfolio-sketch501 .l-main-wrapper {
-    padding-top: 4px;
+    gap: 0.05em;
+    padding: 2px 8px;
+  }
+
+  .portfolio-sketch501 .l-item rt {
+    font-size: 9px;
   }
 }

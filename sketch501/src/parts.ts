@@ -28,7 +28,7 @@ export class Parts extends MyDisplay {
 
     this._c = (opt.dispId || 0) * 10;
 
-    this._size = Func.val(24, 62);
+    this._size = Func.val(40, 62);
     Tween.set(this.el, {
       fontSize: `${this._size}px`,
     });
