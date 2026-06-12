@@ -89,6 +89,18 @@ const initAboutFlow = () => {
 
 const cleanups = [initAboutFlow(), initAboutTreeArtwork()].filter(Boolean);
 
+const loadAboutLetterPull = async () => {
+  try {
+    const { initAboutLetterPull } = await import('./about-sketch393/about-sketch393.js');
+    const cleanup = initAboutLetterPull();
+    if (cleanup) cleanups.push(cleanup);
+  } catch (error) {
+    console.warn('About letter pull failed to load:', error);
+  }
+};
+
+loadAboutLetterPull();
+
 window.addEventListener('pagehide', (event) => {
   if (event.persisted) return;
   cleanups.forEach((cleanup) => cleanup());

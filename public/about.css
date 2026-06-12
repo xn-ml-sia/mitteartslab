@@ -181,9 +181,29 @@ body.about-page {
   text-align: center;
 }
 
+.about-letter-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+.about-letter-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  touch-action: pan-y;
+}
+
 .about-section--bio .about-copy {
+  position: relative;
+  z-index: 2;
   flex: 0 1 var(--about-text-max);
   width: min(var(--about-text-max), 100%);
+  pointer-events: none;
 }
 
 /* --- Mobile: three viewport pages, document scroll --- */

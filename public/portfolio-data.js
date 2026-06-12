@@ -12,9 +12,18 @@ export const PORTFOLIO_CASES = [
       fill: '#FF004D',
     },
     slides: [
-      { src: '/public/assets/services/raw-gradients-ldrx5uab.png', alt: 'Motion tokens and component specs' },
-      { src: '/public/assets/services/raw-gradients-ljs0kzkm.png', alt: 'Interaction timing documentation' },
-      { src: '/public/assets/services/raw-gradients-fscayqib.png', alt: 'Agent-assisted system extension' },
+      {
+        src: '/public/assets/portfolio/motion-ds/slide-01.jpg',
+        alt: 'Mezo portfolio allocation with MUSD/BTC and USDC/BTC positions',
+      },
+      {
+        src: '/public/assets/portfolio/motion-ds/slide-02.jpg',
+        alt: 'MUSD Savings Rate Vault with TVL and APY metrics',
+      },
+      {
+        src: '/public/assets/portfolio/motion-ds/slide-03.jpg',
+        alt: 'sAMM-MUSD/BTC liquidity pool position and earnings',
+      },
     ],
   },
   {
