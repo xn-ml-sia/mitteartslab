@@ -1,5 +1,12 @@
 import { getPortfolioCase } from './portfolio-data.js';
-import { setPortfolioFlipCaterpillarEnabled } from './portfolio-flip-caterpillar.js';
+import { THUMB_SELECTOR } from './portfolio-hover-bg.js';
+import {
+  resetDetailTitle,
+  runCompanyTitleOpen,
+  setCompanyTitleText,
+} from './portfolio-title.js';
+
+const setPortfolioFlipCaterpillarEnabled = () => {};
 
 const config = {
   clipPathDirection: 'top-bottom',
@@ -41,7 +48,12 @@ const imageUrl = (imgEl) => {
 };
 
 const preloadSlideImages = (cases) => {
-  const urls = cases.flatMap((item) => item.slides.map((slide) => slide.src));
+  const urls = cases.flatMap((item) => [
+    item.thumbnail,
+    item.hoverImage,
+    ...(item.detailImages?.map((image) => image.src) || []),
+    ...item.slides.map((slide) => slide.src),
+  ]);
   return Promise.all(
     urls.map(
       (src) =>
@@ -55,18 +67,63 @@ const preloadSlideImages = (cases) => {
   );
 };
 
+const getThumbImage = (card) => card?.querySelector(THUMB_SELECTOR) || null;
+
+const DETAIL_IMAGE_COUNT = 4;
+
+const getDetailImageSources = (portfolioCase) => {
+  if (portfolioCase.detailImages?.length >= DETAIL_IMAGE_COUNT) {
+    return portfolioCase.detailImages.slice(0, DETAIL_IMAGE_COUNT).map((image) => image.src);
+  }
+
+  const pool = [
+    portfolioCase.thumbnail,
+    portfolioCase.hoverImage,
+    ...(portfolioCase.slides?.map((slide) => slide.src) || []),
+  ].filter(Boolean);
+
+  const sources = [];
+  pool.forEach((src) => {
+    if (sources.length >= DETAIL_IMAGE_COUNT) return;
+    if (!sources.includes(src)) sources.push(src);
+  });
+
+  while (sources.length < DETAIL_IMAGE_COUNT) {
+    sources.push(sources[sources.length - 1]);
+  }
+
+  return sources.slice(0, DETAIL_IMAGE_COUNT);
+};
+
+const getDetailImageAlts = (portfolioCase) => {
+  if (portfolioCase.detailImages?.length >= DETAIL_IMAGE_COUNT) {
+    return portfolioCase.detailImages
+      .slice(0, DETAIL_IMAGE_COUNT)
+      .map((image) => image.alt || portfolioCase.title);
+  }
+
+  const alts = portfolioCase.slides?.map((slide) => slide.alt) || [];
+  while (alts.length < DETAIL_IMAGE_COUNT) {
+    alts.push(portfolioCase.title);
+  }
+  return alts.slice(0, DETAIL_IMAGE_COUNT);
+};
+
 export const initPortfolioRepeatingTransition = ({
   root,
   cases,
   reducedMotion = prefersReducedMotion(),
+  onDetailOpenChange,
 } = {}) => {
   if (typeof gsap === 'undefined') return null;
 
   const grid = root?.querySelector('.portfolio-grid');
   const panel = document.getElementById('portfolio-detail');
-  if (!grid || !panel) return null;
+  const panelGallery = panel?.querySelector('.portfolio-detail__gallery');
+  const panelCells = Array.from(panel?.querySelectorAll('.portfolio-detail__img') || []);
+  const panelImg = panel?.querySelector('.portfolio-detail__img.is-primary') || panelCells[0];
+  if (!grid || !panel || !panelGallery || !panelImg || panelCells.length < DETAIL_IMAGE_COUNT) return null;
 
-  const panelImg = panel.querySelector('.portfolio-detail__img');
   const panelContent = panel.querySelector('.portfolio-detail__content');
   const panelTitle = panel.querySelector('.portfolio-detail__title');
   const panelSubtitle = panel.querySelector('.portfolio-detail__subtitle');
@@ -84,11 +141,11 @@ export const initPortfolioRepeatingTransition = ({
   const getCards = () => Array.from(grid.querySelectorAll('.portfolio-card'));
 
   const restoreGridVisualState = () => {
-    gsap.killTweensOf([...getCards(), ...root.querySelectorAll('.portfolio-card__carousel img')]);
+    gsap.killTweensOf([...getCards(), ...root.querySelectorAll(THUMB_SELECTOR)]);
     getCards().forEach((card) => {
       gsap.set(card, { clearProps: 'opacity,scale,clipPath,transform,pointerEvents' });
     });
-    root.querySelectorAll('.portfolio-card__carousel img').forEach((img) => {
+    root.querySelectorAll(THUMB_SELECTOR).forEach((img) => {
       gsap.set(img, { clearProps: 'opacity,scale,transform,pointerEvents,visibility' });
       img.style.removeProperty('pointer-events');
     });
@@ -131,7 +188,7 @@ export const initPortfolioRepeatingTransition = ({
 
   const setPageTitle = (portfolioCase) => {
     document.title = portfolioCase
-      ? `mitte arts lab : ${portfolioCase.title}`
+      ? `mitte arts lab : ${portfolioCase.company}`
       : 'mitte arts lab : portfolio';
   };
 
@@ -186,12 +243,28 @@ export const initPortfolioRepeatingTransition = ({
   };
 
   const setPanelContent = (portfolioCase, imgEl) => {
-    const bg = imageUrl(imgEl);
-    panelImg.style.backgroundImage = bg;
-    panelTitle.textContent = portfolioCase.title;
+    const sources = getDetailImageSources(portfolioCase);
+    const alts = getDetailImageAlts(portfolioCase);
+
+    panelCells.forEach((cell, index) => {
+      cell.style.backgroundImage = `url("${sources[index]}")`;
+      cell.setAttribute('aria-label', alts[index] || portfolioCase.title);
+    });
+
+    setCompanyTitleText(panelTitle, portfolioCase.company);
     panelSubtitle.textContent = portfolioCase.subtitle;
     panelDescription.textContent = portfolioCase.description || portfolioCase.subtitle;
-    panelImg.setAttribute('aria-label', imgEl.alt || portfolioCase.title);
+    resetDetailTitle(panelTitle);
+    gsap.set(panelTitle, { opacity: 0 });
+  };
+
+  const runDetailTitleTransition = () => {
+    const cardTitle = currentCard?.querySelector('.portfolio-work__title');
+    runCompanyTitleOpen({
+      sourceEl: cardTitle,
+      targetEl: panelTitle,
+      reducedMotion,
+    });
   };
 
   const computeStaggerDelays = (clickedItem, items) => {
@@ -290,11 +363,12 @@ export const initPortfolioRepeatingTransition = ({
     gsap.delayedCall(cleanupDelay, () => movers.forEach((m) => m.remove()));
   };
 
-  const revealPanel = (endImg, onComplete) => {
+  const revealPanel = (primaryCell, onComplete) => {
     const clipPaths = getClipPathsForDirection(config.clipPathDirection);
+    const secondaryCells = panelCells.filter((cell) => cell !== primaryCell);
 
     gsap.set(panelContent, { opacity: 0 });
-    gsap.set(panelImg, { clipPath: clipPaths.hide, opacity: 0 });
+    gsap.set(panelCells, { clipPath: clipPaths.hide, opacity: 0 });
     gsap.set(panel, { opacity: 1, pointerEvents: 'auto' });
 
     gsap
@@ -305,14 +379,25 @@ export const initPortfolioRepeatingTransition = ({
         },
       })
       .fromTo(
-        endImg,
+        primaryCell,
         { clipPath: clipPaths.hide, opacity: 0 },
         {
           clipPath: clipPaths.reveal,
           opacity: 1,
-          pointerEvents: 'auto',
           delay: config.steps * config.stepInterval,
         },
+      )
+      .fromTo(
+        secondaryCells,
+        { clipPath: clipPaths.hide, opacity: 0 },
+        {
+          clipPath: clipPaths.reveal,
+          opacity: 1,
+          duration: config.stepDuration * 1.2,
+          stagger: 0.07,
+          ease: config.panelRevealEase,
+        },
+        '-=0.35',
       )
       .fromTo(
         panelContent,
@@ -322,10 +407,11 @@ export const initPortfolioRepeatingTransition = ({
           ease: 'expo',
           opacity: 1,
           y: 0,
-          delay: config.steps * config.stepInterval,
-          onComplete,
+          onComplete: () => {
+            onComplete?.();
+          },
         },
-        '<-=.2',
+        '<-=.15',
       );
   };
 
@@ -350,6 +436,7 @@ export const initPortfolioRepeatingTransition = ({
   const animateTransition = (startRect, endRect, bg, endEl, startEl, onComplete) => {
     hideFrame();
     gsap.set(startEl, { opacity: 0, pointerEvents: 'none' });
+    runDetailTitleTransition();
 
     const path = generateMotionPath(startRect, endRect, config.steps);
     const layer = getMoverLayer();
@@ -399,6 +486,7 @@ export const initPortfolioRepeatingTransition = ({
     panel.setAttribute('aria-hidden', open ? 'false' : 'true');
     panel.classList.toggle('is-open', open);
     setPortfolioFlipCaterpillarEnabled(!open);
+    onDetailOpenChange?.(open);
 
     if (open) {
       getCards().forEach((card) => card.classList.add('is-revealed'));
@@ -416,8 +504,9 @@ export const initPortfolioRepeatingTransition = ({
     gsap.set(getCards().filter((c) => c !== card), { opacity: 0, scale: 0.8 });
     gsap.set(card, { opacity: 0, clipPath: clipPaths.from });
     gsap.set(panel, { opacity: 1, pointerEvents: 'auto' });
-    gsap.set(panelImg, { clipPath: clipPaths.reveal });
+    gsap.set(panelCells, { clipPath: clipPaths.reveal, opacity: 1 });
     gsap.set(panelContent, { opacity: 1, y: 0 });
+    runDetailTitleTransition();
 
     currentCard = card;
     currentImg = imgEl;
@@ -484,9 +573,12 @@ export const initPortfolioRepeatingTransition = ({
 
     const finishClose = () => {
       clearMoverLayer();
-      gsap.killTweensOf([panel, panelImg, panelContent, ...getCards()]);
-      panel.classList.remove('portfolio-detail--right');
-      gsap.set(panelImg, { clipPath: 'inset(0% 0% 100% 0%)', clearProps: 'opacity' });
+      gsap.killTweensOf([panel, ...panelCells, panelContent, ...getCards()]);
+      const cardTitle = currentCard?.querySelector('.portfolio-work__title');
+      if (cardTitle) gsap.set(cardTitle, { clearProps: 'opacity' });
+      panel.classList.remove('portfolio-detail--right', 'is-title-active');
+      resetDetailTitle(panelTitle);
+      gsap.set(panelCells, { clipPath: 'inset(0% 0% 100% 0%)', clearProps: 'opacity' });
       gsap.set(panelContent, { clearProps: 'opacity,transform' });
       gsap.set(panel, { opacity: 0, pointerEvents: 'none' });
       restoreGridVisualState();
@@ -501,7 +593,7 @@ export const initPortfolioRepeatingTransition = ({
     if (!animate || reducedMotion || !currentCard) {
       gsap.set(frameEls, { opacity: 1, pointerEvents: 'auto' });
       gsap.set(panel, { opacity: 0, pointerEvents: 'none' });
-      gsap.set(panelImg, { clipPath: 'inset(0% 0% 100% 0%)', clearProps: 'opacity' });
+      gsap.set(panelCells, { clipPath: 'inset(0% 0% 100% 0%)', clearProps: 'opacity' });
       gsap.set(panelContent, { opacity: 0, y: 25 });
       finishClose();
       return;
@@ -518,7 +610,7 @@ export const initPortfolioRepeatingTransition = ({
       .to(panel, { opacity: 0 })
       .add(showFrame, 0)
       .set(panel, { opacity: 0, pointerEvents: 'none' })
-      .set(panelImg, { clipPath: 'inset(0% 0% 100% 0%)' })
+      .set(panelCells, { clipPath: 'inset(0% 0% 100% 0%)' })
       .set(items, { clipPath: 'none', opacity: 0, scale: 0.8 }, 0)
       .to(
         items,
@@ -531,11 +623,10 @@ export const initPortfolioRepeatingTransition = ({
       );
   };
 
-  const resolveCarouselImage = (target) => {
+  const resolveThumbImage = (target) => {
     if (!(target instanceof Element)) return null;
-    const img = target.closest('.portfolio-card__carousel img');
+    const img = target.closest(THUMB_SELECTOR);
     if (!img || !root.contains(img)) return null;
-    if (img.classList.contains('is-carousel-hidden')) return null;
     if (img.offsetParent === null && getComputedStyle(img).display === 'none') return null;
     return img;
   };
@@ -550,14 +641,14 @@ export const initPortfolioRepeatingTransition = ({
 
   const onRootClick = (event) => {
     if (event.defaultPrevented) return;
-    const img = resolveCarouselImage(event.target);
+    const img = resolveThumbImage(event.target);
     if (!img) return;
     onImageActivate(img);
   };
 
   const onRootKeydown = (event) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
-    const img = resolveCarouselImage(event.target);
+    const img = resolveThumbImage(event.target);
     if (!img) return;
     event.preventDefault();
     onImageActivate(img);
@@ -570,9 +661,7 @@ export const initPortfolioRepeatingTransition = ({
     if (id && getPortfolioCase(id)) {
       if (isPanelOpen) return;
       const card = document.getElementById(`portfolio-${id}`);
-      const img =
-        card?.querySelector('.portfolio-card__carousel img:not(.is-carousel-hidden)') ||
-        card?.querySelector('.portfolio-card__carousel img');
+      const img = getThumbImage(card);
       if (img) openDetail(id, img, { animate: false, updateHistory: false });
       setPageTitle(getPortfolioCase(id));
       return;
@@ -596,9 +685,7 @@ export const initPortfolioRepeatingTransition = ({
     }
 
     const card = document.getElementById(`portfolio-${id}`);
-    const img =
-      card?.querySelector('.portfolio-card__carousel img:not(.is-carousel-hidden)') ||
-      card?.querySelector('.portfolio-card__carousel img');
+    const img = getThumbImage(card);
     if (!img) return;
 
     openDetail(id, img, { animate: false, updateHistory: false });
@@ -643,5 +730,6 @@ export const initPortfolioRepeatingTransition = ({
     moverLayer = null;
     setPortfolioFlipCaterpillarEnabled(true);
     page.classList.remove('portfolio-detail-open');
+    onDetailOpenChange?.(false);
   };
 };

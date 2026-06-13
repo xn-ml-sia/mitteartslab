@@ -7,15 +7,17 @@
     <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22none%22%3E%3C%2Frect%3E%3Cellipse%20cx%3D%227.641%22%20cy%3D%228.29%22%20rx%3D%222.565%22%20ry%3D%223.208%22%20fill%3D%22none%22%20stroke%3D%22%23603553%22%20stroke-width%3D%221%22%3E%3C%2Fellipse%3E%3Cellipse%20cx%3D%228.279%22%20cy%3D%227.774%22%20rx%3D%221.214%22%20ry%3D%221.342%22%20fill%3D%22none%22%20stroke%3D%22%23603553%22%20stroke-width%3D%221%22%3E%3C%2Fellipse%3E%3C%2Fsvg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Pixelify+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/public/styles.css" />
     <link rel="stylesheet" href="/public/portfolio-sketch501/portfolio-sketch501.css" />
     <link rel="stylesheet" href="/public/portfolio.css" />
     <link rel="stylesheet" href="/public/portfolio-detail.css" />
+    <link rel="stylesheet" href="/public/portfolio-detail-title.css" />
   </head>
   <body class="portfolio-page">
     <script type="module" src="/public/chapter-header.js"></script>
+    <div class="portfolio-hover-bg" id="portfolio-hover-bg" aria-hidden="true"></div>
     <div class="portfolio-shell">
       <mal-chapter-header logo-variant="bottom"></mal-chapter-header>
 
@@ -23,14 +25,19 @@
         <!-- PORTFOLIO_SKETCH501_HERO -->
       </section>
 
-      <main class="portfolio-main" id="portfolio-root" aria-label="Portfolio case studies"></main>
+      <main class="portfolio-main" id="portfolio-root" aria-label="Work"></main>
     </div>
 
     <div class="portfolio-detail" id="portfolio-detail" hidden aria-hidden="true">
-      <div class="portfolio-detail__img" role="img" aria-hidden="true"></div>
+      <div class="portfolio-detail__gallery" aria-label="Project images">
+        <div class="portfolio-detail__img is-primary" role="img" aria-hidden="true"></div>
+        <div class="portfolio-detail__img" role="img" aria-hidden="true"></div>
+        <div class="portfolio-detail__img" role="img" aria-hidden="true"></div>
+        <div class="portfolio-detail__img" role="img" aria-hidden="true"></div>
+      </div>
       <div class="portfolio-detail__content">
         <button type="button" class="portfolio-detail__close">close</button>
-        <h2 class="portfolio-detail__title"></h2>
+        <h2 class="portfolio-detail__title portfolio-company-title"></h2>
         <p class="portfolio-detail__subtitle"></p>
         <p class="portfolio-detail__description"></p>
       </div>

@@ -1,7 +1,6 @@
 import { PORTFOLIO_CASES } from './portfolio-data.js';
 import { initMalLogos, setPageFavicon } from './mal-logo.js';
-import { initPortfolioCardReveal } from './portfolio-card-reveal.js';
-import { initPortfolioFlipCaterpillar } from './portfolio-flip-caterpillar.js';
+import { initPortfolioHoverBg, prefersReducedMotion } from './portfolio-hover-bg.js';
 import { initPortfolioRepeatingTransition } from './portfolio-repeating-transition.js';
 
 const escapeHtml = (value) =>
@@ -11,99 +10,108 @@ const escapeHtml = (value) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
-const renderHeadMark = (mark) => {
-  if (!mark) return '';
-
-  const viewBox = escapeHtml(mark.viewBox || '0 0 70 19');
-  const label = escapeHtml(mark.label || '');
-
-  if (mark.innerSvg) {
-    return `
-      <div class="portfolio-card__mark" aria-label="${label}">
-        <svg viewBox="${viewBox}" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          ${mark.innerSvg}
-        </svg>
-      </div>
-    `;
-  }
-
-  if (!mark.path) return '';
-
-  const fill = escapeHtml(mark.fill || 'currentColor');
-
-  return `
-    <div class="portfolio-card__mark" aria-label="${label}">
-      <svg viewBox="${viewBox}" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <path d="${mark.path}" fill="${fill}" />
-      </svg>
-    </div>
-  `;
+const getColumnCount = () => {
+  if (window.matchMedia('(min-width: 1024px)').matches) return 5;
+  if (window.matchMedia('(min-width: 640px)').matches) return 3;
+  return 2;
 };
 
-const renderCarousel = (item) => `
-  <div class="portfolio-card__carousel">
-    ${item.slides
-      .map(
-        (slide, index) =>
-          `<img src="${slide.src}" alt="${escapeHtml(slide.alt)}" data-slide-index="${index}" loading="lazy" decoding="async" role="button" tabindex="0" />`,
-      )
-      .join('')}
-  </div>
-`;
+const distributeCases = (cases, columnCount) => {
+  const columns = Array.from({ length: columnCount }, () => []);
+  cases.forEach((item, index) => {
+    columns[index % columnCount].push({ item, index });
+  });
+  return columns;
+};
 
-const renderCard = (item) => `
-  <article class="portfolio-card" id="portfolio-${item.id}" data-portfolio-id="${escapeHtml(item.id)}">
-    <header class="portfolio-card__head">
-      ${renderHeadMark(item.mark)}
-      <div class="portfolio-card__copy">
-        <h2 class="portfolio-card__title">${escapeHtml(item.title)}</h2>
-        <p class="portfolio-card__subtitle">${escapeHtml(item.subtitle)}</p>
+const renderKeywords = (keywords) =>
+  keywords.map((keyword) => `<span>${escapeHtml(keyword)}</span>`).join('');
+
+const renderCard = ({ item, index }) => `
+  <article
+    class="portfolio-work portfolio-card"
+    id="portfolio-${escapeHtml(item.id)}"
+    data-portfolio-id="${escapeHtml(item.id)}"
+    data-index="${index}"
+  >
+    <picture class="portfolio-work__hover-src">
+      <img src="${escapeHtml(item.hoverImage)}" alt="" loading="lazy" decoding="async" />
+    </picture>
+    <div class="portfolio-work__inner">
+      <h2 class="portfolio-work__title portfolio-company-title" data-text="${escapeHtml(item.company)}">${escapeHtml(item.company)}</h2>
+      <p class="portfolio-work__keywords">${renderKeywords(item.keywords)}</p>
+      <div class="portfolio-work__thumb">
+        <img
+          src="${escapeHtml(item.thumbnail)}"
+          alt="${escapeHtml(item.company)}"
+          loading="lazy"
+          decoding="async"
+          role="button"
+          tabindex="0"
+        />
+        <div class="portfolio-work__detail" aria-hidden="true">
+          <span class="portfolio-work__detail-label">detail</span>
+        </div>
       </div>
-    </header>
-    ${renderCarousel(item)}
+    </div>
   </article>
 `;
 
-const renderPage = () => `
-  <div class="portfolio-grid">
-    ${PORTFOLIO_CASES.map(renderCard).join('')}
-  </div>
-`;
+const renderColumns = (cases) => {
+  const columnCount = getColumnCount();
+  const columns = distributeCases(cases, columnCount);
 
-const prefersReducedMotion = () =>
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return `
+    <div class="portfolio-grid portfolio-work-list" data-columns="${columnCount}">
+      ${columns
+        .map(
+          (column) => `
+        <div class="portfolio-work-list__col">
+          ${column.map(renderCard).join('')}
+        </div>
+      `,
+        )
+        .join('')}
+    </div>
+  `;
+};
 
 const boot = () => {
   const root = document.getElementById('portfolio-root');
   if (!root) return;
 
-  root.innerHTML = renderPage();
-  initMalLogos();
-  setPageFavicon('bottom');
+  let cleanups = [];
 
-  const cleanups = [];
-  const reducedMotion = prefersReducedMotion();
+  const mount = () => {
+    cleanups.forEach((cleanup) => cleanup());
+    cleanups = [];
 
-  if (reducedMotion) {
-    root.querySelectorAll('.portfolio-card').forEach((card) => {
-      card.classList.add('is-revealed');
+    root.innerHTML = renderColumns(PORTFOLIO_CASES);
+    initMalLogos();
+    setPageFavicon('bottom');
+
+    const hover = initPortfolioHoverBg(root);
+    if (hover) cleanups.push(() => hover.destroy());
+
+    const transitionCleanup = initPortfolioRepeatingTransition({
+      root,
+      cases: PORTFOLIO_CASES,
+      reducedMotion: prefersReducedMotion(),
+      onDetailOpenChange: (open) => hover?.setEnabled(!open),
     });
-  } else {
-    const revealCleanup = initPortfolioCardReveal(root);
-    if (revealCleanup) cleanups.push(revealCleanup);
+    if (transitionCleanup) cleanups.push(transitionCleanup);
+  };
 
-    if (typeof gsap !== 'undefined' && typeof Flip !== 'undefined') {
-      const flipCleanup = initPortfolioFlipCaterpillar(root);
-      if (flipCleanup) cleanups.push(flipCleanup);
-    }
-  }
+  mount();
 
-  const transitionCleanup = initPortfolioRepeatingTransition({
-    root,
-    cases: PORTFOLIO_CASES,
-    reducedMotion,
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    const nextCount = getColumnCount();
+    const currentCount = Number(root.querySelector('.portfolio-grid')?.dataset.columns || 0);
+    if (nextCount === currentCount) return;
+    window.clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(mount, 150);
   });
-  if (transitionCleanup) cleanups.push(transitionCleanup);
 
   window.addEventListener(
     'pagehide',

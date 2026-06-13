@@ -1,0 +1,31 @@
+/* Shared company title — Codrops ScrollTextMotion pattern */
+
+.portfolio-company-title {
+  white-space: nowrap;
+  filter: blur(0);
+  will-change: transform, opacity, filter;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  font-smooth: never;
+}
+
+.portfolio-company-title-mover {
+  position: fixed;
+  z-index: 3100;
+  pointer-events: none;
+  transform-origin: top left;
+  will-change: left, top, width, height, font-size, filter, opacity;
+}
+
+.portfolio-company-title__scramble-inner {
+  display: inline;
+  white-space: nowrap;
+}
+
+.portfolio-company-title__scramble-char {
+  display: inline-block;
+}
+
+.portfolio-detail__title.portfolio-company-title {
+  display: block;
+}

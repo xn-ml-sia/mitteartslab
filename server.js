@@ -718,9 +718,7 @@ const server = http.createServer(async (req, res) => {
     serveFile(res, path.join(ROOT, 'portfolio.html'));
     return;
   }
-
-  const portfolioDetailMatch = pathname.match(/^\/portfolio\/([^/.]+)\/?$/);
-  if (portfolioDetailMatch) {
+  if (pathname.startsWith('/portfolio/') && !pathname.slice('/portfolio/'.length).includes('.')) {
     serveFile(res, path.join(ROOT, 'portfolio.html'));
     return;
   }
