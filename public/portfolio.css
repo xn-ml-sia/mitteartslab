@@ -3,7 +3,7 @@
 .portfolio-page {
   --portfolio-gap: 8px;
   --portfolio-work-col-count: 5;
-  --portfolio-font: "IBM Plex Mono", "Noto Sans JP", monospace;
+  --portfolio-font: var(--font-family-code);
   background: #ececec;
   color: #111;
   font-family: var(--portfolio-font);
