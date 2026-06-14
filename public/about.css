@@ -142,6 +142,7 @@ body.about-page {
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
+  isolation: isolate;
 }
 
 .about-photo-trail__img {
@@ -153,6 +154,8 @@ body.about-page {
   will-change: transform;
   pointer-events: none;
   user-select: none;
+  transform-origin: center center;
+  backface-visibility: hidden;
 }
 
 .about-section--intro.is-visible .about-photo,

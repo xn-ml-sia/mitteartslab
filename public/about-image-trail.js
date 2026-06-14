@@ -1,5 +1,7 @@
 const lerp = (a, b, n) => (1 - n) * a + n * b;
 
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
 const map = (x, a, b, c, d) => ((x - a) * (d - c)) / (b - a) + c;
 
 const calcWinsize = () => ({
@@ -13,18 +15,19 @@ const prefersReducedMotion = () =>
 const canHover = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
 const DEFAULTS = {
-  perspective: 85,
-  totalTrailElements: 10,
+  perspective: 120,
+  totalTrailElements: 8,
   valuesFromTo: {
-    x: [-90, 90],
-    y: [-60, 60],
-    rx: [-5, 5],
-    ry: [-12, 12],
-    rz: [-2, 2],
+    x: [-72, 72],
+    y: [-52, 52],
+    rx: [-4, 4],
+    ry: [-8, 8],
+    rz: [0, 0],
   },
+  cursorInfluence: 0.55,
   opacityChange: true,
-  amt: (pos) => 0.012 * pos + 0.025,
-  amtMain: 0.22,
+  amt: (pos) => 0.018 * pos + 0.035,
+  amtMain: 0.24,
 };
 
 class ImageTrailEffect {
@@ -83,6 +86,7 @@ class ImageTrailEffect {
       img.src = this.imageUrl;
       img.decoding = 'async';
       img.draggable = false;
+      img.style.zIndex = String(i + 1);
 
       const isTop = i === totalTrailElements - 1;
       if (isTop) {
@@ -96,7 +100,7 @@ class ImageTrailEffect {
         const opacityVal =
           i === totalTrailElements - 1
             ? 1
-            : (1 / totalTrailElements) * i + 1 / totalTrailElements;
+            : 0.82 + (i / (totalTrailElements - 1)) * 0.14;
         img.style.opacity = String(opacityVal);
       }
 
@@ -107,11 +111,29 @@ class ImageTrailEffect {
     this.trail.appendChild(fragment);
   }
 
+  getTargets() {
+    const rect = this.trail.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = this.cursor.x - cx;
+    const dy = this.cursor.y - cy;
+    const { valuesFromTo, cursorInfluence } = this.options;
+    const { width, height } = this.winsize;
+
+    return {
+      x: clamp(dx * cursorInfluence, valuesFromTo.x[0], valuesFromTo.x[1]),
+      y: clamp(dy * cursorInfluence, valuesFromTo.y[0], valuesFromTo.y[1]),
+      rx: map(this.cursor.y, 0, height, valuesFromTo.rx[0], valuesFromTo.rx[1]),
+      ry: map(this.cursor.x, 0, width, valuesFromTo.ry[0], valuesFromTo.ry[1]),
+      rz: map(this.cursor.x, 0, width, valuesFromTo.rz[0], valuesFromTo.rz[1]),
+    };
+  }
+
   render() {
     if (!this.active) return;
 
-    const { totalTrailElements, valuesFromTo, amt, amtMain } = this.options;
-    const { width, height } = this.winsize;
+    const { totalTrailElements, amt, amtMain } = this.options;
+    const targets = this.getTargets();
 
     for (let i = 0; i < totalTrailElements; i += 1) {
       const amount =
@@ -120,21 +142,14 @@ class ImageTrailEffect {
           : amtMain ?? amt(totalTrailElements - 1);
 
       const state = this.imgTransforms[i];
-      state.x = lerp(state.x, map(this.cursor.x, 0, width, valuesFromTo.x[0], valuesFromTo.x[1]), amount);
-      state.y = lerp(state.y, map(this.cursor.y, 0, height, valuesFromTo.y[0], valuesFromTo.y[1]), amount);
-      state.rz = lerp(state.rz, map(this.cursor.x, 0, width, valuesFromTo.rz[0], valuesFromTo.rz[1]), amount);
-      state.rx = lerp(
-        state.rx,
-        map(this.cursor.y, 0, height, valuesFromTo.rx[0], valuesFromTo.rx[1]),
-        amount,
-      );
-      state.ry = lerp(
-        state.ry,
-        map(this.cursor.x, 0, width, valuesFromTo.ry[0], valuesFromTo.ry[1]),
-        amount,
-      );
+      state.x = lerp(state.x, targets.x, amount);
+      state.y = lerp(state.y, targets.y, amount);
+      state.rz = lerp(state.rz, targets.rz, amount);
+      state.rx = lerp(state.rx, targets.rx, amount);
+      state.ry = lerp(state.ry, targets.ry, amount);
 
-      this.trailElems[i].style.transform = `translateX(${state.x}px) translateY(${state.y}px) rotateX(${state.rx}deg) rotateY(${state.ry}deg) rotateZ(${state.rz}deg)`;
+      this.trailElems[i].style.transform =
+        `translate3d(${state.x}px, ${state.y}px, 0) rotateX(${state.rx}deg) rotateY(${state.ry}deg) rotateZ(${state.rz}deg)`;
     }
 
     this.rafId = requestAnimationFrame(() => this.render());
