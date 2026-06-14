@@ -128,8 +128,7 @@ export const initPortfolioRepeatingTransition = ({
   const panelTitle = panel.querySelector('.portfolio-detail__title');
   const panelSubtitle = panel.querySelector('.portfolio-detail__subtitle');
   const panelDescription = panel.querySelector('.portfolio-detail__description');
-  const panelClose = panel.querySelector('.portfolio-detail__close');
-  const frameEls = document.querySelectorAll('.portfolio-sketch501, .chapter-header');
+  const panelClose = panel.querySelector('.portfolio-detail__back');
   const page = document.body;
 
   let isAnimating = false;
@@ -205,24 +204,6 @@ export const initPortfolioRepeatingTransition = ({
     }
     window.requestAnimationFrame(() => {
       historySilent = false;
-    });
-  };
-
-  const hideFrame = () => {
-    gsap.to(frameEls, {
-      opacity: 0,
-      duration: 0.5,
-      ease: 'sine.inOut',
-      pointerEvents: 'none',
-    });
-  };
-
-  const showFrame = () => {
-    gsap.to(frameEls, {
-      opacity: 1,
-      duration: 0.5,
-      ease: 'sine.inOut',
-      pointerEvents: 'auto',
     });
   };
 
@@ -434,7 +415,6 @@ export const initPortfolioRepeatingTransition = ({
   };
 
   const animateTransition = (startRect, endRect, bg, endEl, startEl, onComplete) => {
-    hideFrame();
     gsap.set(startEl, { opacity: 0, pointerEvents: 'none' });
     runDetailTitleTransition();
 
@@ -500,7 +480,6 @@ export const initPortfolioRepeatingTransition = ({
     setDetailOpenState(true);
 
     const clipPaths = getClipPathsForDirection(config.clipPathDirection);
-    gsap.set(frameEls, { opacity: 0, pointerEvents: 'none' });
     gsap.set(getCards().filter((c) => c !== card), { opacity: 0, scale: 0.8 });
     gsap.set(card, { opacity: 0, clipPath: clipPaths.from });
     gsap.set(panel, { opacity: 1, pointerEvents: 'auto' });
@@ -591,7 +570,6 @@ export const initPortfolioRepeatingTransition = ({
     };
 
     if (!animate || reducedMotion || !currentCard) {
-      gsap.set(frameEls, { opacity: 1, pointerEvents: 'auto' });
       gsap.set(panel, { opacity: 0, pointerEvents: 'none' });
       gsap.set(panelCells, { clipPath: 'inset(0% 0% 100% 0%)', clearProps: 'opacity' });
       gsap.set(panelContent, { opacity: 0, y: 25 });
@@ -608,7 +586,6 @@ export const initPortfolioRepeatingTransition = ({
         onComplete: finishClose,
       })
       .to(panel, { opacity: 0 })
-      .add(showFrame, 0)
       .set(panel, { opacity: 0, pointerEvents: 'none' })
       .set(panelCells, { clipPath: 'inset(0% 0% 100% 0%)' })
       .set(items, { clipPath: 'none', opacity: 0, scale: 0.8 }, 0)
