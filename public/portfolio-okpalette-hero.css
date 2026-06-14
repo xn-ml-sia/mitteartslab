@@ -1,13 +1,5 @@
 /* Shared page hero — moss video + ring text */
 
-@font-face {
-  font-family: 'Kaluar';
-  src: url('/public/fonts/Kaluar-SemiBold.woff') format('woff');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
 .portfolio-okpalette-hero-wrap {
   --portfolio-gap: 8px;
   position: relative;
@@ -91,7 +83,7 @@
   position: absolute;
   left: 0;
   top: 0;
-  font-family: 'Kaluar', var(--font-family-code), serif;
+  font-family: var(--font-family-code), serif;
   font-style: normal;
   font-size: max(2.75rem, 5.5vmin);
   font-weight: 600;

@@ -36,8 +36,8 @@
   --mono-900: #0f0f0f;
 
   /* type */
-  --font-family-base: "IBM Plex Mono", "Courier Prime", Courier, monospace;
-  --font-family-code: "IBM Plex Mono", "Courier Prime", Courier, monospace;
+  --font-family-base: "IBM Plex Mono", monospace;
+  --font-family-code: "IBM Plex Mono", monospace;
   --line-height-base: 1.5;
   --letter-spacing-base: 0.02em;
 

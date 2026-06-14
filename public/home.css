@@ -138,7 +138,7 @@
   opacity: 0;
   font-size: 0.85em;
   text-align: center;
-  font-family: "Overpass Mono", "IBM Plex Mono", "Courier Prime", monospace;
+  font-family: var(--font-family-code);
   letter-spacing: 0.02em;
   white-space: normal;
   overflow-wrap: anywhere;
@@ -164,7 +164,7 @@
 
 .home-brand-name {
   color: var(--background-color);
-  font-family: "IBM Plex Mono", "Courier Prime", monospace;
+  font-family: var(--font-family-code);
   font-size: clamp(12px, 1vw, 16px);
   letter-spacing: 0.08em;
   line-height: 1.1;
@@ -234,7 +234,7 @@
 
 .home-nav-link {
   color: rgba(0, 0, 0, 0.9);
-  font-family: "IBM Plex Mono", "Courier Prime", monospace;
+  font-family: var(--font-family-code);
   font-size: clamp(12px, 1vw, 16px);
   letter-spacing: 0.08em;
   line-height: 1.1;
@@ -340,7 +340,7 @@
 
 .home-submenu-link {
   color: rgba(0, 0, 0, 0.9);
-  font-family: "IBM Plex Mono", "Courier Prime", monospace;
+  font-family: var(--font-family-code);
   font-size: clamp(12px, 1vw, 16px);
   letter-spacing: 0.08em;
   text-decoration: none;

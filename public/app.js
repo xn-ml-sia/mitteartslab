@@ -56,7 +56,7 @@ const debugOverlay = (() => {
     'padding:10px 12px',
     'background:rgba(0,0,0,0.78)',
     'color:#fff',
-    'font:12px/1.4 "Courier Prime",monospace',
+    'font:12px/1.4 "IBM Plex Mono",monospace',
     'border:1px solid rgba(255,255,255,0.2)',
     'border-radius:8px',
     'backdrop-filter: blur(3px)',
