@@ -89,6 +89,18 @@ const initAboutFlow = () => {
 
 const cleanups = [initAboutFlow(), initAboutTreeArtwork()].filter(Boolean);
 
+const loadAboutImageTrail = async () => {
+  try {
+    const { initAboutImageTrail } = await import('./about-image-trail.js');
+    const cleanup = initAboutImageTrail();
+    if (cleanup) cleanups.push(cleanup);
+  } catch (error) {
+    console.warn('About image trail failed to load:', error);
+  }
+};
+
+loadAboutImageTrail();
+
 const loadAboutLetterPull = async () => {
   try {
     const { initAboutLetterPull } = await import('./about-sketch393/about-sketch393.js');
