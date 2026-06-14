@@ -281,24 +281,29 @@
   }
 }
 
+.portfolio-phone.is-layers-open {
+  --phone-tooltip-first-offset: 192px;
+  --phone-tooltip-stack-gap: 50px;
+}
+
 .portfolio-phone.is-layers-open .portfolio-phone__tooltip--1 {
-  --phone-annotation-offset: 166px;
+  --phone-annotation-offset: var(--phone-tooltip-first-offset);
 }
 
 .portfolio-phone.is-layers-open .portfolio-phone__tooltip--2 {
-  --phone-annotation-offset: 128px;
+  --phone-annotation-offset: calc(var(--phone-tooltip-first-offset) - var(--phone-tooltip-stack-gap));
 }
 
 .portfolio-phone.is-layers-open .portfolio-phone__tooltip--3 {
-  --phone-annotation-offset: 89px;
+  --phone-annotation-offset: calc(var(--phone-tooltip-first-offset) - var(--phone-tooltip-stack-gap) * 2);
 }
 
 .portfolio-phone.is-layers-open .portfolio-phone__tooltip--4 {
-  --phone-annotation-offset: 51px;
+  --phone-annotation-offset: calc(var(--phone-tooltip-first-offset) - var(--phone-tooltip-stack-gap) * 3);
 }
 
 .portfolio-phone.is-layers-open .portfolio-phone__tooltip--5 {
-  --phone-annotation-offset: 13px;
+  --phone-annotation-offset: calc(var(--phone-tooltip-first-offset) - var(--phone-tooltip-stack-gap) * 4);
 }
 
 /* Effect 3 — layers open */

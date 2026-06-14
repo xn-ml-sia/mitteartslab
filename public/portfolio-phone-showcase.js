@@ -2,7 +2,6 @@ import { PixelTooltip } from './portfolio-pixel-tooltip.js';
 
 const MAX_SCREENS = 5;
 const FLIP_DURATION_MS = 800;
-const LAYERS_CLOSE_DELAY_MS = 500;
 const TOOLTIP_OPEN_STAGGER = 0.12;
 
 const tooltipWord = (text) => {
@@ -121,19 +120,22 @@ export const initPortfolioPhoneShowcase = ({
   const concealPhone = () => {
     if (!isFlipped) return;
 
-    setLayersOpen(false);
+    setTooltipLayers(false);
 
     if (reducedMotion) {
       setFlipped(false);
+      setLayersOpen(false);
       phoneSection.hidden = true;
       return;
     }
 
+    setFlipped(false);
+
     closeTimer = window.setTimeout(() => {
       closeTimer = null;
-      setFlipped(false);
+      setLayersOpen(false);
       phoneSection.hidden = true;
-    }, LAYERS_CLOSE_DELAY_MS);
+    }, FLIP_DURATION_MS);
   };
 
   const resetPhoneShowcase = () => {
