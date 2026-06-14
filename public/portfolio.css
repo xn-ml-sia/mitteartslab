@@ -155,6 +155,15 @@ body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
   line-height: 1.2;
   letter-spacing: -0.01em;
   opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+.portfolio-work-list.has-card-hover .portfolio-work:not(.is-dimmed) .portfolio-work__title {
+  opacity: 1;
+}
+
+.portfolio-work.is-dimmed .portfolio-work__title {
+  opacity: 0.12;
 }
 
 .portfolio-detail__title.portfolio-company-title {
@@ -173,6 +182,15 @@ body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
   font-weight: 500;
   line-height: 1.35;
   color: #555;
+  transition: opacity 0.3s ease;
+}
+
+.portfolio-work-list.has-card-hover .portfolio-work:not(.is-dimmed) .portfolio-work__keywords {
+  opacity: 1;
+}
+
+.portfolio-work.is-dimmed .portfolio-work__keywords {
+  opacity: 0.12;
 }
 
 .portfolio-work__thumb {

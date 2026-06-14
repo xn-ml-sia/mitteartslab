@@ -323,7 +323,7 @@ body.about-page {
     display: none;
   }
 
-  /* Section 3 — centered bio */
+  /* Bio — centered copy */
   .about-section--bio {
     display: flex;
     align-items: center;
