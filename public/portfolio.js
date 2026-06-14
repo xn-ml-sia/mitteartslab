@@ -2,6 +2,7 @@ import { PORTFOLIO_CASES } from './portfolio-data.js';
 import { initMalLogos, setPageFavicon } from './mal-logo.js';
 import { initPortfolioHoverBg, prefersReducedMotion } from './portfolio-hover-bg.js';
 import { initPortfolioRepeatingTransition } from './portfolio-repeating-transition.js';
+import { initPortfolioPhoneShowcase } from './portfolio-phone-showcase.js';
 
 const escapeHtml = (value) =>
   String(value)
@@ -93,11 +94,18 @@ const boot = () => {
     const hover = initPortfolioHoverBg(root);
     if (hover) cleanups.push(() => hover.destroy());
 
+    const phoneShowcase = initPortfolioPhoneShowcase({
+      panel: document.getElementById('portfolio-detail'),
+      reducedMotion: prefersReducedMotion(),
+    });
+    if (phoneShowcase) cleanups.push(() => phoneShowcase.destroy());
+
     const transitionCleanup = initPortfolioRepeatingTransition({
       root,
       cases: PORTFOLIO_CASES,
       reducedMotion: prefersReducedMotion(),
       onDetailOpenChange: (open) => hover?.setEnabled(!open),
+      phoneShowcase,
     });
     if (transitionCleanup) cleanups.push(transitionCleanup);
   };

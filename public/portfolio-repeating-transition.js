@@ -52,6 +52,7 @@ const preloadSlideImages = (cases) => {
     item.thumbnail,
     item.hoverImage,
     ...(item.detailImages?.map((image) => image.src) || []),
+    ...(item.phoneScreens?.map((screen) => screen.src) || []),
     ...item.slides.map((slide) => slide.src),
   ]);
   return Promise.all(
@@ -114,6 +115,7 @@ export const initPortfolioRepeatingTransition = ({
   cases,
   reducedMotion = prefersReducedMotion(),
   onDetailOpenChange,
+  phoneShowcase,
 } = {}) => {
   if (typeof gsap === 'undefined') return null;
 
@@ -226,17 +228,25 @@ export const initPortfolioRepeatingTransition = ({
   const setPanelContent = (portfolioCase, imgEl) => {
     const sources = getDetailImageSources(portfolioCase);
     const alts = getDetailImageAlts(portfolioCase);
-
-    panelCells.forEach((cell, index) => {
-      cell.style.backgroundImage = `url("${sources[index]}")`;
-      cell.setAttribute('aria-label', alts[index] || portfolioCase.title);
-    });
+    const heroFront = panel.querySelector('.portfolio-detail__hero-face--front');
 
     setCompanyTitleText(panelTitle, portfolioCase.company);
     panelSubtitle.textContent = portfolioCase.subtitle;
     panelDescription.textContent = portfolioCase.description || portfolioCase.subtitle;
     resetDetailTitle(panelTitle);
     gsap.set(panelTitle, { opacity: 0 });
+    phoneShowcase?.renderPhoneShowcase(portfolioCase);
+
+    panelCells.forEach((cell, index) => {
+      const isPrimary = cell.classList.contains('is-primary');
+      const target = isPrimary && heroFront ? heroFront : cell;
+      target.style.backgroundImage = `url("${sources[index]}")`;
+      if (!isPrimary) {
+        cell.setAttribute('aria-label', alts[index] || portfolioCase.title);
+      } else if (heroFront) {
+        heroFront.setAttribute('aria-label', alts[index] || portfolioCase.title);
+      }
+    });
   };
 
   const runDetailTitleTransition = () => {
@@ -557,6 +567,7 @@ export const initPortfolioRepeatingTransition = ({
       if (cardTitle) gsap.set(cardTitle, { clearProps: 'opacity' });
       panel.classList.remove('portfolio-detail--right', 'is-title-active');
       resetDetailTitle(panelTitle);
+      phoneShowcase?.resetPhoneShowcase();
       gsap.set(panelCells, { clipPath: 'inset(0% 0% 100% 0%)', clearProps: 'opacity' });
       gsap.set(panelContent, { clearProps: 'opacity,transform' });
       gsap.set(panel, { opacity: 0, pointerEvents: 'none' });

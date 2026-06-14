@@ -1,0 +1,415 @@
+/* Portfolio detail — Codrops Effect 3 phone layers (hero flip reveal) */
+
+.portfolio-detail__phone {
+  position: relative;
+  padding: 0;
+}
+
+.portfolio-detail__hero-face--back .portfolio-phone {
+  --phone-scale: min(0.9, calc(100cqw / var(--phone-w)));
+  container-type: inline-size;
+}
+
+.portfolio-detail__hero-face--back .portfolio-phone__tooltip {
+  max-width: none;
+}
+
+.portfolio-phone {
+  --phone-w: 240px;
+  --phone-h: 508px;
+  --phone-depth: 15px;
+  --phone-side-w: 30px;
+  --phone-screen-w: 204px;
+  --phone-screen-h: 362px;
+  --phone-screen-top: 73px;
+  --phone-screen-left: 18px;
+  --phone-scale: min(1, calc((100vw - 2rem) / var(--phone-w)));
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.portfolio-phone__stage {
+  position: relative;
+  width: var(--phone-w);
+  height: var(--phone-h);
+  transform: scale(var(--phone-scale));
+  transform-origin: top center;
+}
+
+.portfolio-phone__perspective {
+  position: relative;
+  width: var(--phone-w);
+  height: var(--phone-h);
+  perspective: 1200px;
+  perspective-origin: 50% 0%;
+}
+
+.portfolio-phone__annotations {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.portfolio-phone__device {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(17deg) rotateX(10deg);
+  transition: transform 0.7s ease-in-out;
+}
+
+.portfolio-phone__device,
+.portfolio-phone__body,
+.portfolio-phone__face,
+.portfolio-phone__screen {
+  transform-style: preserve-3d;
+}
+
+.portfolio-phone__body {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.4s;
+}
+
+.portfolio-phone__face {
+  position: absolute;
+  display: block;
+  background: #181818;
+}
+
+.portfolio-phone__face--front,
+.portfolio-phone__face--back {
+  width: var(--phone-w);
+  height: var(--phone-h);
+  border-radius: 34px;
+}
+
+.portfolio-phone__face--front {
+  transform: rotateY(0deg) translateZ(var(--phone-depth));
+  box-shadow: inset 0 0 0 2px #2a2a2a;
+}
+
+.portfolio-phone__face--front::after {
+  content: '';
+  position: absolute;
+  top: var(--phone-screen-top);
+  left: var(--phone-screen-left);
+  width: var(--phone-screen-w);
+  height: var(--phone-screen-h);
+  border-radius: 4px;
+  background: #0a0a0a;
+  box-shadow: inset 0 0 0 1px #333;
+}
+
+.portfolio-phone__face--back {
+  transform: rotateX(180deg) translateZ(var(--phone-depth));
+}
+
+.portfolio-phone__face--left,
+.portfolio-phone__face--right {
+  width: var(--phone-side-w);
+  height: 448px;
+}
+
+.portfolio-phone__face--top,
+.portfolio-phone__face--bottom {
+  width: var(--phone-side-w);
+  height: 180px;
+  transform-origin: 50% 0;
+}
+
+.portfolio-phone__face--right {
+  transform: translateY(30px) rotateY(90deg) translateZ(225px);
+}
+
+.portfolio-phone__face--left {
+  transform: translateY(30px) rotateY(-90deg) translateZ(var(--phone-depth));
+}
+
+.portfolio-phone__face--top {
+  transform: rotateZ(-90deg) translateY(var(--phone-depth)) rotateY(90deg);
+}
+
+.portfolio-phone__face--bottom {
+  transform: rotateZ(-90deg) translateY(var(--phone-depth)) rotateY(-90deg) translateZ(var(--phone-h));
+}
+
+.portfolio-phone__face--side::before,
+.portfolio-phone__face--side::after {
+  position: absolute;
+  top: -25px;
+  left: 0;
+  width: var(--phone-side-w);
+  height: 23px;
+  background: linear-gradient(to top, #181818 0%, #333 100%);
+  content: '';
+  transform: rotateX(22.5deg) translateZ(-7px);
+}
+
+.portfolio-phone__face--side::after {
+  top: 100%;
+  background: linear-gradient(to bottom, #181818 0%, #333 100%);
+  transform: rotateX(-22.5deg) translateZ(-7px);
+}
+
+.portfolio-phone__screens {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.portfolio-phone__screen {
+  position: absolute;
+  top: var(--phone-screen-top);
+  left: var(--phone-screen-left);
+  width: var(--phone-screen-w);
+  height: var(--phone-screen-h);
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background-color: #111;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  opacity: 1;
+  backface-visibility: hidden;
+  transform: translateZ(16px);
+  transition: transform 0.7s ease-in-out, opacity 0.4s ease;
+}
+
+.portfolio-phone__screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  border-radius: inherit;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.portfolio-phone__screen:hover::after,
+.portfolio-phone__screen:focus-visible::after {
+  opacity: 1;
+}
+
+/* Pixel tooltip annotations (Codrops PixelGooeyTooltip — Effect 2) */
+.portfolio-phone__tooltip {
+  --phone-annotation-offset: 0px;
+  --tt-columns: 4;
+  --tt-rows: 2;
+  --tt-bg-color: #111;
+  --tt-text-color: #ececec;
+  position: absolute;
+  left: calc(var(--phone-screen-left) + var(--phone-screen-w) + 18px);
+  top: calc(var(--phone-screen-top) + var(--phone-annotation-offset));
+  width: fit-content;
+  height: fit-content;
+  pointer-events: none;
+}
+
+.portfolio-phone__tooltip.tooltip {
+  display: block;
+  opacity: 0;
+}
+
+.portfolio-phone__tooltip.tooltip--show {
+  opacity: 1;
+}
+
+.portfolio-phone__tooltip .tooltip__bg {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--tt-columns), 1fr);
+  grid-template-rows: repeat(var(--tt-rows), 1fr);
+  pointer-events: none;
+}
+
+.portfolio-phone__tooltip .tooltip__bg div {
+  background: var(--tt-bg-color);
+  outline: 1px solid var(--tt-bg-color);
+}
+
+.portfolio-phone__tooltip .tooltip__content {
+  position: relative;
+  z-index: 1;
+  color: var(--tt-text-color);
+  padding: 0.5rem 0.65rem;
+  font-family: var(--portfolio-font);
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1;
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
+.portfolio-phone__tooltip .tooltip__content-title {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.portfolio-phone__tooltip .tooltip__content-desc {
+  display: none;
+}
+
+.portfolio-phone__tooltip .tooltip__content-title.glitch {
+  animation: portfolio-phone-tooltip-glitch 3.5s linear infinite;
+}
+
+@keyframes portfolio-phone-tooltip-glitch {
+  0%,
+  10%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+  2% {
+    transform: translate3d(-2px, 0, 0);
+    clip-path: polygon(0 18%, 100% 18%, 100% 22%, 0 22%);
+  }
+  4% {
+    transform: translate3d(2px, 0, 0);
+    clip-path: polygon(0 42%, 100% 42%, 100% 46%, 0 46%);
+  }
+  6% {
+    transform: translate3d(-1px, 0, 0);
+    clip-path: polygon(0 68%, 100% 68%, 100% 72%, 0 72%);
+  }
+}
+
+.portfolio-phone.is-layers-open .portfolio-phone__tooltip--1 {
+  --phone-annotation-offset: 166px;
+}
+
+.portfolio-phone.is-layers-open .portfolio-phone__tooltip--2 {
+  --phone-annotation-offset: 128px;
+}
+
+.portfolio-phone.is-layers-open .portfolio-phone__tooltip--3 {
+  --phone-annotation-offset: 89px;
+}
+
+.portfolio-phone.is-layers-open .portfolio-phone__tooltip--4 {
+  --phone-annotation-offset: 51px;
+}
+
+.portfolio-phone.is-layers-open .portfolio-phone__tooltip--5 {
+  --phone-annotation-offset: 13px;
+}
+
+/* Effect 3 — layers open */
+.portfolio-phone.is-layers-open .portfolio-phone__device {
+  transform: rotateY(-30deg) rotateX(90deg) translateZ(-15px) translateZ(-97px);
+}
+
+.portfolio-phone.is-layers-open .portfolio-phone__screen--1 {
+  transform: translateZ(65px);
+  transition-delay: 0.7s;
+  opacity: 0.9;
+}
+
+.portfolio-phone.is-layers-open .portfolio-phone__screen--2 {
+  transform: translateZ(115px);
+  transition-delay: 0.6s;
+  opacity: 0.9;
+}
+
+.portfolio-phone.is-layers-open .portfolio-phone__screen--3 {
+  transform: translateZ(165px);
+  transition-delay: 0.5s;
+  opacity: 0.9;
+}
+
+.portfolio-phone.is-layers-open .portfolio-phone__screen--4 {
+  transform: translateZ(215px);
+  transition-delay: 0.4s;
+  opacity: 0.9;
+}
+
+.portfolio-phone.is-layers-open .portfolio-phone__screen--5 {
+  transform: translateZ(265px);
+  transition-delay: 0.3s;
+  opacity: 0.9;
+}
+
+/* Reduced motion — flat fallback */
+.portfolio-phone.is-reduced-motion .portfolio-phone__perspective {
+  display: none;
+}
+
+.portfolio-phone__flat-fallback {
+  display: none;
+  width: 100%;
+  max-width: 24rem;
+  margin-inline: auto;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.portfolio-phone.is-reduced-motion .portfolio-phone__flat-fallback {
+  display: flex;
+}
+
+.portfolio-phone.is-reduced-motion.is-layers-open .portfolio-phone__flat-item {
+  display: flex;
+}
+
+.portfolio-phone__flat-item {
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  font-family: var(--portfolio-font);
+  color: #111;
+}
+
+.portfolio-phone__flat-thumb {
+  width: 4.5rem;
+  aspect-ratio: 9 / 16;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+  border: 2px solid #111;
+}
+
+.portfolio-phone__flat-label {
+  font-size: 0.82rem;
+  text-transform: lowercase;
+  line-height: 1.3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-detail__hero-flip-inner {
+    transition: none;
+  }
+
+  .portfolio-phone__device,
+  .portfolio-phone__screen {
+    transition: none;
+  }
+
+  .portfolio-phone.is-layers-open .portfolio-phone__device {
+    transform: rotateY(17deg) rotateX(10deg);
+  }
+
+  .portfolio-phone.is-layers-open .portfolio-phone__screen {
+    transform: translateZ(16px);
+    transition-delay: 0s;
+  }
+}
+
+@media (max-width: 39.99em) {
+  .portfolio-detail__hero-face--back .portfolio-phone {
+    --phone-scale: min(0.78, calc(100cqw / var(--phone-w)));
+  }
+}

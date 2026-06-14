@@ -1,4 +1,25 @@
-export const PORTFOLIO_CASES = [
+const MAX_PHONE_SCREENS = 5;
+
+const buildPhoneScreens = (detailImages = [], slides = []) => {
+  const pool = [...detailImages, ...slides];
+  const seen = new Set();
+  const screens = [];
+
+  pool.forEach((item) => {
+    if (!item?.src || seen.has(item.src) || screens.length >= MAX_PHONE_SCREENS) return;
+    seen.add(item.src);
+    const label = (item.alt || 'Screen').split(/[—–,]/)[0].trim().slice(0, 36);
+    screens.push({
+      src: item.src,
+      alt: item.alt || label,
+      label,
+    });
+  });
+
+  return screens;
+};
+
+const RAW_PORTFOLIO_CASES = [
   {
     id: 'motion-ds',
     company: 'Mezo',
@@ -273,5 +294,10 @@ export const PORTFOLIO_CASES = [
     ],
   },
 ];
+
+export const PORTFOLIO_CASES = RAW_PORTFOLIO_CASES.map((item) => ({
+  ...item,
+  phoneScreens: buildPhoneScreens(item.detailImages, item.slides),
+}));
 
 export const getPortfolioCase = (id) => PORTFOLIO_CASES.find((item) => item.id === id);
