@@ -118,6 +118,7 @@ body.portfolio-detail-open .portfolio-sketch501 {
 }
 
 .portfolio-detail__hero-flip {
+  position: relative;
   width: 100%;
   height: 100%;
   perspective: 1400px;
