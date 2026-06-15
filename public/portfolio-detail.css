@@ -319,6 +319,10 @@ body.portfolio-detail-open .portfolio-sketch501 {
     aspect-ratio: 4 / 5;
   }
 
+  .portfolio-detail__img.is-primary.is-phone-ready {
+    aspect-ratio: 3 / 4;
+  }
+
   .portfolio-detail__img:nth-child(2) {
     grid-column: 1;
     grid-row: 2;

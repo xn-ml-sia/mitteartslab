@@ -17,12 +17,24 @@
 .portfolio-phone {
   --phone-w: 240px;
   --phone-h: 508px;
-  --phone-depth: 15px;
-  --phone-side-w: 30px;
-  --phone-screen-w: 204px;
-  --phone-screen-h: 362px;
-  --phone-screen-top: 73px;
-  --phone-screen-left: 18px;
+  --phone-depth: 4px;
+  --phone-radius: 44px;
+  --phone-screen-radius: 15px;
+  --phone-shell: #a39e97;
+  --phone-shell-light: #cfc9c1;
+  --phone-shell-dark: #7d776f;
+  --phone-shell-edge: #8f8981;
+  --phone-shell-side: #969088;
+  --phone-screen-gradient: linear-gradient(
+    160deg,
+    var(--phone-shell-light) 0%,
+    var(--phone-shell) 52%,
+    var(--phone-shell-dark) 100%
+  );
+  --phone-screen-w: 226px;
+  --phone-screen-h: 478px;
+  --phone-screen-top: 15px;
+  --phone-screen-left: 7px;
   --phone-scale: min(1, calc((100vw - 2rem) / var(--phone-w)));
   position: relative;
   width: 100%;
@@ -73,22 +85,101 @@
   transition: transform 0.4s;
 }
 
+.portfolio-phone__body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: var(--phone-w);
+  height: var(--phone-h);
+  border-radius: var(--phone-radius);
+  background:
+    radial-gradient(ellipse 52% 40px at 0% 100%, var(--phone-shell-dark) 0%, transparent 74%),
+    radial-gradient(ellipse 52% 40px at 100% 100%, var(--phone-shell-dark) 0%, transparent 74%),
+    radial-gradient(ellipse 52% 40px at 0% 0%, var(--phone-shell-light) 0%, transparent 74%),
+    radial-gradient(ellipse 52% 40px at 100% 0%, var(--phone-shell-light) 0%, transparent 74%),
+    linear-gradient(
+      90deg,
+      var(--phone-shell-dark) 0%,
+      var(--phone-shell-side) 18%,
+      var(--phone-shell) 50%,
+      var(--phone-shell-side) 82%,
+      var(--phone-shell-dark) 100%
+    );
+  transform: translateZ(0);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.portfolio-phone__body::after {
+  content: '';
+  position: absolute;
+  top: 128px;
+  right: 1px;
+  width: 2px;
+  height: 32px;
+  border-radius: 1px;
+  background: #6f6a63;
+  transform: translateZ(calc(var(--phone-depth) + 0.5px));
+  pointer-events: none;
+}
+
 .portfolio-phone__face {
   position: absolute;
   display: block;
-  background: #181818;
+  background: var(--phone-shell);
 }
 
 .portfolio-phone__face--front,
 .portfolio-phone__face--back {
   width: var(--phone-w);
   height: var(--phone-h);
-  border-radius: 34px;
+  border-radius: var(--phone-radius);
 }
 
 .portfolio-phone__face--front {
   transform: rotateY(0deg) translateZ(var(--phone-depth));
-  box-shadow: inset 0 0 0 2px #2a2a2a;
+  background:
+    radial-gradient(ellipse 52% 40px at 0% 100%, var(--phone-shell-dark) 0%, transparent 74%),
+    radial-gradient(ellipse 52% 40px at 100% 100%, var(--phone-shell-dark) 0%, transparent 74%),
+    radial-gradient(ellipse 52% 40px at 0% 0%, #e8e3dc 0%, transparent 74%),
+    radial-gradient(ellipse 52% 40px at 100% 0%, #e8e3dc 0%, transparent 74%),
+    linear-gradient(
+      148deg,
+      #d8d2ca 0%,
+      var(--phone-shell-light) 18%,
+      var(--phone-shell) 52%,
+      var(--phone-shell-dark) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    inset 0 0 0 2px var(--phone-shell-edge);
+  outline: 1px solid transparent;
+}
+
+.portfolio-phone__face--front::before {
+  content: '';
+  position: absolute;
+  top: 116px;
+  left: 1px;
+  width: 2px;
+  height: 70px;
+  border-radius: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #6f6a63 12%,
+    #6f6a63 22%,
+    transparent 30%,
+    transparent 42%,
+    #6f6a63 52%,
+    #6f6a63 62%,
+    transparent 70%,
+    transparent 82%,
+    #6f6a63 92%,
+    #6f6a63 100%
+  );
+  transform: translateZ(0.5px);
+  pointer-events: none;
 }
 
 .portfolio-phone__face--front::after {
@@ -98,66 +189,109 @@
   left: var(--phone-screen-left);
   width: var(--phone-screen-w);
   height: var(--phone-screen-h);
-  border-radius: 4px;
-  background: #0a0a0a;
-  box-shadow: inset 0 0 0 1px #333;
+  border-radius: var(--phone-screen-radius);
+  background: var(--phone-screen-gradient);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
 }
 
 .portfolio-phone__face--back {
   transform: rotateX(180deg) translateZ(var(--phone-depth));
+  background:
+    radial-gradient(ellipse 52% 40px at 0% 100%, #6f6a63 0%, transparent 74%),
+    radial-gradient(ellipse 52% 40px at 100% 100%, #6f6a63 0%, transparent 74%),
+    linear-gradient(
+      205deg,
+      #d0cac2 0%,
+      var(--phone-shell) 50%,
+      #6f6a63 100%
+    );
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+.portfolio-phone__face--back::before {
+  content: '';
+  position: absolute;
+  top: 44px;
+  left: 22px;
+  width: 54px;
+  height: 54px;
+  border-radius: 15px;
+  background: linear-gradient(155deg, #bab4ac 0%, #8f8981 100%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+.portfolio-phone__face--back::after {
+  content: '';
+  position: absolute;
+  top: 58px;
+  left: 36px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #4a4a52 0%, #121218 72%);
+  box-shadow:
+    20px 0 0 -3px #1a1a22,
+    10px 16px 0 -5px #222228,
+    0 0 0 2px rgba(180, 180, 188, 0.55);
 }
 
 .portfolio-phone__face--left,
-.portfolio-phone__face--right {
-  width: var(--phone-side-w);
-  height: 448px;
-}
-
+.portfolio-phone__face--right,
 .portfolio-phone__face--top,
 .portfolio-phone__face--bottom {
-  width: var(--phone-side-w);
-  height: 180px;
-  transform-origin: 50% 0;
-}
-
-.portfolio-phone__face--right {
-  transform: translateY(30px) rotateY(90deg) translateZ(225px);
-}
-
-.portfolio-phone__face--left {
-  transform: translateY(30px) rotateY(-90deg) translateZ(var(--phone-depth));
-}
-
-.portfolio-phone__face--top {
-  transform: rotateZ(-90deg) translateY(var(--phone-depth)) rotateY(90deg);
-}
-
-.portfolio-phone__face--bottom {
-  transform: rotateZ(-90deg) translateY(var(--phone-depth)) rotateY(-90deg) translateZ(var(--phone-h));
-}
-
-.portfolio-phone__face--side::before,
-.portfolio-phone__face--side::after {
-  position: absolute;
-  top: -25px;
-  left: 0;
-  width: var(--phone-side-w);
-  height: 23px;
-  background: linear-gradient(to top, #181818 0%, #333 100%);
-  content: '';
-  transform: rotateX(22.5deg) translateZ(-7px);
-}
-
-.portfolio-phone__face--side::after {
-  top: 100%;
-  background: linear-gradient(to bottom, #181818 0%, #333 100%);
-  transform: rotateX(-22.5deg) translateZ(-7px);
+  display: none;
 }
 
 .portfolio-phone__screens {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
+}
+
+.portfolio-phone__screens::before {
+  content: '';
+  position: absolute;
+  top: calc(var(--phone-screen-top) + 11px);
+  left: calc(var(--phone-screen-left) + var(--phone-screen-w) / 2);
+  width: 56px;
+  height: 16px;
+  border-radius: 999px;
+  background: #000;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04);
+  transform: translateX(-50%) translateZ(22px);
+  pointer-events: none;
+  z-index: 6;
+}
+
+.portfolio-phone__screens::after {
+  content: '';
+  position: absolute;
+  top: var(--phone-screen-top);
+  left: var(--phone-screen-left);
+  width: var(--phone-screen-w);
+  height: var(--phone-screen-h);
+  border-radius: var(--phone-screen-radius);
+  background: linear-gradient(
+    122deg,
+    rgba(216, 210, 202, 0.55) 0%,
+    rgba(207, 201, 193, 0.22) 18%,
+    rgba(163, 158, 151, 0) 40%,
+    rgba(163, 158, 151, 0) 62%,
+    rgba(125, 119, 111, 0.1) 82%,
+    rgba(216, 210, 202, 0.2) 100%
+  );
+  transform: translateZ(26px);
+  pointer-events: none;
+  z-index: 7;
+  transition: opacity 0.45s ease;
+}
+
+.portfolio-phone.is-layers-open .portfolio-phone__screens::after {
+  opacity: 0;
 }
 
 .portfolio-phone__screen {
@@ -168,8 +302,8 @@
   height: var(--phone-screen-h);
   padding: 0;
   border: 0;
-  border-radius: 4px;
-  background-color: #111;
+  border-radius: var(--phone-screen-radius);
+  background-color: var(--phone-shell);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -178,6 +312,9 @@
   backface-visibility: hidden;
   transform: translateZ(16px);
   transition: transform 0.7s ease-in-out, opacity 0.4s ease;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    inset 0 18px 36px -24px rgba(216, 210, 202, 0.35);
 }
 
 .portfolio-phone__screen::after {
@@ -308,7 +445,7 @@
 
 /* Effect 3 — layers open */
 .portfolio-phone.is-layers-open .portfolio-phone__device {
-  transform: rotateY(-30deg) rotateX(90deg) translateZ(-15px) translateZ(-97px);
+  transform: rotateY(-30deg) rotateX(90deg) translateZ(calc(var(--phone-depth) * -1)) translateZ(-97px);
 }
 
 .portfolio-phone.is-layers-open .portfolio-phone__screen--1 {
@@ -380,11 +517,12 @@
 .portfolio-phone__flat-thumb {
   width: 4.5rem;
   aspect-ratio: 9 / 16;
-  border-radius: 6px;
+  border-radius: 10px;
   background-size: cover;
   background-position: center;
   flex-shrink: 0;
-  border: 2px solid #111;
+  border: 2px solid var(--phone-shell-edge);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28);
 }
 
 .portfolio-phone__flat-label {
@@ -414,6 +552,11 @@
 }
 
 @media (max-width: 39.99em) {
+  .portfolio-detail__hero-face--back {
+    align-items: flex-start;
+    padding-top: 0.5rem;
+  }
+
   .portfolio-detail__hero-face--back .portfolio-phone {
     --phone-scale: min(0.78, calc(100cqw / var(--phone-w)));
   }
