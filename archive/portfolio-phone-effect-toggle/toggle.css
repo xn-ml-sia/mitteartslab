@@ -1,0 +1,112 @@
+/* Archived goo-style effect toggle for portfolio phone showcase */
+
+.portfolio-phone__effect-toggle {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  z-index: 12;
+  pointer-events: auto;
+  transform: translateX(-50%) rotate(90deg);
+  transform-origin: center;
+}
+
+.portfolio-phone__toggle-container {
+  --active-color: #d3d3d6;
+  --inactive-color: #d3d3d6;
+  position: relative;
+  aspect-ratio: 292 / 142;
+  height: 1.875em;
+}
+
+.portfolio-phone__toggle-input {
+  appearance: none;
+  margin: 0;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.portfolio-phone__effect-toggle.is-switching {
+  pointer-events: none;
+}
+
+.portfolio-phone__effect-toggle.is-switching .portfolio-phone__toggle-input {
+  cursor: not-allowed;
+}
+
+.portfolio-phone__toggle {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.portfolio-phone__toggle-background {
+  fill: var(--inactive-color);
+  transition: fill 0.4s;
+}
+
+.portfolio-phone__toggle-input:checked + .portfolio-phone__toggle .portfolio-phone__toggle-background {
+  fill: var(--active-color);
+}
+
+.portfolio-phone__toggle-circle-center {
+  transform-origin: center;
+  transition: transform 0.6s;
+}
+
+.portfolio-phone__toggle-input:checked + .portfolio-phone__toggle .portfolio-phone__toggle-circle-center {
+  transform: translateX(150px);
+}
+
+.portfolio-phone__toggle-circle {
+  transform-origin: center;
+  transition: transform 0.45s;
+  backface-visibility: hidden;
+}
+
+.portfolio-phone__toggle-circle--left {
+  transform: scale(1);
+}
+
+.portfolio-phone__toggle-input:checked + .portfolio-phone__toggle .portfolio-phone__toggle-circle--left {
+  transform: scale(0);
+}
+
+.portfolio-phone__toggle-circle--right {
+  transform: scale(0);
+}
+
+.portfolio-phone__toggle-input:checked + .portfolio-phone__toggle .portfolio-phone__toggle-circle--right {
+  transform: scale(1);
+}
+
+.portfolio-phone__toggle-icon {
+  transition: fill 0.4s;
+}
+
+.portfolio-phone__toggle-icon--on {
+  fill: var(--inactive-color);
+}
+
+.portfolio-phone__toggle-input:checked + .portfolio-phone__toggle .portfolio-phone__toggle-icon--on {
+  fill: #fff;
+}
+
+.portfolio-phone__toggle-icon--off {
+  fill: #eaeaec;
+}
+
+.portfolio-phone__toggle-input:checked + .portfolio-phone__toggle .portfolio-phone__toggle-icon--off {
+  fill: var(--active-color);
+}
+
+.portfolio-phone__toggle-input:focus-visible + .portfolio-phone__toggle {
+  outline: 2px solid #ececec;
+  outline-offset: 2px;
+  border-radius: 999px;
+}
