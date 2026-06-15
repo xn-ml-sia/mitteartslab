@@ -15,10 +15,12 @@
   --phone-h: 508px;
   --phone-depth: 4px;
   --phone-radius-top: 44px;
-  --phone-radius-bottom: 16px;
+  --phone-radius-bottom: 44px;
   --phone-radius: var(--phone-radius-top) var(--phone-radius-top) var(--phone-radius-bottom) var(--phone-radius-bottom);
-  --phone-screen-radius-top: 15px;
-  --phone-screen-radius-bottom: 11px;
+  --phone-screen-radius-top: calc(var(--phone-radius-top) - var(--phone-screen-top));
+  --phone-screen-radius-bottom: calc(
+    var(--phone-radius-bottom) - (var(--phone-h) - var(--phone-screen-h) - var(--phone-screen-top))
+  );
   --phone-screen-radius: var(--phone-screen-radius-top) var(--phone-screen-radius-top) var(--phone-screen-radius-bottom) var(--phone-screen-radius-bottom);
   --phone-screen-1-z: 4px;
   --phone-screen-stack-step: 4px;
