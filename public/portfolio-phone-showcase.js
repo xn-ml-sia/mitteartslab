@@ -259,7 +259,13 @@ export const initPortfolioPhoneShowcase = ({
       const screenBtn = document.createElement('button');
       screenBtn.type = 'button';
       screenBtn.className = `portfolio-phone__screen portfolio-phone__screen--${index + 1}`;
-      screenBtn.style.backgroundImage = `url("${screen.src}")`;
+
+      const screenMedia = document.createElement('span');
+      screenMedia.className = 'portfolio-phone__screen-media';
+      screenMedia.style.backgroundImage = `url("${screen.src}")`;
+      screenMedia.setAttribute('aria-hidden', 'true');
+      screenBtn.appendChild(screenMedia);
+
       screenBtn.setAttribute('aria-label', screen.alt || screen.label || `Screen ${index + 1}`);
       screensEl.appendChild(screenBtn);
 
