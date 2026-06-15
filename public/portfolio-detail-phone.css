@@ -418,62 +418,122 @@
   }
 }
 
-.portfolio-phone.is-layers-open {
-  --phone-tooltip-first-offset: 192px;
+.portfolio-phone.is-layers-open.is-effect-3 {
+  --phone-tooltip-first-offset: 260px;
   --phone-tooltip-stack-gap: 50px;
 }
 
-.portfolio-phone.is-layers-open .portfolio-phone__tooltip--1 {
+.portfolio-phone.is-layers-open.is-effect-3 .portfolio-phone__tooltip--1 {
   --phone-annotation-offset: var(--phone-tooltip-first-offset);
 }
 
-.portfolio-phone.is-layers-open .portfolio-phone__tooltip--2 {
+.portfolio-phone.is-layers-open.is-effect-3 .portfolio-phone__tooltip--2 {
   --phone-annotation-offset: calc(var(--phone-tooltip-first-offset) - var(--phone-tooltip-stack-gap));
 }
 
-.portfolio-phone.is-layers-open .portfolio-phone__tooltip--3 {
+.portfolio-phone.is-layers-open.is-effect-3 .portfolio-phone__tooltip--3 {
   --phone-annotation-offset: calc(var(--phone-tooltip-first-offset) - var(--phone-tooltip-stack-gap) * 2);
 }
 
-.portfolio-phone.is-layers-open .portfolio-phone__tooltip--4 {
+.portfolio-phone.is-layers-open.is-effect-3 .portfolio-phone__tooltip--4 {
   --phone-annotation-offset: calc(var(--phone-tooltip-first-offset) - var(--phone-tooltip-stack-gap) * 3);
 }
 
-.portfolio-phone.is-layers-open .portfolio-phone__tooltip--5 {
+.portfolio-phone.is-layers-open.is-effect-3 .portfolio-phone__tooltip--5 {
   --phone-annotation-offset: calc(var(--phone-tooltip-first-offset) - var(--phone-tooltip-stack-gap) * 4);
 }
 
-/* Effect 3 — layers open */
-.portfolio-phone.is-layers-open .portfolio-phone__device {
+/* Effect 3 — layers open (default first reveal) */
+.portfolio-phone.is-layers-open.is-effect-3 .portfolio-phone__device {
   transform: rotateY(-30deg) rotateX(90deg) translateZ(calc(var(--phone-depth) * -1)) translateZ(-97px);
 }
 
-.portfolio-phone.is-layers-open .portfolio-phone__screen--1 {
+.portfolio-phone.is-layers-open.is-effect-3 .portfolio-phone__screen--1 {
   transform: translateZ(65px);
   transition-delay: 0.7s;
   opacity: 0.9;
 }
 
-.portfolio-phone.is-layers-open .portfolio-phone__screen--2 {
+.portfolio-phone.is-layers-open.is-effect-3 .portfolio-phone__screen--2 {
   transform: translateZ(115px);
   transition-delay: 0.6s;
   opacity: 0.9;
 }
 
-.portfolio-phone.is-layers-open .portfolio-phone__screen--3 {
+.portfolio-phone.is-layers-open.is-effect-3 .portfolio-phone__screen--3 {
   transform: translateZ(165px);
   transition-delay: 0.5s;
   opacity: 0.9;
 }
 
-.portfolio-phone.is-layers-open .portfolio-phone__screen--4 {
+.portfolio-phone.is-layers-open.is-effect-3 .portfolio-phone__screen--4 {
   transform: translateZ(215px);
   transition-delay: 0.4s;
   opacity: 0.9;
 }
 
-.portfolio-phone.is-layers-open .portfolio-phone__screen--5 {
+.portfolio-phone.is-layers-open.is-effect-3 .portfolio-phone__screen--5 {
   transform: translateZ(265px);
+  transition-delay: 0.3s;
+  opacity: 0.9;
+}
+
+/* Effect 1 — alternate explode on second flip */
+.portfolio-phone.is-layers-open.is-effect-1 {
+  --phone-tooltip-stack-gap: 14px;
+}
+
+.portfolio-phone.is-layers-open.is-effect-1 .portfolio-phone__annotations {
+  inset: auto;
+  bottom: 6px;
+  left: 50%;
+  right: auto;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--phone-tooltip-stack-gap);
+  width: max-content;
+  height: auto;
+  transform: translateX(-50%);
+}
+
+.portfolio-phone.is-layers-open.is-effect-1 .portfolio-phone__tooltip {
+  position: relative;
+  left: auto;
+  top: auto;
+}
+
+.portfolio-phone.is-layers-open.is-effect-1 .portfolio-phone__device {
+  transform: rotateY(50deg) rotateX(20deg) translateZ(calc(var(--phone-depth) * -1)) translateZ(-224px);
+}
+
+.portfolio-phone.is-layers-open.is-effect-1 .portfolio-phone__screen--1 {
+  transform: translateZ(85px);
+  transition-delay: 0.7s;
+  opacity: 0.9;
+}
+
+.portfolio-phone.is-layers-open.is-effect-1 .portfolio-phone__screen--2 {
+  transform: translateZ(155px);
+  transition-delay: 0.6s;
+  opacity: 0.9;
+}
+
+.portfolio-phone.is-layers-open.is-effect-1 .portfolio-phone__screen--3 {
+  transform: translateZ(225px);
+  transition-delay: 0.5s;
+  opacity: 0.9;
+}
+
+.portfolio-phone.is-layers-open.is-effect-1 .portfolio-phone__screen--4 {
+  transform: translateZ(295px);
+  transition-delay: 0.4s;
+  opacity: 0.9;
+}
+
+.portfolio-phone.is-layers-open.is-effect-1 .portfolio-phone__screen--5 {
+  transform: translateZ(365px);
   transition-delay: 0.3s;
   opacity: 0.9;
 }
@@ -541,7 +601,8 @@
     transition: none;
   }
 
-  .portfolio-phone.is-layers-open .portfolio-phone__device {
+  .portfolio-phone.is-layers-open.is-effect-3 .portfolio-phone__device,
+  .portfolio-phone.is-layers-open.is-effect-1 .portfolio-phone__device {
     transform: rotateY(17deg) rotateX(10deg);
   }
 

@@ -30,6 +30,7 @@ export const initPortfolioPhoneShowcase = ({
 
   let layersOpen = false;
   let isFlipped = false;
+  let explodeEffect = 3;
   let hasPhoneScreens = false;
   let flipTimer = null;
   let closeTimer = null;
@@ -57,6 +58,42 @@ export const initPortfolioPhoneShowcase = ({
     tooltips.forEach((tooltip) => tooltip.destroy());
     tooltips = [];
     labelsEl.replaceChildren();
+  };
+
+  const applyExplodeEffect = (effect) => {
+    phoneRoot.classList.toggle('is-effect-1', effect === 1);
+    phoneRoot.classList.toggle('is-effect-3', effect === 3);
+  };
+
+  const updatePrimaryAria = () => {
+    if (!hasPhoneScreens) return;
+
+    if (!isFlipped) {
+      primaryHero.setAttribute('aria-label', 'Reveal mobile app screens');
+      return;
+    }
+
+    if (explodeEffect === 3) {
+      primaryHero.setAttribute('aria-label', 'Switch to alternate exploded view');
+      return;
+    }
+
+    primaryHero.setAttribute('aria-label', 'Return to project image');
+  };
+
+  const resetTooltipsInstant = () => {
+    tooltipTimers.forEach((id) => window.clearTimeout(id));
+    tooltipTimers = [];
+
+    tooltips.forEach((tooltip) => {
+      if (tooltip.tl) tooltip.tl.kill();
+      tooltip.isOpen = false;
+      tooltip.DOM.el.classList.remove('tooltip--show');
+      gsap.set(tooltip.DOM.el, { zIndex: 0 });
+      gsap.set(tooltip.DOM.cells, { opacity: 0, scale: 0 });
+      gsap.set(tooltip.DOM.contentTitle, { opacity: 0 });
+      tooltip.DOM.contentTitle.classList.remove('glitch');
+    });
   };
 
   const setTooltipLayers = (open) => {
@@ -89,6 +126,11 @@ export const initPortfolioPhoneShowcase = ({
   const setLayersOpen = (open) => {
     layersOpen = open;
     phoneRoot.classList.toggle('is-layers-open', open);
+    if (open) {
+      applyExplodeEffect(explodeEffect);
+    } else {
+      phoneRoot.classList.remove('is-effect-1', 'is-effect-3');
+    }
     labelsEl.setAttribute('aria-hidden', String(!open));
     if (flatEl) flatEl.hidden = !open || !reducedMotion;
     setTooltipLayers(open);
@@ -98,11 +140,28 @@ export const initPortfolioPhoneShowcase = ({
     isFlipped = flipped;
     primaryHero.classList.toggle('is-flipped', flipped);
     primaryHero.setAttribute('aria-expanded', String(flipped));
+    updatePrimaryAria();
+  };
+
+  const switchExplodeEffect = (effect) => {
+    if (!isFlipped || !layersOpen || effect === explodeEffect) return;
+
+    if (flipTimer) {
+      window.clearTimeout(flipTimer);
+      flipTimer = null;
+    }
+
+    resetTooltipsInstant();
+    explodeEffect = effect;
+    applyExplodeEffect(effect);
+    updatePrimaryAria();
+    setTooltipLayers(true);
   };
 
   const revealPhone = () => {
     if (!hasPhoneScreens || isFlipped) return;
 
+    explodeEffect = 3;
     phoneSection.hidden = false;
     setFlipped(true);
 
@@ -121,6 +180,7 @@ export const initPortfolioPhoneShowcase = ({
     if (!isFlipped) return;
 
     setTooltipLayers(false);
+    explodeEffect = 3;
 
     if (reducedMotion) {
       setFlipped(false);
@@ -141,7 +201,8 @@ export const initPortfolioPhoneShowcase = ({
   const resetPhoneShowcase = () => {
     clearTimers();
     layersOpen = false;
-    phoneRoot.classList.remove('is-layers-open');
+    explodeEffect = 3;
+    phoneRoot.classList.remove('is-layers-open', 'is-effect-1', 'is-effect-3');
     screensEl.replaceChildren();
     destroyTooltips();
     labelsEl.setAttribute('aria-hidden', 'true');
@@ -228,22 +289,36 @@ export const initPortfolioPhoneShowcase = ({
     if (!hasPhoneScreens) return;
     if (event.target.closest('.portfolio-phone__screen, .portfolio-phone__flat-item')) return;
     event.stopPropagation();
-    if (isFlipped) {
-      concealPhone();
-    } else {
+
+    if (!isFlipped) {
       revealPhone();
+      return;
     }
+
+    if (reducedMotion || explodeEffect === 1) {
+      concealPhone();
+      return;
+    }
+
+    switchExplodeEffect(1);
   };
 
   const onPrimaryKeydown = (event) => {
     if (!hasPhoneScreens) return;
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
-    if (isFlipped) {
-      concealPhone();
-    } else {
+
+    if (!isFlipped) {
       revealPhone();
+      return;
     }
+
+    if (reducedMotion || explodeEffect === 1) {
+      concealPhone();
+      return;
+    }
+
+    switchExplodeEffect(1);
   };
 
   primaryHero.addEventListener('click', onPrimaryClick);
