@@ -1,16 +1,8 @@
-import { PixelTooltip } from './portfolio-pixel-tooltip.js';
-
 const MAX_SCREENS = 5;
 const FLIP_DURATION_MS = 800;
 const EFFECT_REVERSE_MS = 1400;
 const EFFECT_HANDOFF_MS = 1400;
 const EFFECT_EXPLODE_MS = 1400;
-const TOOLTIP_OPEN_STAGGER = 0.12;
-
-const tooltipWord = (text) => {
-  const word = String(text || '').trim().split(/\s+/)[0];
-  return word || 'screen';
-};
 
 export const initPortfolioPhoneShowcase = ({
   panel = document.getElementById('portfolio-detail'),
@@ -25,10 +17,9 @@ export const initPortfolioPhoneShowcase = ({
   const phoneSection = panel.querySelector('.portfolio-detail__phone');
   const phoneRoot = panel.querySelector('[data-phone-root]');
   const screensEl = panel.querySelector('[data-phone-screens]');
-  const labelsEl = panel.querySelector('[data-phone-labels]');
   const flatEl = panel.querySelector('[data-phone-flat]');
 
-  if (!primaryHero || !heroFlip || !heroFlipInner || !heroFront || !phoneSection || !phoneRoot || !screensEl || !labelsEl) {
+  if (!primaryHero || !heroFlip || !heroFlipInner || !heroFront || !phoneSection || !phoneRoot || !screensEl) {
     return null;
   }
 
@@ -72,8 +63,6 @@ export const initPortfolioPhoneShowcase = ({
   let flipTimer = null;
   let effectSwitchTimer = null;
   let closeTimer = null;
-  let tooltipTimers = [];
-  let tooltips = [];
 
   if (reducedMotion) {
     phoneRoot.classList.add('is-reduced-motion');
@@ -92,14 +81,6 @@ export const initPortfolioPhoneShowcase = ({
       window.clearTimeout(effectSwitchTimer);
       effectSwitchTimer = null;
     }
-    tooltipTimers.forEach((id) => window.clearTimeout(id));
-    tooltipTimers = [];
-  };
-
-  const destroyTooltips = () => {
-    tooltips.forEach((tooltip) => tooltip.destroy());
-    tooltips = [];
-    labelsEl.replaceChildren();
   };
 
   const applyExplodeEffect = (effect) => {
@@ -114,7 +95,8 @@ export const initPortfolioPhoneShowcase = ({
     const shownEffect = toggleTargetEffect ?? explodeEffect;
     effectToggleEl.hidden = !layersOpen || !hasPhoneScreens;
     effectToggleInput.checked = shownEffect === 1;
-    effectToggleInput.disabled = isEffectSwitching;
+    effectToggleEl.classList.toggle('is-switching', isEffectSwitching);
+    effectToggleInput.setAttribute('aria-disabled', String(isEffectSwitching));
   };
 
   const updatePrimaryAria = () => {
@@ -128,48 +110,6 @@ export const initPortfolioPhoneShowcase = ({
     primaryHero.setAttribute('aria-label', 'Return to project image');
   };
 
-  const resetTooltipsInstant = () => {
-    tooltipTimers.forEach((id) => window.clearTimeout(id));
-    tooltipTimers = [];
-
-    tooltips.forEach((tooltip) => {
-      if (tooltip.tl) tooltip.tl.kill();
-      tooltip.isOpen = false;
-      tooltip.DOM.el.classList.remove('tooltip--show');
-      gsap.set(tooltip.DOM.el, { zIndex: 0 });
-      gsap.set(tooltip.DOM.cells, { opacity: 0, scale: 0 });
-      gsap.set(tooltip.DOM.contentTitle, { opacity: 0 });
-      tooltip.DOM.contentTitle.classList.remove('glitch');
-    });
-  };
-
-  const setTooltipLayers = (open) => {
-    tooltipTimers.forEach((id) => window.clearTimeout(id));
-    tooltipTimers = [];
-
-    if (reducedMotion) {
-      tooltips.forEach((tooltip) => {
-        tooltip.DOM.el.classList.toggle('tooltip--show', open);
-        tooltip.DOM.el.style.opacity = open ? '1' : '0';
-        tooltip.isOpen = open;
-        if (open) {
-          gsap.set(tooltip.DOM.cells, { opacity: 1, scale: 1 });
-          gsap.set(tooltip.DOM.contentTitle, { opacity: 1 });
-        }
-      });
-      return;
-    }
-
-    tooltips.forEach((tooltip, index) => {
-      const delayMs = open ? index * TOOLTIP_OPEN_STAGGER * 1000 : (tooltips.length - 1 - index) * 50;
-      const timerId = window.setTimeout(() => {
-        if (open) tooltip.open('Effect2');
-        else tooltip.close('Effect2');
-      }, delayMs);
-      tooltipTimers.push(timerId);
-    });
-  };
-
   const setLayersOpen = (open) => {
     layersOpen = open;
     phoneRoot.classList.toggle('is-layers-open', open);
@@ -178,9 +118,7 @@ export const initPortfolioPhoneShowcase = ({
     } else {
       phoneRoot.classList.remove('is-effect-1', 'is-effect-3');
     }
-    labelsEl.setAttribute('aria-hidden', String(!open));
     if (flatEl) flatEl.hidden = !open || !reducedMotion;
-    setTooltipLayers(open);
     updateEffectToggle();
   };
 
@@ -203,13 +141,10 @@ export const initPortfolioPhoneShowcase = ({
       effectSwitchTimer = null;
     }
 
-    resetTooltipsInstant();
-
     if (reducedMotion) {
       explodeEffect = effect;
       applyExplodeEffect(effect);
       updatePrimaryAria();
-      setTooltipLayers(true);
       return;
     }
 
@@ -230,9 +165,6 @@ export const initPortfolioPhoneShowcase = ({
         effectSwitchTimer = null;
         phoneRoot.classList.remove('is-screens-collapsed');
         phoneRoot.classList.add('is-screens-exploding');
-        if (layersOpen && explodeEffect === effect) {
-          setTooltipLayers(true);
-        }
 
         flipTimer = window.setTimeout(() => {
           flipTimer = null;
@@ -266,7 +198,6 @@ export const initPortfolioPhoneShowcase = ({
   const concealPhone = () => {
     if (!isFlipped) return;
 
-    setTooltipLayers(false);
     explodeEffect = 3;
 
     if (reducedMotion) {
@@ -300,8 +231,6 @@ export const initPortfolioPhoneShowcase = ({
       'is-screens-exploding',
     );
     screensEl.replaceChildren();
-    destroyTooltips();
-    labelsEl.setAttribute('aria-hidden', 'true');
     if (flatEl) {
       flatEl.replaceChildren();
       flatEl.hidden = true;
@@ -315,28 +244,6 @@ export const initPortfolioPhoneShowcase = ({
     primaryHero.removeAttribute('aria-expanded');
     primaryHero.removeAttribute('aria-label');
     updateEffectToggle();
-  };
-
-  const createScreenTooltip = (screen, index) => {
-    const tooltipEl = document.createElement('div');
-    tooltipEl.className = `portfolio-phone__tooltip tooltip portfolio-phone__tooltip--${index + 1}`;
-    tooltipEl.dataset.rows = '2';
-    tooltipEl.dataset.cols = '4';
-    tooltipEl.innerHTML = `
-      <div class="tooltip__bg"></div>
-      <div class="tooltip__content">
-        <h3 class="tooltip__content-title"></h3>
-        <p class="tooltip__content-desc"></p>
-      </div>
-    `;
-
-    const title = tooltipWord(screen.label || screen.alt || `Screen ${index + 1}`);
-
-    labelsEl.appendChild(tooltipEl);
-
-    const tooltip = new PixelTooltip(tooltipEl);
-    tooltip.setContent({ title });
-    return tooltip;
   };
 
   const renderPhoneShowcase = (portfolioCase) => {
@@ -353,20 +260,16 @@ export const initPortfolioPhoneShowcase = ({
     primaryHero.setAttribute('aria-label', 'Reveal mobile app screens');
 
     screens.forEach((screen, index) => {
-      const screenBtn = document.createElement('button');
-      screenBtn.type = 'button';
-      screenBtn.className = `portfolio-phone__screen portfolio-phone__screen--${index + 1}`;
+      const screenLayer = document.createElement('div');
+      screenLayer.className = `portfolio-phone__screen portfolio-phone__screen--${index + 1}`;
 
       const screenMedia = document.createElement('span');
       screenMedia.className = 'portfolio-phone__screen-media';
       screenMedia.style.backgroundImage = `url("${screen.src}")`;
       screenMedia.setAttribute('aria-hidden', 'true');
-      screenBtn.appendChild(screenMedia);
+      screenLayer.appendChild(screenMedia);
 
-      screenBtn.setAttribute('aria-label', screen.alt || screen.label || `Screen ${index + 1}`);
-      screensEl.appendChild(screenBtn);
-
-      tooltips.push(createScreenTooltip(screen, index));
+      screensEl.appendChild(screenLayer);
 
       if (reducedMotion && flatEl) {
         const flatItem = document.createElement('button');
@@ -400,7 +303,7 @@ export const initPortfolioPhoneShowcase = ({
 
   const onPrimaryClick = (event) => {
     if (!hasPhoneScreens) return;
-    if (event.target.closest('.portfolio-phone__screen, .portfolio-phone__flat-item, .portfolio-phone__effect-toggle')) {
+    if (event.target.closest('.portfolio-phone__flat-item, .portfolio-phone__effect-toggle')) {
       return;
     }
     event.stopPropagation();

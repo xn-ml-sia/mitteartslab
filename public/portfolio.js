@@ -12,7 +12,7 @@ const escapeHtml = (value) =>
     .replace(/"/g, '&quot;');
 
 const getColumnCount = () => {
-  if (window.matchMedia('(min-width: 1024px)').matches) return 5;
+  if (window.matchMedia('(min-width: 1024px)').matches) return 4;
   if (window.matchMedia('(min-width: 640px)').matches) return 3;
   return 2;
 };
