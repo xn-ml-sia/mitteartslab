@@ -35,11 +35,19 @@ export const initPortfolioPhoneShowcase = ({
       aria-pressed="false"
     >
       <img
-        class="portfolio-phone__effect-btn-icon"
-        src="/public/assets/dot-icon/cam.svg"
+        class="portfolio-phone__effect-btn-icon portfolio-phone__effect-btn-icon--cube"
+        src="/public/assets/dot-icon/cube-solid.png"
         alt=""
-        width="44"
-        height="44"
+        width="48"
+        height="48"
+        decoding="async"
+      >
+      <img
+        class="portfolio-phone__effect-btn-icon portfolio-phone__effect-btn-icon--layers"
+        src="/public/assets/dot-icon/layers-stack.png"
+        alt=""
+        width="48"
+        height="48"
         decoding="async"
       >
     </button>

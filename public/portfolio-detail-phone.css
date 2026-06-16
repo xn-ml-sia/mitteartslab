@@ -551,22 +551,51 @@
 }
 
 .portfolio-phone__effect-btn {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   padding: 0;
   border: 0;
-  background: transparent;
+  border-radius: 12px;
+  background: #18191c;
+  overflow: hidden;
   cursor: pointer;
 }
 
 .portfolio-phone__effect-btn-icon {
+  position: absolute;
+  inset: 0;
   display: block;
-  width: 44px;
-  height: 44px;
-  filter: brightness(0);
+  width: 48px;
+  height: 48px;
+  margin: auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+.portfolio-phone__effect-btn[aria-pressed='false'] .portfolio-phone__effect-btn-icon--cube,
+.portfolio-phone__effect-btn[aria-pressed='true'] .portfolio-phone__effect-btn-icon--layers {
+  opacity: 1;
+}
+
+.portfolio-phone__effect-btn[aria-pressed='false'] .portfolio-phone__effect-btn-icon--layers,
+.portfolio-phone__effect-btn[aria-pressed='true'] .portfolio-phone__effect-btn-icon--cube {
+  opacity: 0;
+}
+
+@media (hover: hover) {
+  .portfolio-phone__effect-btn[aria-pressed='false']:hover .portfolio-phone__effect-btn-icon--cube,
+  .portfolio-phone__effect-btn[aria-pressed='true']:hover .portfolio-phone__effect-btn-icon--layers {
+    opacity: 0;
+  }
+
+  .portfolio-phone__effect-btn[aria-pressed='false']:hover .portfolio-phone__effect-btn-icon--layers,
+  .portfolio-phone__effect-btn[aria-pressed='true']:hover .portfolio-phone__effect-btn-icon--cube {
+    opacity: 1;
+  }
 }
 
 .portfolio-phone__effect-toggle.is-switching .portfolio-phone__effect-btn {
@@ -577,7 +606,7 @@
 .portfolio-phone__effect-btn:focus-visible {
   outline: 2px solid #ececec;
   outline-offset: 2px;
-  border-radius: 999px;
+  border-radius: 12px;
 }
 
 .portfolio-phone__effect-btn:disabled {
