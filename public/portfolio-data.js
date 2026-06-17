@@ -32,14 +32,18 @@ const RAW_PORTFOLIO_CASES = [
       'Product design for Mezo — a bitcoin-native economic layer that helps developers build, grow, and ship DeFi with clearer money flows, onboarding, and trust patterns.',
     slides: [
       { src: '/public/assets/services/mezo-bg.png', alt: 'Mezo layered stack — your money, the bank, middlemen, you' },
-      { src: '/public/assets/services/mezo-bg2.png', alt: 'NewApp icon grid exploration' },
-      { src: '/public/assets/services/mezo-bg3.png', alt: 'Mezo bitcoin collage with product narrative' },
+      { src: '/public/assets/services/defi.png', alt: 'Mezo DeFi product detail' },
     ],
     detailImages: [
       { src: '/public/assets/services/mezo-bg.png', alt: 'Mezo layered stack — your money, the bank, middlemen, you' },
-      { src: '/public/assets/services/mezo-bg2.png', alt: 'NewApp icon grid exploration' },
-      { src: '/public/assets/services/mezo-bg3.png', alt: 'Mezo bitcoin collage with product narrative' },
-      { src: '/public/assets/services/mezo-thumb.png', alt: 'Bitcoin rewards icon with upward trend' },
+      { src: '/public/assets/services/defi.png', alt: 'Mezo DeFi product detail' },
+    ],
+    detailImageCount: 2,
+    phoneScreens: [
+      { src: '/public/assets/services/mez-1.png', alt: 'Mezo app screen 1', label: 'Screen 1' },
+      { src: '/public/assets/services/mez-2.png', alt: 'Mezo app screen 2', label: 'Screen 2' },
+      { src: '/public/assets/services/mez-3.png', alt: 'Mezo app screen 3', label: 'Screen 3' },
+      { src: '/public/assets/services/mez-4.png', alt: 'Mezo app screen 4', label: 'Screen 4' },
     ],
   },
   {

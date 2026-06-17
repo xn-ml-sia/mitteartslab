@@ -473,19 +473,19 @@
 }
 
 .portfolio-phone.is-layers-open.is-effect-1:not(.is-screens-collapsed):not(.is-screens-exploding):not(.is-screens-collapsing) .portfolio-phone__screen--2 {
-  animation: portfolio-phone-screen-float-e1-2 ease-in-out 3.9s 1.4s infinite;
+  animation: portfolio-phone-screen-float-e1-2 ease-in-out 3.9s 0s infinite;
 }
 
 .portfolio-phone.is-layers-open.is-effect-1:not(.is-screens-collapsed):not(.is-screens-exploding):not(.is-screens-collapsing) .portfolio-phone__screen--3 {
-  animation: portfolio-phone-screen-float-e1-3 ease-in-out 4.2s 1.4s infinite;
+  animation: portfolio-phone-screen-float-e1-3 ease-in-out 4.2s 0s infinite;
 }
 
 .portfolio-phone.is-layers-open.is-effect-1:not(.is-screens-collapsed):not(.is-screens-exploding):not(.is-screens-collapsing) .portfolio-phone__screen--4 {
-  animation: portfolio-phone-screen-float-e1-4 ease-in-out 3.7s 1.4s infinite;
+  animation: portfolio-phone-screen-float-e1-4 ease-in-out 3.7s 0s infinite;
 }
 
 .portfolio-phone.is-layers-open.is-effect-1:not(.is-screens-collapsed):not(.is-screens-exploding):not(.is-screens-collapsing) .portfolio-phone__screen--5 {
-  animation: portfolio-phone-screen-float-e1-5 ease-in-out 4.5s 1.4s infinite;
+  animation: portfolio-phone-screen-float-e1-5 ease-in-out 4.5s 0s infinite;
 }
 
 /* Reduced motion — flat fallback */
@@ -543,7 +543,7 @@
 
 .portfolio-phone__effect-toggle {
   position: absolute;
-  left: 16px;
+  right: 16px;
   bottom: 16px;
   z-index: 12;
   pointer-events: auto;

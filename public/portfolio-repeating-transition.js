@@ -75,6 +75,9 @@ const DETAIL_IMAGE_COUNT = 4;
 const getDetailImageCount = (portfolioCase) =>
   portfolioCase.detailImageCount ?? DETAIL_IMAGE_COUNT;
 
+const getDetailThumbCount = (portfolioCase) =>
+  Math.max(0, getDetailImageCount(portfolioCase) - 1);
+
 const getDetailImageSources = (portfolioCase) => {
   const count = getDetailImageCount(portfolioCase);
 
@@ -139,6 +142,32 @@ export const initPortfolioRepeatingTransition = ({
   const panelDescription = panel.querySelector('.portfolio-detail__description');
   const panelClose = panel.querySelector('.portfolio-detail__back');
   const page = document.body;
+
+  let thumbRow = panel.querySelector('[data-detail-thumb-row]');
+  if (!thumbRow) {
+    thumbRow = document.createElement('div');
+    thumbRow.className = 'portfolio-detail__thumb-row';
+    thumbRow.setAttribute('data-detail-thumb-row', '');
+    thumbRow.hidden = true;
+    panelContent.insertAdjacentElement('afterend', thumbRow);
+  }
+
+  const secondaryCells = panelCells.filter((cell) => !cell.classList.contains('is-primary'));
+
+  const syncThumbAspectRatio = (cell, src) => {
+    cell.style.removeProperty('aspect-ratio');
+    if (!src) return;
+
+    const probe = new Image();
+    probe.onload = () => {
+      if (!cell.isConnected) return;
+      const { naturalWidth, naturalHeight } = probe;
+      if (naturalWidth > 0 && naturalHeight > 0) {
+        cell.style.aspectRatio = `${naturalWidth} / ${naturalHeight}`;
+      }
+    };
+    probe.src = src;
+  };
 
   let isAnimating = false;
   let isPanelOpen = false;
@@ -244,16 +273,21 @@ export const initPortfolioRepeatingTransition = ({
     gsap.set(panelTitle, { opacity: 0 });
     phoneShowcase?.renderPhoneShowcase(portfolioCase);
 
-    panelGallery.classList.toggle('is-gallery-three', getDetailImageCount(portfolioCase) === 3);
+    panel.classList.add('is-gallery-three');
+    panelGallery.classList.add('is-gallery-three');
+
+    const thumbCount = getDetailThumbCount(portfolioCase);
 
     panelCells.forEach((cell, index) => {
       const isPrimary = cell.classList.contains('is-primary');
       const hasImage = index < sources.length;
+      const isExtraThumb = !isPrimary && index >= 1 + thumbCount;
 
-      cell.hidden = !hasImage;
+      cell.hidden = !hasImage || isExtraThumb;
       if (!hasImage) {
         if (!isPrimary) {
           cell.style.backgroundImage = '';
+          cell.style.removeProperty('aspect-ratio');
           cell.removeAttribute('aria-label');
         }
         return;
@@ -263,10 +297,20 @@ export const initPortfolioRepeatingTransition = ({
       target.style.backgroundImage = `url("${sources[index]}")`;
       if (!isPrimary) {
         cell.setAttribute('aria-label', alts[index] || portfolioCase.title);
+        syncThumbAspectRatio(cell, sources[index]);
       } else if (heroFront) {
         heroFront.setAttribute('aria-label', alts[index] || portfolioCase.title);
       }
     });
+
+    secondaryCells.forEach((cell) => panelGallery.appendChild(cell));
+
+    thumbRow.replaceChildren();
+    secondaryCells.slice(0, thumbCount).forEach((cell) => {
+      if (!cell.hidden) thumbRow.appendChild(cell);
+    });
+    thumbRow.hidden = thumbRow.childElementCount === 0;
+    thumbRow.classList.toggle('is-single', thumbCount === 1);
   };
 
   const runDetailTitleTransition = () => {
