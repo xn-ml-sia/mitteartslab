@@ -6,6 +6,7 @@ import { Point } from '../libs/point';
 import { Util } from '../libs/util';
 import { Func } from '../core/func';
 import { Color } from 'three';
+import { isHeroHoverActive } from './heroInteraction';
 
 export class Parts extends MyDisplay {
   private _iconSrc: string = '';
@@ -44,13 +45,18 @@ export class Parts extends MyDisplay {
     super._update();
 
     if (this._c % 2 == 0) {
-      const offset = this.getOffset(this.el);
-      this._pos.x = offset.x;
-      this._pos.y = offset.y;
+      const rect = this.el.getBoundingClientRect();
+      this._pos.x = rect.left + rect.width * 0.5;
+      this._pos.y = rect.top + rect.height * 0.5;
     }
 
-    const mx = MouseMgr.instance.x;
-    const my = MouseMgr.instance.y;
+    let mx = MouseMgr.instance.x;
+    let my = MouseMgr.instance.y;
+
+    if (!isHeroHoverActive()) {
+      mx = -9999;
+      my = -9999;
+    }
 
     const dx = mx - this._pos.x;
     const dy = my - this._pos.y;

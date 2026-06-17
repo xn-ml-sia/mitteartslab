@@ -1,8 +1,8 @@
 {
-  "name": "mitteartslab-generative-rock-prototype",
-  "version": "0.1.0",
+  "name": "mitteartslab portfolio",
+  "version": "1.0",
   "private": true,
-  "description": "Phase 1 prototype for Generative Rock",
+  "description": "MAL is a creative studio that help teams level up their AI game ",
   "scripts": {
     "start": "node server.js",
     "sync:archive": "node scripts/sync-archive.mjs",

@@ -72,9 +72,14 @@ const getThumbImage = (card) => card?.querySelector(THUMB_SELECTOR) || null;
 
 const DETAIL_IMAGE_COUNT = 4;
 
+const getDetailImageCount = (portfolioCase) =>
+  portfolioCase.detailImageCount ?? DETAIL_IMAGE_COUNT;
+
 const getDetailImageSources = (portfolioCase) => {
-  if (portfolioCase.detailImages?.length >= DETAIL_IMAGE_COUNT) {
-    return portfolioCase.detailImages.slice(0, DETAIL_IMAGE_COUNT).map((image) => image.src);
+  const count = getDetailImageCount(portfolioCase);
+
+  if (portfolioCase.detailImages?.length >= count) {
+    return portfolioCase.detailImages.slice(0, count).map((image) => image.src);
   }
 
   const pool = [
@@ -97,9 +102,11 @@ const getDetailImageSources = (portfolioCase) => {
 };
 
 const getDetailImageAlts = (portfolioCase) => {
-  if (portfolioCase.detailImages?.length >= DETAIL_IMAGE_COUNT) {
+  const count = getDetailImageCount(portfolioCase);
+
+  if (portfolioCase.detailImages?.length >= count) {
     return portfolioCase.detailImages
-      .slice(0, DETAIL_IMAGE_COUNT)
+      .slice(0, count)
       .map((image) => image.alt || portfolioCase.title);
   }
 
@@ -237,8 +244,21 @@ export const initPortfolioRepeatingTransition = ({
     gsap.set(panelTitle, { opacity: 0 });
     phoneShowcase?.renderPhoneShowcase(portfolioCase);
 
+    panelGallery.classList.toggle('is-gallery-three', getDetailImageCount(portfolioCase) === 3);
+
     panelCells.forEach((cell, index) => {
       const isPrimary = cell.classList.contains('is-primary');
+      const hasImage = index < sources.length;
+
+      cell.hidden = !hasImage;
+      if (!hasImage) {
+        if (!isPrimary) {
+          cell.style.backgroundImage = '';
+          cell.removeAttribute('aria-label');
+        }
+        return;
+      }
+
       const target = isPrimary && heroFront ? heroFront : cell;
       target.style.backgroundImage = `url("${sources[index]}")`;
       if (!isPrimary) {
@@ -356,7 +376,9 @@ export const initPortfolioRepeatingTransition = ({
 
   const revealPanel = (primaryCell, onComplete) => {
     const clipPaths = getClipPathsForDirection(config.clipPathDirection);
-    const secondaryCells = panelCells.filter((cell) => cell !== primaryCell);
+    const secondaryCells = panelCells.filter(
+      (cell) => cell !== primaryCell && !cell.hidden,
+    );
 
     gsap.set(panelContent, { opacity: 0 });
     gsap.set(panelCells, { clipPath: clipPaths.hide, opacity: 0 });

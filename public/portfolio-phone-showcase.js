@@ -1,4 +1,5 @@
 const MAX_SCREENS = 5;
+const DEFAULT_EXPLODE_EFFECT = 1;
 const FLIP_DURATION_MS = 800;
 const EFFECT_REVERSE_MS = 1400;
 const EFFECT_HANDOFF_MS = 1400;
@@ -35,16 +36,8 @@ export const initPortfolioPhoneShowcase = ({
       aria-pressed="false"
     >
       <img
-        class="portfolio-phone__effect-btn-icon portfolio-phone__effect-btn-icon--cube"
+        class="portfolio-phone__effect-btn-icon"
         src="/public/assets/dot-icon/cube-solid.png"
-        alt=""
-        width="48"
-        height="48"
-        decoding="async"
-      >
-      <img
-        class="portfolio-phone__effect-btn-icon portfolio-phone__effect-btn-icon--layers"
-        src="/public/assets/dot-icon/layers-stack.png"
         alt=""
         width="48"
         height="48"
@@ -58,7 +51,7 @@ export const initPortfolioPhoneShowcase = ({
 
   let layersOpen = false;
   let isFlipped = false;
-  let explodeEffect = 3;
+  let explodeEffect = DEFAULT_EXPLODE_EFFECT;
   let hasPhoneScreens = false;
   let isEffectSwitching = false;
   let toggleTargetEffect = null;
@@ -183,28 +176,44 @@ export const initPortfolioPhoneShowcase = ({
     }, EFFECT_REVERSE_MS);
   };
 
+  const runExplodeHandoff = () => {
+    phoneRoot.classList.remove('is-screens-collapsed');
+    phoneRoot.classList.add('is-screens-exploding');
+
+    flipTimer = window.setTimeout(() => {
+      flipTimer = null;
+      phoneRoot.classList.remove('is-screens-exploding');
+    }, EFFECT_EXPLODE_MS);
+  };
+
   const revealPhone = () => {
     if (!hasPhoneScreens || isFlipped) return;
 
-    explodeEffect = 3;
+    explodeEffect = DEFAULT_EXPLODE_EFFECT;
     phoneSection.hidden = false;
+    phoneRoot.classList.add('is-screens-collapsed');
+    setLayersOpen(true);
     setFlipped(true);
 
     if (reducedMotion) {
-      setLayersOpen(true);
+      primaryHero.classList.add('is-flip-settled');
+      phoneRoot.classList.remove('is-screens-collapsed');
       return;
     }
 
     flipTimer = window.setTimeout(() => {
       flipTimer = null;
-      setLayersOpen(true);
+      primaryHero.classList.add('is-flip-settled');
+      runExplodeHandoff();
     }, FLIP_DURATION_MS);
   };
 
   const concealPhone = () => {
     if (!isFlipped) return;
 
-    explodeEffect = 3;
+    explodeEffect = DEFAULT_EXPLODE_EFFECT;
+    primaryHero.classList.remove('is-flip-settled');
+    phoneRoot.classList.remove('is-screens-collapsed', 'is-screens-exploding', 'is-screens-collapsing');
 
     if (reducedMotion) {
       setFlipped(false);
@@ -225,7 +234,7 @@ export const initPortfolioPhoneShowcase = ({
   const resetPhoneShowcase = () => {
     clearTimers();
     layersOpen = false;
-    explodeEffect = 3;
+    explodeEffect = DEFAULT_EXPLODE_EFFECT;
     isEffectSwitching = false;
     toggleTargetEffect = null;
     phoneRoot.classList.remove(
@@ -244,6 +253,7 @@ export const initPortfolioPhoneShowcase = ({
     phoneSection.hidden = true;
     hasPhoneScreens = false;
     setFlipped(false);
+    primaryHero.classList.remove('is-flip-settled');
     primaryHero.classList.remove('is-phone-ready');
     primaryHero.removeAttribute('tabindex');
     primaryHero.removeAttribute('role');

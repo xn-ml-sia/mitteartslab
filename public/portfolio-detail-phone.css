@@ -43,6 +43,7 @@
   height: var(--phone-h);
   transform: scale(var(--phone-scale));
   transform-origin: top center;
+  transition: transform 0.7s ease-in-out;
 }
 
 .portfolio-phone__perspective {
@@ -88,7 +89,7 @@
   height: var(--phone-screen-h);
   padding: 0;
   border: 0;
-  border-radius: var(--phone-screen-radius);
+  border-radius: 24px;
   background-color: transparent;
   cursor: default;
   pointer-events: none;
@@ -110,13 +111,11 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background-color: var(--phone-shell);
+  background-color: transparent;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
-    inset 0 18px 36px -24px rgba(216, 210, 202, 0.35);
+  box-shadow: none;
   transform: translate3d(0, 0, 0);
 }
 
@@ -551,7 +550,6 @@
 }
 
 .portfolio-phone__effect-btn {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -560,42 +558,22 @@
   padding: 0;
   border: 0;
   border-radius: 12px;
-  background: #18191c;
-  overflow: hidden;
+  background: transparent;
   cursor: pointer;
 }
 
 .portfolio-phone__effect-btn-icon {
-  position: absolute;
-  inset: 0;
   display: block;
   width: 48px;
   height: 48px;
-  margin: auto;
   object-fit: contain;
   object-position: center;
+  filter: brightness(0);
+  transition: filter 0.2s ease;
 }
 
-.portfolio-phone__effect-btn[aria-pressed='false'] .portfolio-phone__effect-btn-icon--cube,
-.portfolio-phone__effect-btn[aria-pressed='true'] .portfolio-phone__effect-btn-icon--layers {
-  opacity: 1;
-}
-
-.portfolio-phone__effect-btn[aria-pressed='false'] .portfolio-phone__effect-btn-icon--layers,
-.portfolio-phone__effect-btn[aria-pressed='true'] .portfolio-phone__effect-btn-icon--cube {
-  opacity: 0;
-}
-
-@media (hover: hover) {
-  .portfolio-phone__effect-btn[aria-pressed='false']:hover .portfolio-phone__effect-btn-icon--cube,
-  .portfolio-phone__effect-btn[aria-pressed='true']:hover .portfolio-phone__effect-btn-icon--layers {
-    opacity: 0;
-  }
-
-  .portfolio-phone__effect-btn[aria-pressed='false']:hover .portfolio-phone__effect-btn-icon--layers,
-  .portfolio-phone__effect-btn[aria-pressed='true']:hover .portfolio-phone__effect-btn-icon--cube {
-    opacity: 1;
-  }
+.portfolio-phone__effect-btn:hover:not(:disabled) .portfolio-phone__effect-btn-icon {
+  filter: brightness(0) invert(0.55);
 }
 
 .portfolio-phone__effect-toggle.is-switching .portfolio-phone__effect-btn {
@@ -620,6 +598,10 @@
 
   .portfolio-phone__device,
   .portfolio-phone__screen {
+    transition: none;
+  }
+
+  .portfolio-phone__effect-btn-icon {
     transition: none;
   }
 

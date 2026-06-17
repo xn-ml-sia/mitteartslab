@@ -24,31 +24,22 @@ const RAW_PORTFOLIO_CASES = [
     id: 'motion-ds',
     company: 'Mezo',
     keywords: ['web3', 'defi', 'product design'],
-    thumbnail: '/public/assets/services/raw-gradients-ggzjvx-n.png',
-    hoverImage: '/public/assets/services/raw-illustrations-n8d3n8zf.png',
+    thumbnail: '/public/assets/services/mezo-bg.png',
+    hoverImage: '/public/assets/services/mezo-bg.png',
     title: 'powered by blockchain',
     subtitle: 'make web3/defi accessible and safe',
     description:
-      'Product design for Mezo — onboarding, wallet flows, and trust patterns that make web3 and DeFi feel legible without dumbing down the stakes.',
+      'Product design for Mezo — a bitcoin-native economic layer that helps developers build, grow, and ship DeFi with clearer money flows, onboarding, and trust patterns.',
     slides: [
-      {
-        src: '/public/assets/services/raw-gradients-ggzjvx-n.png',
-        alt: 'Mezo portfolio allocation with MUSD/BTC and USDC/BTC positions',
-      },
-      {
-        src: '/public/assets/services/raw-illustrations-n8d3n8zf.png',
-        alt: 'MUSD Savings Rate Vault with TVL and APY metrics',
-      },
-      {
-        src: '/public/assets/services/raw-illustrations-lzfqw6-v.png',
-        alt: 'sAMM-MUSD/BTC liquidity pool position and earnings',
-      },
+      { src: '/public/assets/services/mezo-bg.png', alt: 'Mezo layered stack — your money, the bank, middlemen, you' },
+      { src: '/public/assets/services/mezo-bg2.png', alt: 'NewApp icon grid exploration' },
+      { src: '/public/assets/services/mezo-bg3.png', alt: 'Mezo bitcoin collage with product narrative' },
     ],
     detailImages: [
-      { src: '/public/assets/services/raw-gradients-ggzjvx-n.png', alt: 'Mezo portfolio allocation' },
-      { src: '/public/assets/services/raw-illustrations-n8d3n8zf.png', alt: 'MUSD Savings Rate Vault' },
-      { src: '/public/assets/services/raw-illustrations-lzfqw6-v.png', alt: 'sAMM liquidity pool' },
-      { src: '/public/assets/services/raw-gradients-ldrx5uab.png', alt: 'Mezo onboarding flow' },
+      { src: '/public/assets/services/mezo-bg.png', alt: 'Mezo layered stack — your money, the bank, middlemen, you' },
+      { src: '/public/assets/services/mezo-bg2.png', alt: 'NewApp icon grid exploration' },
+      { src: '/public/assets/services/mezo-bg3.png', alt: 'Mezo bitcoin collage with product narrative' },
+      { src: '/public/assets/services/mezo-thumb.png', alt: 'Bitcoin rewards icon with upward trend' },
     ],
   },
   {
@@ -75,24 +66,30 @@ const RAW_PORTFOLIO_CASES = [
   },
   {
     id: 'sloo',
-    company: 'DesignOps department',
-    keywords: ['designops', 'ai workflows', 'inclusive design'],
-    thumbnail: '/public/assets/services/raw-illustrations-lzfqw6-v.png',
-    hoverImage: '/public/assets/services/raw-gradients-ggzjvx-n.png',
-    title: 'designops department',
-    subtitle: 'make AI more inclusive for design teams',
+    company: 'BlockFi',
+    keywords: ['bitcoin', 'credit', 'reward'],
+    thumbnail: '/public/assets/services/blockfi-bg-blue.png',
+    hoverImage: '/public/assets/services/blockfi-bg-blue.png',
+    title: 'blockfi visa',
+    subtitle: 'bitcoin, credit, reward',
     description:
-      'DesignOps tooling and rituals that help teams adopt AI workflows without leaving people behind — object stories, repair flows, and inclusive handoff patterns.',
+      'Product design for BlockFi — a bitcoin rewards Visa that bridges everyday credit with crypto-native value, from card reveal and rewards surfaces to checkout trust patterns.',
     slides: [
-      { src: '/public/assets/services/raw-illustrations-lzfqw6-v.png', alt: 'Sloo object ritual screens' },
-      { src: '/public/assets/services/raw-gradients-ggzjvx-n.png', alt: 'Repair and reimagine flows' },
-      { src: '/public/assets/services/raw-gradients-ldrx5uab.png', alt: 'Community object stories' },
+      { src: '/public/assets/services/blockfi-bg-blue.png', alt: 'BlockFi cards over blue geometric landscape' },
+      { src: '/public/assets/services/bf-thumb-1.png', alt: 'BlockFi app screen detail 1' },
+      { src: '/public/assets/services/bf-thumb-2.png', alt: 'BlockFi app screen detail 2' },
     ],
     detailImages: [
-      { src: '/public/assets/services/raw-illustrations-lzfqw6-v.png', alt: 'Object ritual screens' },
-      { src: '/public/assets/services/raw-gradients-ggzjvx-n.png', alt: 'Repair and reimagine flows' },
-      { src: '/public/assets/services/raw-gradients-ldrx5uab.png', alt: 'Community object stories' },
-      { src: '/public/assets/services/raw-gradients-ljs0kzkm.png', alt: 'Inclusive handoff patterns' },
+      { src: '/public/assets/services/blockfi-bg-blue.png', alt: 'BlockFi cards over blue geometric landscape' },
+      { src: '/public/assets/services/bf-thumb-1.png', alt: 'BlockFi app screen detail 1' },
+      { src: '/public/assets/services/bf-thumb-2.png', alt: 'BlockFi app screen detail 2' },
+    ],
+    detailImageCount: 3,
+    phoneScreens: [
+      { src: '/public/assets/services/bf-1.png', alt: 'BlockFi app screen 1', label: 'Screen 1' },
+      { src: '/public/assets/services/bf-2.png', alt: 'BlockFi app screen 2', label: 'Screen 2' },
+      { src: '/public/assets/services/bf-3.png', alt: 'BlockFi app screen 3', label: 'Screen 3' },
+      { src: '/public/assets/services/bf-4.png', alt: 'BlockFi app screen 4', label: 'Screen 4' },
     ],
   },
   {
@@ -297,7 +294,10 @@ const RAW_PORTFOLIO_CASES = [
 
 export const PORTFOLIO_CASES = RAW_PORTFOLIO_CASES.map((item) => ({
   ...item,
-  phoneScreens: buildPhoneScreens(item.detailImages, item.slides),
+  phoneScreens:
+    item.phoneScreens?.length > 0
+      ? item.phoneScreens
+      : buildPhoneScreens(item.detailImages, item.slides),
 }));
 
 export const getPortfolioCase = (id) => PORTFOLIO_CASES.find((item) => item.id === id);
