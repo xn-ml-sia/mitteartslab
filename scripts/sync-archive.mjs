@@ -13,11 +13,6 @@ const sections = [
     label: 'free-for-all hero',
   },
   {
-    marker: '<!-- ARCHIVE_SKETCH219_HERO -->',
-    heroPath: path.join(ROOT, 'public/portfolio-sketch219/hero-body.html'),
-    label: 'sketch219 headline',
-  },
-  {
     marker: '<!-- ARCHIVE_MOSS_HERO -->',
     heroPath: path.join(ROOT, 'public/portfolio-hero/hero-body.html'),
     label: 'moss hero',
@@ -36,4 +31,4 @@ for (const section of sections) {
 }
 
 fs.writeFileSync(outputPath, html);
-console.log('Synced archive.html (free-for-all, sketch219, moss hero)');
+console.log('Synced archive.html (free-for-all, moss hero)');

@@ -209,12 +209,21 @@ body.portfolio-detail-open .portfolio-sketch501 {
   grid-row: 3;
 }
 
-/* BlockFi — copy | hero | thumbs (mobile); hero | copy+thumbs (desktop) */
+/* Detail split layout — copy | hero | thumbs (mobile); copy+thumbs | hero (desktop) */
 .portfolio-detail.is-gallery-three {
-  --portfolio-gallery-three-hero-min: min(
-    var(--portfolio-detail-gallery-size),
-    52dvh,
-    calc((min(100vw - var(--portfolio-detail-padding) * 2, 72rem) - var(--portfolio-detail-gap)) / 2)
+  --portfolio-detail-phone-w: 240px;
+  --portfolio-detail-phone-h: 508px;
+  --portfolio-detail-phone-scale: min(
+    0.78,
+    (100vw - 2 * var(--portfolio-detail-padding)) / var(--portfolio-detail-phone-w)
+  );
+  --portfolio-detail-hero-size: calc(
+    100dvh - var(--portfolio-detail-padding) - var(--portfolio-detail-back-target) - 0.75rem -
+      clamp(2rem, 6vh, 4rem)
+  );
+  --portfolio-detail-hero-mobile-height: max(
+    calc(var(--portfolio-detail-phone-h) * var(--portfolio-detail-phone-scale) + 4.5rem),
+    calc((100vw - 2 * var(--portfolio-detail-padding)) * 5 / 6)
   );
   grid-template-columns: 1fr;
   grid-template-rows: auto auto auto;
@@ -228,24 +237,31 @@ body.portfolio-detail-open .portfolio-sketch501 {
   display: block;
   grid-area: detail-image;
   min-width: 0;
+  min-height: 0;
   width: 100%;
+  height: 100%;
   aspect-ratio: unset;
   margin-inline: 0;
 }
 
 .portfolio-detail.is-gallery-three .portfolio-detail__img.is-primary {
-  width: min(100%, calc(48dvh * 5 / 6));
-  max-height: 48dvh;
-  aspect-ratio: 5 / 6;
+  width: 100%;
+  height: 100%;
   min-width: 0;
   min-height: 0;
-  height: auto;
   max-width: none;
+  max-height: none;
+  aspect-ratio: unset;
   margin-inline: 0;
 }
 
 .portfolio-detail.is-gallery-three .portfolio-detail__img.is-primary.is-phone-ready {
-  aspect-ratio: 5 / 6;
+  aspect-ratio: unset;
+}
+
+.portfolio-detail.is-gallery-three .portfolio-detail__hero-flip,
+.portfolio-detail.is-gallery-three .portfolio-detail__hero-flip-inner {
+  height: 100%;
 }
 
 .portfolio-detail.is-gallery-three .portfolio-detail__content {
@@ -364,7 +380,7 @@ body.portfolio-detail-open .portfolio-sketch501 {
   }
 
   .portfolio-detail.is-gallery-three {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-rows: auto auto;
     grid-template-areas:
       'detail-content detail-image'
@@ -379,29 +395,24 @@ body.portfolio-detail-open .portfolio-sketch501 {
     align-self: start;
     justify-self: end;
     display: block;
-    width: fit-content;
-    max-width: 100%;
-    height: auto;
-    min-height: 0;
-  }
-
-  .portfolio-detail.is-gallery-three .portfolio-detail__img.is-primary {
-    width: var(--portfolio-gallery-three-hero-min);
-    height: auto;
+    width: 100%;
     min-width: 0;
-    min-height: 0;
     max-width: 100%;
-    max-height: var(--portfolio-gallery-three-hero-min);
+    height: auto;
     aspect-ratio: 1 / 1;
-    margin-inline: 0;
+    min-height: 0;
+    max-height: min(var(--portfolio-detail-hero-size), 100%);
   }
 
+  .portfolio-detail.is-gallery-three .portfolio-detail__img.is-primary,
   .portfolio-detail.is-gallery-three .portfolio-detail__img.is-primary.is-phone-ready {
-    width: var(--portfolio-gallery-three-hero-min);
-    height: auto;
-    max-width: 100%;
-    max-height: var(--portfolio-gallery-three-hero-min);
+    width: 100%;
+    height: 100%;
+    min-width: 0;
     aspect-ratio: 1 / 1;
+    max-width: none;
+    max-height: none;
+    margin-inline: 0;
   }
 
   .portfolio-detail.is-gallery-three .portfolio-detail__content {
@@ -416,17 +427,12 @@ body.portfolio-detail-open .portfolio-sketch501 {
 
   .portfolio-detail.is-gallery-three .portfolio-detail__thumb-row {
     align-self: end;
+    min-width: 0;
   }
 
   .portfolio-detail.is-gallery-three .portfolio-detail__thumb-row .portfolio-detail__img {
     height: auto;
     background-size: contain;
-  }
-
-  .portfolio-detail.is-gallery-three.portfolio-detail--right .portfolio-detail__content {
-    align-items: start;
-    text-align: left;
-    justify-content: start;
   }
 
   .portfolio-detail__gallery {
@@ -505,19 +511,71 @@ body.portfolio-detail-open .portfolio-sketch501 {
     max-width: none;
   }
 
+  .portfolio-detail.is-gallery-three {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding-top: var(--portfolio-detail-padding);
+    height: auto;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .portfolio-detail.is-open.is-gallery-three {
+    display: flex;
+  }
+
+  .portfolio-detail.is-gallery-three .portfolio-detail__back {
+    position: static;
+    flex: 0 0 auto;
+    align-self: flex-start;
+  }
+
+  .portfolio-detail.is-gallery-three .portfolio-detail__content,
+  .portfolio-detail.is-gallery-three .portfolio-detail__thumb-row,
   .portfolio-detail.is-gallery-three .portfolio-detail__gallery {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
     width: 100%;
-    max-height: none;
+    max-width: none;
+    flex: 0 0 auto;
+  }
+
+  .portfolio-detail.is-gallery-three .portfolio-detail__content {
+    overflow-y: visible;
+    min-height: 0;
+  }
+
+  .portfolio-detail.is-gallery-three .portfolio-detail__gallery {
+    height: auto;
+    min-height: var(--portfolio-detail-hero-mobile-height);
+    overflow: visible;
+    margin-top: 0;
+    justify-self: stretch;
+    align-self: stretch;
   }
 
   .portfolio-detail.is-gallery-three .portfolio-detail__img.is-primary,
   .portfolio-detail.is-gallery-three .portfolio-detail__img.is-primary.is-phone-ready {
     grid-column: auto;
     grid-row: auto;
-    aspect-ratio: 5 / 6;
-    min-height: 0;
+    width: 100%;
+    height: auto;
+    min-height: var(--portfolio-detail-hero-mobile-height);
+    aspect-ratio: unset;
+    margin-inline: 0;
+    overflow: hidden;
+  }
+
+  .portfolio-detail.is-gallery-three .portfolio-detail__img.is-primary.is-phone-ready.is-flipped,
+  .portfolio-detail.is-gallery-three .portfolio-detail__img.is-primary.is-phone-ready.is-flip-settled {
+    overflow: visible;
+  }
+
+  .portfolio-detail.is-gallery-three .portfolio-detail__hero-flip,
+  .portfolio-detail.is-gallery-three .portfolio-detail__hero-flip-inner {
+    min-height: var(--portfolio-detail-hero-mobile-height);
+    height: 100%;
   }
 
   .portfolio-detail.is-gallery-three .portfolio-detail__thumb-row .portfolio-detail__img:nth-child(n) {

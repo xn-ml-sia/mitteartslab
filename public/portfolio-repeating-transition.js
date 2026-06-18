@@ -6,8 +6,6 @@ import {
   setCompanyTitleText,
 } from './portfolio-title.js';
 
-const setPortfolioFlipCaterpillarEnabled = () => {};
-
 const config = {
   clipPathDirection: 'top-bottom',
   autoAdjustHorizontalClipPath: true,
@@ -93,15 +91,15 @@ const getDetailImageSources = (portfolioCase) => {
 
   const sources = [];
   pool.forEach((src) => {
-    if (sources.length >= DETAIL_IMAGE_COUNT) return;
+    if (sources.length >= count) return;
     if (!sources.includes(src)) sources.push(src);
   });
 
-  while (sources.length < DETAIL_IMAGE_COUNT) {
+  while (sources.length < count) {
     sources.push(sources[sources.length - 1]);
   }
 
-  return sources.slice(0, DETAIL_IMAGE_COUNT);
+  return sources.slice(0, count);
 };
 
 const getDetailImageAlts = (portfolioCase) => {
@@ -114,10 +112,10 @@ const getDetailImageAlts = (portfolioCase) => {
   }
 
   const alts = portfolioCase.slides?.map((slide) => slide.alt) || [];
-  while (alts.length < DETAIL_IMAGE_COUNT) {
+  while (alts.length < count) {
     alts.push(portfolioCase.title);
   }
-  return alts.slice(0, DETAIL_IMAGE_COUNT);
+  return alts.slice(0, count);
 };
 
 export const initPortfolioRepeatingTransition = ({
@@ -149,10 +147,26 @@ export const initPortfolioRepeatingTransition = ({
     thumbRow.className = 'portfolio-detail__thumb-row';
     thumbRow.setAttribute('data-detail-thumb-row', '');
     thumbRow.hidden = true;
-    panelContent.insertAdjacentElement('afterend', thumbRow);
+    panelGallery.insertAdjacentElement('afterend', thumbRow);
+  } else if (thumbRow.previousElementSibling !== panelGallery) {
+    panelGallery.insertAdjacentElement('afterend', thumbRow);
   }
 
   const secondaryCells = panelCells.filter((cell) => !cell.classList.contains('is-primary'));
+
+  const restoreThumbLayout = (clearAspectRatio = false) => {
+    secondaryCells.forEach((cell) => {
+      if (clearAspectRatio) {
+        cell.style.removeProperty('aspect-ratio');
+      }
+      if (cell.parentElement === thumbRow) {
+        panelGallery.appendChild(cell);
+      }
+    });
+    thumbRow.replaceChildren();
+    thumbRow.hidden = true;
+    thumbRow.classList.remove('is-single');
+  };
 
   const syncThumbAspectRatio = (cell, src) => {
     cell.style.removeProperty('aspect-ratio');
@@ -166,6 +180,7 @@ export const initPortfolioRepeatingTransition = ({
         cell.style.aspectRatio = `${naturalWidth} / ${naturalHeight}`;
       }
     };
+    probe.onerror = () => {};
     probe.src = src;
   };
 
@@ -274,9 +289,10 @@ export const initPortfolioRepeatingTransition = ({
     phoneShowcase?.renderPhoneShowcase(portfolioCase);
 
     panel.classList.add('is-gallery-three');
-    panelGallery.classList.add('is-gallery-three');
 
     const thumbCount = getDetailThumbCount(portfolioCase);
+
+    restoreThumbLayout();
 
     panelCells.forEach((cell, index) => {
       const isPrimary = cell.classList.contains('is-primary');
@@ -303,9 +319,6 @@ export const initPortfolioRepeatingTransition = ({
       }
     });
 
-    secondaryCells.forEach((cell) => panelGallery.appendChild(cell));
-
-    thumbRow.replaceChildren();
     secondaryCells.slice(0, thumbCount).forEach((cell) => {
       if (!cell.hidden) thumbRow.appendChild(cell);
     });
@@ -541,10 +554,10 @@ export const initPortfolioRepeatingTransition = ({
     panel.hidden = !open;
     panel.setAttribute('aria-hidden', open ? 'false' : 'true');
     panel.classList.toggle('is-open', open);
-    setPortfolioFlipCaterpillarEnabled(!open);
     onDetailOpenChange?.(open);
 
     if (open) {
+      panel.scrollTop = 0;
       getCards().forEach((card) => card.classList.add('is-revealed'));
     }
   };
@@ -632,6 +645,7 @@ export const initPortfolioRepeatingTransition = ({
       const cardTitle = currentCard?.querySelector('.portfolio-work__title');
       if (cardTitle) gsap.set(cardTitle, { clearProps: 'opacity' });
       panel.classList.remove('portfolio-detail--right', 'is-title-active');
+      restoreThumbLayout(true);
       resetDetailTitle(panelTitle);
       phoneShowcase?.resetPhoneShowcase();
       gsap.set(panelCells, { clipPath: 'inset(0% 0% 100% 0%)', clearProps: 'opacity' });
@@ -782,7 +796,6 @@ export const initPortfolioRepeatingTransition = ({
     clearMoverLayer();
     moverLayer?.remove();
     moverLayer = null;
-    setPortfolioFlipCaterpillarEnabled(true);
     page.classList.remove('portfolio-detail-open');
     onDetailOpenChange?.(false);
   };

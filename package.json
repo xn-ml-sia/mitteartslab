@@ -6,14 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "sync:archive": "node scripts/sync-archive.mjs",
-    "sync:archive-hero": "node scripts/sync-archive-hero.mjs",
-    "build:portfolio-sketch219": "npm run build --prefix sketch219",
-    "build:portfolio-sketch501": "npm run build --prefix sketch501",
     "sync:portfolio-sketch501": "node scripts/sync-portfolio-sketch501.mjs",
-    "sync:portfolio": "npm run build:portfolio-sketch501 && npm run sync:portfolio-sketch501",
-    "build:about-sketch393": "cd sketch393 && npx vite build --config vite.about.config.ts",
-    "sync:archive-sketch219": "node scripts/sync-archive-sketch219.mjs",
-    "sync:archive-moss-hero": "node scripts/sync-archive-moss-hero.mjs",
+    "sync:portfolio": "node scripts/sync-portfolio-sketch501.mjs",
     "vendor:gsap": "cp node_modules/gsap/dist/gsap.min.js node_modules/gsap/dist/CustomEase.min.js node_modules/gsap/dist/CustomWiggle.min.js node_modules/gsap/dist/CustomBounce.min.js node_modules/gsap/dist/ScrollTrigger.min.js node_modules/gsap/dist/Physics2DPlugin.min.js node_modules/gsap/dist/SplitText.min.js node_modules/gsap/dist/DrawSVGPlugin.min.js node_modules/gsap/dist/GSDevTools.min.js node_modules/gsap/dist/MotionPathPlugin.min.js node_modules/gsap/dist/MotionPathHelper.min.js node_modules/gsap/dist/Flip.min.js public/vendor/",
     "test:skewed": "node scripts/skewed-smoke-test.mjs"
   },

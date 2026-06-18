@@ -16,6 +16,8 @@ npm-debug.log*
 # Editor / local
 .idea/
 .vscode/
+.agents/
+skills-lock.json
 
 # Local build / experiment artifacts (regenerate locally; not shipped)
 public/portfolio-webgl-hero/

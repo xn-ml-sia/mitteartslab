@@ -1,5 +1,5 @@
 import { initMalLogos, setPageFavicon } from './mal-logo.js';
-import { initAboutTreeArtwork } from './app.js';
+import { initAboutTreeArtwork } from './about-tree-artwork.js';
 
 initMalLogos();
 setPageFavicon('bottom');

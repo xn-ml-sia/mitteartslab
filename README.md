@@ -1,184 +1,59 @@
-# Generative Rock Concept Documentation
+# Mitte Arts Lab
 
-This repository currently contains a lightweight static web experience (`index.html`, `about.html`, and assets in `public/`).
+Static site and lightweight Node server for the MAL portfolio, about page, archive, tools, and Generative Rock prototype.
 
-This documentation package defines a full product concept direction for a new initiative: **Generative Rock**.
+## Production routes
 
-## What is Generative Rock?
+| Route | Page | Notes |
+|-------|------|-------|
+| `/` | `index.html` | Home |
+| `/about` | `about.html` | About + pre-built sketch393 letter canvas |
+| `/portfolio`, `/portfolio/:id` | `portfolio.html` | Portfolio grid + detail panel; sketch501 hero |
+| `/archive` | `archive.html` | Slim archive: free-for-all hero, intro, moss hero |
+| `/second-life` | `second-life.html` | Linked from index Apps |
+| `/skewed`, `/type-lab` | `skewed.html` | Type lab tool |
+| `/phase1.html` | `phase1.html` | Generative Rock prototype + API |
 
-Generative Rock is a symbolic product concept built on one core idea:
+Retired pages (`/services`, `/stoneface`, `/landing`) are no longer routed and return 404.
 
-> **What words cannot hold, a stone can.**
-
-Users can either:
-
-1. **Choose a rock and reveal a message** (ritual discovery flow), or
-2. **Type a prompt and generate many rocks** (AI-assisted emotional expression flow).
-
-Each generated rock includes visual form, emotional meaning, suggested language, and occasion fit.
-
-## Documentation Index
-
-- [Research findings](docs/research-findings.md)
-- [Brand strategy](docs/brand-strategy.md)
-- [UX specification](docs/ux-spec.md)
-- [Technical blueprint](docs/technical-blueprint.md)
-- [Roadmap and delivery plan](docs/roadmap.md)
-
-## Phase 1 Prototype (Implemented)
-
-This repository now includes a Phase 1 prototype implementation aligned to the roadmap:
-
-- `phase1.html`: prototype UI for both required flows
-  - Use case 2: prompt -> many generated rocks
-  - Use case 1: choose a rock -> reveal message
-- `public/phase1.js`: client logic for prompt submission, async job polling, rendering generated cards, and reveal flow
-- `public/phase1.css`: dedicated styles for prototype UI
-- `server.js`: lightweight Node HTTP server with:
-  - `POST /api/v1/rocks/generate` (async job creation)
-  - `GET /api/v1/jobs/:jobId` (job polling)
-  - `POST /api/v1/rocks/reveal` (single reveal response)
-  - `POST /api/v1/events` + `GET /api/v1/analytics` (baseline event logging)
-  - prompt moderation blocklist and deterministic SVG rock image generation
-  - file-backed persistence for jobs and analytics (`.data/jobs.json`, `.data/analytics.json`)
-  - generation quality pass with diversity-aware ranking metadata
-- `package.json`: start script for the prototype server
-
-### Run locally
+## Run locally
 
 1. Install Node.js 18+.
-2. Start server:
-   - `npm install`
-   - `npm start`
-3. Open:
-   - `http://localhost:3000/phase1.html`
-   - `http://localhost:3000/stoneface.html`
+2. `npm install`
+3. `npm start`
+4. Open `http://localhost:3000/`
 
-### Environment note
+## Archive and retired code
 
-The current cloud environment did not include `node`/`npm`, so runtime execution could not be validated here. The implementation was completed with static code validation and clear run instructions for local verification.
+- `_archive/retired-pages/` — former `services` and `stoneface` page stacks (not served in production).
+- `_archive/retired-experiments/` — heavy archive experiment sections removed from the live `/archive` page.
 
-## Phase 1.2 Enhancements (Implemented)
+To restore retired content, copy files back into the repo root / `archive.template.html` and re-add routes in `server.js`.
 
-The prototype now includes the next iteration features from the roadmap:
+## Pre-built sketch heroes
 
-- **Single-rock regeneration**
-  - `POST /api/v1/rocks/regenerate`
-  - Regenerates one generated rock while preserving the rest of the set context.
-- **Lock and favorite controls**
-  - Client-side lock/favorite state with visual indicators.
-  - Locked rocks are excluded from "regenerate unlocked" actions.
-- **Export/share artifacts**
-  - `POST /api/v1/exports`
-  - Generates simple text artifact files under `.data/exports/`
-  - Returns downloadable artifact metadata and URL.
+Interactive heroes ship as built bundles only:
 
-### New interactive controls in `phase1.html`
+- `public/portfolio-sketch501/` — portfolio hero
+- `public/about-sketch393/` — about letter pull
 
-- **Regenerate unlocked**: refreshes only non-locked rocks.
-- **Export current set**: creates a text artifact summarizing the current set.
-- Per-rock actions:
-  - Favorite / Unfavorite
-  - Lock / Unlock
-  - Regenerate
+Source sketch projects (`sketch501/`, `sketch393/`) were removed from the repo. To rebuild historically, restore those folders from git history.
 
-### Additional endpoints
+## npm scripts
 
-- `POST /api/v1/rocks/regenerate`
-- `POST /api/v1/favorites/toggle`
-- `GET /api/v1/favorites`
-- `POST /api/v1/exports`
-- `GET /api/v1/exports/:id`
+| Script | Purpose |
+|--------|---------|
+| `npm start` | Run `server.js` |
+| `npm run sync:archive` | Regenerate `archive.html` from `archive.template.html` |
+| `npm run sync:portfolio` | Sync portfolio sketch501 bundle into `portfolio.html` |
+| `npm run vendor:gsap` | Copy GSAP vendor files into `public/vendor/` |
+| `npm run test:skewed` | Smoke test for type-lab |
 
-These endpoints are implemented in `server.js` and integrated in `public/phase1.js`.
+## Generative Rock (Phase 1)
 
-## Phase 1.3 Enhancements (Implemented)
+Prototype UI and API for prompt-to-rocks and reveal flows.
 
-The prototype now includes the next product-operational layer:
+- `phase1.html`, `public/phase1.js`, `public/phase1.css`
+- `server.js` — `POST /api/v1/rocks/generate`, job polling, reveal, analytics, collections, shares
 
-- **Analytics dashboard panel**
-  - `GET /api/v1/dashboard`
-  - Aggregates analytics counters with counts for jobs, favorites, collections, exports, and active shares.
-- **Saved collections view**
-  - `POST /api/v1/collections`
-  - `GET /api/v1/collections`
-  - Save and browse named rock sets directly from the Phase 1 page.
-- **Share-link expiry controls**
-  - `POST /api/v1/shares`
-  - `GET /api/v1/shares`
-  - `GET /s/:token`
-  - Create links with selectable expiry windows (15m, 1h, 24h, 7d) and enforce expiration at read time.
-
-### New UI sections in `phase1.html`
-
-- Dashboard metrics cards with refresh action
-- Save collection input + list
-- Share list with expiry display
-- Share expiry selector tied to "Create share link"
-
-### Additional persistence files
-
-- `.data/collections.json`
-- `.data/shares.json`
-
-## Concept Landing Page (Implemented)
-
-The landing route is now a stone-gallery experience cloned from the gallery interaction model:
-
-- `stoneface.html`
-- `public/stoneface.css`
-- `public/stoneface.js`
-
-### Landing + Shader behavior
-
-- Gallery-clone draggable/pannable field of stone cards (deterministic placement and camera behavior).
-- Each card mounts the `sec2_rock` shader on its own canvas.
-- A local deterministic expression engine (no backend/API call) maps emotion seeds into:
-  - caption text
-  - shader uniforms (`uShapeProfile`, `uCutDepth`, `uMorphSeed`)
-- WebGL fallback caption note is shown when rendering is unavailable.
-- Reduced-motion mode removes non-essential motion while keeping interaction feedback.
-
-### Sixth pass: Stoneface narrative layer
-
-- `stoneface.html` now includes a fixed `Stoneface` title, tagline, drag helper text, and pun-dial legend overlay.
-- Landing card set uses the current 12-card count with curated Stoneface voice/pun examples.
-- Captions now render as two lines:
-  - metadata (`emotion / pun level / mode`)
-  - expressive Stoneface line
-- Rendering model uses a single shared WebGL renderer + per-card blit; cards are static while the drawer preview animates.
-- Hybrid art direction now tracks the `index.html` section-2 rock vibe with classic wet-stone shading:
-  - cards blend toward index-like baseline uniforms (`uShapeProfile ~ 0.5`, `uCutDepth ~ 0.5`, `uMorphSeed ~ 0.3`)
-  - grading is near-monochrome (`contrast/brightness` forward, low saturation) for a closer gallery mood
-  - cards keep optional hover tilt (`iMouse`) while baseline motion remains focused in the drawer preview
-  - expression differences now come from seed + contour subtleties, not a multi-material branch library
-- Clicking a card opens a right-side details drawer with caption, rationale, and shader profile values.
-- Drawer preview stone animates while the drawer is open (card field remains static).
-
-Access it directly at:
-
-- `http://localhost:3000/stoneface.html`
-
-Navigation link:
-
-- `index.html` now includes a `concept` link in the header.
-
-## Phase 1.1 Hardening (Implemented)
-
-The prototype includes:
-
-- persistent state hydration/snapshot for jobs and analytics
-- improved moderation UX with explicit blocked status and safe rewrite hints
-- richer generated card metadata:
-  - quality score
-  - diversity score
-  - composite score
-- clearer generation stage/error states in UI
-
-## Why this exists in the repo
-
-The goal of this documentation set is to make the concept executable by design, product, and engineering teams without requiring additional discovery before prototyping.
-
-## Notes on cultural framing
-
-The research references traditions where stones are aesthetic, relational, or sacred (including Japanese and Indigenous contexts). This work intentionally uses those references as **inspiration and context**, not as direct replication of sacred forms.
+See [Research findings](docs/research-findings.md) and [Gift of Rock creative brief](docs/gift-of-rock-creative-brief.md) for concept background.

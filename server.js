@@ -704,27 +704,12 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (pathname === '/services' || pathname === '/services.html') {
-    serveFile(res, path.join(ROOT, 'services.html'));
-    return;
-  }
-  if (pathname.startsWith('/services/') && !pathname.slice('/services/'.length).includes('.')) {
-    res.writeHead(301, { Location: '/services' });
-    res.end();
-    return;
-  }
-
   if (pathname === '/portfolio' || pathname === '/portfolio.html') {
     serveFile(res, path.join(ROOT, 'portfolio.html'));
     return;
   }
   if (pathname.startsWith('/portfolio/') && !pathname.slice('/portfolio/'.length).includes('.')) {
     serveFile(res, path.join(ROOT, 'portfolio.html'));
-    return;
-  }
-
-  if (pathname === '/stoneface' || pathname === '/stoneface.html' || pathname === '/landing' || pathname === '/landing.html') {
-    serveFile(res, path.join(ROOT, 'stoneface.html'));
     return;
   }
 

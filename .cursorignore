@@ -34,3 +34,7 @@ public/fonts/
 
 # OS
 .DS_Store
+
+# Minified sketch bundles (pre-built; sources removed from repo)
+public/portfolio-sketch501/
+public/about-sketch393/
