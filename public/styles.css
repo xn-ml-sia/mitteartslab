@@ -64,7 +64,6 @@ html, body {
 /* Shared page surface — link styles.css on every page for this token */
 .chapter-page-shell,
 .chapter-main,
-.shader-deck-section,
 .chapter-canvas,
 .archive-main,
 .sl-page,
@@ -282,107 +281,6 @@ body,
   display: block;
 }
 
-/* --- Shader interlude: three WebGL2 blocks (ShaderToy) --- */
-.shader-deck-section {
-  min-height: calc(100vh - 60px);
-  scroll-snap-align: start;
-  scroll-snap-stop: normal;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 28px 72px 34px;
-  border-top: none;
-  box-sizing: border-box;
-  font-family: var(--font-family-code) !important;
-}
-
-.shader-deck {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 28px;
-  width: 100%;
-  max-width: 1280px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.shader-card {
-  position: relative;
-  aspect-ratio: 1 / 1;
-  border-radius: 10px;
-  overflow: hidden;
-  background: transparent;
-  border: 1px solid color-mix(in oklab, var(--mono-200) 80%, transparent);
-  outline: none;
-}
-
-.shader-card:focus-visible {
-  box-shadow: 0 0 0 2px var(--mono-800);
-}
-
-.shader-canvas {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  z-index: 2;
-  display: block;
-  border: none;
-  background: transparent;
-  touch-action: none;
-  pointer-events: none;
-  user-select: none;
-}
-
-.shader-card--video {
-  padding: 24px;
-  background: #000;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.shader-card--video .shader-card-video {
-  position: relative;
-  width: 75%;
-  height: 75%;
-  max-width: 100%;
-  max-height: 100%;
-  display: block;
-  object-fit: contain;
-  border: none;
-  background: #000;
-  pointer-events: none;
-}
-
-.shader-card--torus .torus-card-mount {
-  position: absolute;
-  inset: 0;
-}
-
-.shader-card--torus .torus-card-mount canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.orbit-text-mount {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 4;
-}
-
-.orbit-text-mount canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-  mix-blend-mode: screen;
-  opacity: 0.86;
-  filter: saturate(1.08) contrast(1.04);
-}
-
 @media (max-width: 1024px) {
   .mal-header-right {
     position: relative;
@@ -419,60 +317,6 @@ body,
   .chapter-hero-source {
     width: clamp(156px, 41vw, 218px);
   }
-
-  .shader-deck-section {
-    min-height: auto;
-    padding: 34px 14px 44px;
-  }
-
-  .shader-deck {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    width: min(92vw, 420px);
-    aspect-ratio: auto;
-    margin: 0 auto;
-    perspective: none;
-  }
-
-  .shader-deck .shader-card {
-    position: relative;
-    inset: auto;
-    transform-origin: 50% 50%;
-    transition:
-      transform var(--motion-slow) var(--motion-ease-standard),
-      opacity var(--motion-base) var(--motion-ease-standard);
-    cursor: pointer;
-    aspect-ratio: 1 / 1;
-  }
-
-  .shader-deck .shader-card.is-active-render {
-    will-change: transform, opacity;
-  }
-
-  .shader-deck .shader-card[data-pos="0"] {
-    transform: none;
-    opacity: 1;
-    z-index: 1;
-  }
-
-  .shader-deck .shader-card[data-pos="1"] {
-    transform: none;
-    opacity: 1;
-    z-index: 1;
-  }
-
-  .shader-deck .shader-card[data-pos="2"] {
-    transform: none;
-    opacity: 1;
-    z-index: 1;
-  }
-
-  .shader-deck .shader-card.is-leaving {
-    transform: none;
-    opacity: 1;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -480,12 +324,6 @@ body,
   body,
   .chapter-main {
     scroll-behavior: auto !important;
-  }
-
-  .shader-deck .shader-card,
-  .shader-deck .shader-card.is-leaving {
-    transition: opacity 80ms linear !important;
-    transform: none !important;
   }
 }
 
@@ -549,17 +387,6 @@ body,
 .archive-poem {
   margin-top: 10px;
   opacity: 0.92;
-}
-
-.archive-page .shader-deck-section {
-  min-height: auto;
-  padding: 0;
-  background: transparent;
-  border-top: none;
-}
-
-.archive-page .shader-deck {
-  max-width: 1280px;
 }
 
 @media (max-width: 1024px) {

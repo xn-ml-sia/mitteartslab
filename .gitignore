@@ -22,8 +22,6 @@ skills-lock.json
 # Local build / experiment artifacts (regenerate locally; not shipped)
 public/portfolio-webgl-hero/
 public/portfolio-webgl-text/
-public/portfolio-circular-text/
-public/portfolio-hero-mirrors/
 public/portfolio-webgl-text.bundle.js
 public/portfolio-webgl-text.bundle.mjs
 public/services.bundle.js
