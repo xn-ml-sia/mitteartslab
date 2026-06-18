@@ -543,8 +543,8 @@
 
 .portfolio-phone__effect-toggle {
   position: absolute;
-  right: 16px;
-  bottom: 16px;
+  left: 0;
+  bottom: 0;
   z-index: 12;
   pointer-events: auto;
 }
@@ -640,5 +640,11 @@
 
   .portfolio-phone.is-layers-open.is-effect-3 {
     --phone-effect-3-shift-x: 32px;
+  }
+
+  .portfolio-phone__effect-toggle {
+    left: auto;
+    right: 0;
+    bottom: 0;
   }
 }

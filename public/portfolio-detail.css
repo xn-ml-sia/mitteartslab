@@ -356,11 +356,6 @@ body.portfolio-detail-open .portfolio-sketch501 {
   outline-offset: 2px;
 }
 
-.portfolio-detail--right .portfolio-detail__content {
-  align-items: start;
-  text-align: left;
-}
-
 .portfolio-detail-mover {
   position: absolute;
   background-size: cover;
@@ -383,8 +378,8 @@ body.portfolio-detail-open .portfolio-sketch501 {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-rows: auto auto;
     grid-template-areas:
-      'detail-content detail-image'
-      'detail-thumbs detail-image';
+      'detail-image detail-content'
+      'detail-image detail-thumbs';
     align-items: start;
     width: min(100%, 72rem);
     margin-inline: auto;
@@ -393,7 +388,7 @@ body.portfolio-detail-open .portfolio-sketch501 {
   .portfolio-detail.is-gallery-three .portfolio-detail__gallery {
     grid-row: 1 / -1;
     align-self: start;
-    justify-self: end;
+    justify-self: start;
     display: block;
     width: 100%;
     min-width: 0;
@@ -442,18 +437,6 @@ body.portfolio-detail-open .portfolio-sketch501 {
     aspect-ratio: 5 / 6;
     max-height: min(70dvh, calc(100dvh - var(--portfolio-detail-padding) * 4));
     margin-inline: 0;
-  }
-
-  .portfolio-detail--right {
-    grid-template-columns: var(--portfolio-detail-content-width) minmax(0, 1fr);
-    grid-template-areas: 'detail-content detail-image';
-  }
-}
-
-@media (min-width: 65em) {
-  .portfolio-detail--right .portfolio-detail__content {
-    align-items: start;
-    text-align: left;
   }
 }
 

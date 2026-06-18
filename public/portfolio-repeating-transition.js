@@ -264,8 +264,6 @@ export const initPortfolioRepeatingTransition = ({
     const centerX = getElementCenter(clickedEl).x;
     const isLeftSide = centerX < window.innerWidth / 2;
 
-    panel.classList.toggle('portfolio-detail--right', isLeftSide);
-
     if (config.autoAdjustHorizontalClipPath) {
       if (
         config.clipPathDirection === 'left-right' ||
@@ -644,7 +642,7 @@ export const initPortfolioRepeatingTransition = ({
       gsap.killTweensOf([panel, ...panelCells, panelContent, ...getCards()]);
       const cardTitle = currentCard?.querySelector('.portfolio-work__title');
       if (cardTitle) gsap.set(cardTitle, { clearProps: 'opacity' });
-      panel.classList.remove('portfolio-detail--right', 'is-title-active');
+      panel.classList.remove('is-title-active');
       restoreThumbLayout(true);
       resetDetailTitle(panelTitle);
       phoneShowcase?.resetPhoneShowcase();
