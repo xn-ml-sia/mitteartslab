@@ -598,6 +598,7 @@ export const initPortfolioRepeatingTransition = ({
 
     const finishOpen = () => {
       isAnimating = false;
+      phoneShowcase?.startAutoDemo?.();
       if (updateHistory && parsePortfolioIdFromPath() !== caseId) {
         pushPortfolioUrl(caseId);
       }

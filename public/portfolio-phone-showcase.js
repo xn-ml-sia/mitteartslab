@@ -4,6 +4,8 @@ const FLIP_DURATION_MS = 800;
 const EFFECT_REVERSE_MS = 1400;
 const EFFECT_HANDOFF_MS = 1400;
 const EFFECT_EXPLODE_MS = 1400;
+const AUTO_FLIP_DELAY_MS = 3500;
+const AUTO_EFFECT_SWITCH_DELAY_MS = 5000;
 
 export const initPortfolioPhoneShowcase = ({
   panel = document.getElementById('portfolio-detail'),
@@ -58,10 +60,50 @@ export const initPortfolioPhoneShowcase = ({
   let flipTimer = null;
   let effectSwitchTimer = null;
   let closeTimer = null;
+  let autoFlipTimer = null;
+  let autoEffectTimer = null;
+  let autoDemoGeneration = 0;
 
   if (reducedMotion) {
     phoneRoot.classList.add('is-reduced-motion');
   }
+
+  const clearAutoDemoTimers = () => {
+    if (autoFlipTimer) {
+      window.clearTimeout(autoFlipTimer);
+      autoFlipTimer = null;
+    }
+    if (autoEffectTimer) {
+      window.clearTimeout(autoEffectTimer);
+      autoEffectTimer = null;
+    }
+  };
+
+  const cancelAutoDemo = () => {
+    autoDemoGeneration += 1;
+    clearAutoDemoTimers();
+  };
+
+  const startAutoDemo = () => {
+    cancelAutoDemo();
+    if (reducedMotion || !hasPhoneScreens) return;
+
+    const generation = autoDemoGeneration;
+
+    autoFlipTimer = window.setTimeout(() => {
+      autoFlipTimer = null;
+      if (generation !== autoDemoGeneration || isFlipped || !hasPhoneScreens) return;
+
+      revealPhone();
+
+      autoEffectTimer = window.setTimeout(() => {
+        autoEffectTimer = null;
+        if (generation !== autoDemoGeneration || !isFlipped || !layersOpen || isEffectSwitching) return;
+        if (explodeEffect === 3) return;
+        switchExplodeEffect(3);
+      }, AUTO_EFFECT_SWITCH_DELAY_MS);
+    }, AUTO_FLIP_DELAY_MS);
+  };
 
   const clearTimers = () => {
     if (flipTimer) {
@@ -232,6 +274,7 @@ export const initPortfolioPhoneShowcase = ({
   };
 
   const resetPhoneShowcase = () => {
+    cancelAutoDemo();
     clearTimers();
     layersOpen = false;
     explodeEffect = DEFAULT_EXPLODE_EFFECT;
@@ -309,6 +352,7 @@ export const initPortfolioPhoneShowcase = ({
 
   const onEffectToggleClick = (event) => {
     event.stopPropagation();
+    cancelAutoDemo();
     const shownEffect = toggleTargetEffect ?? explodeEffect;
     const effect = shownEffect === 1 ? 3 : 1;
     if (isEffectSwitching || effect === explodeEffect) {
@@ -325,6 +369,7 @@ export const initPortfolioPhoneShowcase = ({
       return;
     }
     event.stopPropagation();
+    cancelAutoDemo();
 
     if (!isFlipped) {
       revealPhone();
@@ -340,6 +385,7 @@ export const initPortfolioPhoneShowcase = ({
     if (!hasPhoneScreens) return;
     if (event.key !== 'Enter' && event.key !== ' ') return;
     event.preventDefault();
+    cancelAutoDemo();
 
     if (!isFlipped) {
       revealPhone();
@@ -358,6 +404,8 @@ export const initPortfolioPhoneShowcase = ({
   return {
     renderPhoneShowcase,
     resetPhoneShowcase,
+    startAutoDemo,
+    cancelAutoDemo,
     destroy: () => {
       primaryHero.removeEventListener('click', onPrimaryClick);
       primaryHero.removeEventListener('keydown', onPrimaryKeydown);
