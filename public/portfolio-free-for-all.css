@@ -25,11 +25,11 @@
 .portfolio-free-for-all #all {
   position: absolute;
   top: 45%;
-  font-family: var(--font-family-code);
+  font-family: var(--font-family-mono);
   font-size: clamp(2rem, 8vw, 5.5rem);
   font-weight: 600;
   line-height: 1;
-  color: #111;
+  color: var(--portfolio-ink);
 }
 
 .portfolio-free-for-all #free {

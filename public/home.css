@@ -138,7 +138,7 @@
   opacity: 0;
   font-size: 0.85em;
   text-align: center;
-  font-family: var(--font-family-code);
+  font-family: var(--font-family-mono);
   letter-spacing: 0.02em;
   text-transform: uppercase;
   white-space: normal;
@@ -165,7 +165,7 @@
 
 .home-brand-name {
   color: var(--background-color);
-  font-family: var(--font-family-code);
+  font-family: var(--font-family-mono);
   font-size: clamp(12px, 1vw, 16px);
   letter-spacing: 0.08em;
   line-height: 1.1;
@@ -236,7 +236,7 @@
 
 .home-nav-link {
   color: rgba(0, 0, 0, 0.9);
-  font-family: var(--font-family-code);
+  font-family: var(--font-family-mono);
   font-size: clamp(12px, 1vw, 16px);
   letter-spacing: 0.08em;
   line-height: 1.1;
@@ -342,7 +342,7 @@
 
 .home-submenu-link {
   color: rgba(0, 0, 0, 0.9);
-  font-family: var(--font-family-code);
+  font-family: var(--font-family-mono);
   font-size: clamp(12px, 1vw, 16px);
   letter-spacing: 0.08em;
   text-decoration: none;
@@ -382,7 +382,7 @@
   }
 
   .home-submenu {
-    gap: 10px;
+    gap: var(--space-3);
   }
 }
 

@@ -8,7 +8,7 @@
   margin-inline: calc(-1 * var(--portfolio-gap));
   margin-bottom: var(--portfolio-gap);
   text-transform: none;
-  color: #111;
+  color: var(--portfolio-ink);
   --portfolio-hero-diameter: min(78vmin, 94vw, 70vh);
 }
 
@@ -83,11 +83,11 @@
   position: absolute;
   left: 0;
   top: 0;
-  font-family: var(--font-family-code), serif;
+  font-family: var(--font-family-mono), serif;
   font-style: normal;
   font-size: max(2.75rem, 5.5vmin);
   font-weight: 600;
-  color: #111;
+  color: var(--portfolio-ink);
   backface-visibility: visible;
   transform-style: preserve-3d;
   transform: translate(-50%, -50%) rotateY(calc(var(--i) * 360deg)) translateZ(var(--r));

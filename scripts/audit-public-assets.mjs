@@ -36,6 +36,7 @@ const LIVE_GLOBS = [
 
 const EXTRA_SCAN_FILES = [
   'public/portfolio-data.js',
+  'public/portfolio-card.js',
   'public/portfolio-sketch501/portfolio-sketch501.js',
   'public/portfolio-sketch501/portfolio-sketch501.css',
   'public/about-sketch393/about-sketch393.js',

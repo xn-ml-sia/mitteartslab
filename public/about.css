@@ -1,10 +1,10 @@
 /* About page — three full-viewport sections, document scroll */
 
 .about-page {
-  --about-gutter: 72px;
-  --about-gutter-mobile: 14px;
+  --about-gutter: var(--page-gutter-desktop);
+  --about-gutter-mobile: var(--page-gutter-mobile);
   --about-text-max: 576px;
-  --about-gap: 40px;
+  --about-gap: var(--space-10);
   --about-art-slot: min(75.2vw, 420px);
   --about-photo-width: clamp(210px, 25vw, 360px);
 }
@@ -19,15 +19,9 @@ body.about-page {
 }
 
 .about-shell {
-  max-width: 1400px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
   background-color: var(--rubin-ivory);
-}
-
-.about-page .chapter-header {
-  padding: 0 22px;
-  height: 60px;
-  box-sizing: border-box;
 }
 
 .about-main {
@@ -37,11 +31,11 @@ body.about-page {
 
 .about-copy,
 .about-copy p {
-  font-family: var(--font-family-code) !important;
-  font-weight: 300;
+  font-family: var(--font-family-mono) !important;
+  font-weight: var(--font-weight-body);
   line-height: var(--line-height-base);
   letter-spacing: var(--letter-spacing-base);
-  font-size: 15px;
+  font-size: var(--font-size-body);
 }
 
 .about-copy p {
@@ -236,7 +230,7 @@ body.about-page {
 @media (max-width: 1024px) {
   .about-page {
     --about-gutter: var(--about-gutter-mobile);
-    --about-gap: 20px;
+    --about-gap: var(--space-5);
     --about-photo-width: clamp(154px, 34vw, 240px);
   }
 

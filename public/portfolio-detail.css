@@ -1,10 +1,11 @@
 /* Portfolio detail panel + repeating image transition movers */
 
 .portfolio-page {
-  --portfolio-detail-padding: clamp(1rem, 3vw, 1.5rem);
-  --portfolio-detail-gap: 1rem;
-  --portfolio-detail-cell-gap: 0.5rem;
-  --portfolio-detail-back-target: 40px;
+  --portfolio-detail-padding: clamp(var(--space-4), 3vw, var(--space-6));
+  --portfolio-detail-gap: var(--space-4);
+  --portfolio-detail-split-gap: clamp(var(--space-10), 6vw, var(--space-16));
+  --portfolio-detail-cell-gap: var(--space-2);
+  --portfolio-detail-back-target: var(--space-10);
   --portfolio-detail-content-width: 28rem;
   --portfolio-detail-gallery-size: calc(
     (100dvh - var(--portfolio-detail-padding) * 2) * 4 / 5 - var(--portfolio-detail-gap)
@@ -13,7 +14,7 @@
 
 body.portfolio-detail-open {
   overflow: hidden;
-  background: var(--portfolio-page-bg, #ececec);
+  background: var(--portfolio-page-bg, var(--portfolio-surface));
 }
 
 body.portfolio-detail-open .chapter-header,
@@ -89,7 +90,7 @@ body.portfolio-detail-open .portfolio-sketch501 {
   min-height: 0;
   background-size: cover;
   background-position: center;
-  border-radius: var(--portfolio-inner-radius, 14px);
+  border-radius: var(--portfolio-inner-radius, var(--space-4));
   will-change: clip-path, opacity;
 }
 
@@ -108,7 +109,7 @@ body.portfolio-detail-open .portfolio-sketch501 {
 }
 
 .portfolio-detail__img.is-primary.is-phone-ready:focus-visible {
-  outline: 2px solid #111;
+  outline: 2px solid var(--focus-ring);
   outline-offset: 4px;
 }
 
@@ -184,7 +185,7 @@ body.portfolio-detail-open .portfolio-sketch501 {
   grid-area: detail-content;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--space-2);
   justify-content: end;
   align-items: end;
   text-align: right;
@@ -336,7 +337,7 @@ body.portfolio-detail-open .portfolio-sketch501 {
   border: 0;
   background: none;
   cursor: pointer;
-  color: #111;
+  color: var(--portfolio-ink);
 }
 
 .portfolio-detail__back img {
@@ -352,7 +353,7 @@ body.portfolio-detail-open .portfolio-sketch501 {
 }
 
 .portfolio-detail__back:focus-visible {
-  outline: 2px solid #111;
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -361,7 +362,7 @@ body.portfolio-detail-open .portfolio-sketch501 {
   background-size: cover;
   background-position: 50% 50%;
   background-repeat: no-repeat;
-  border-radius: var(--portfolio-inner-radius, 14px);
+  border-radius: var(--portfolio-inner-radius, var(--space-4));
   will-change: transform, clip-path, opacity;
   pointer-events: none;
 }
@@ -372,6 +373,8 @@ body.portfolio-detail-open .portfolio-sketch501 {
     grid-template-areas: 'detail-image detail-content';
     grid-template-rows: auto;
     align-items: start;
+    column-gap: var(--portfolio-detail-split-gap);
+    row-gap: var(--portfolio-detail-gap);
   }
 
   .portfolio-detail.is-gallery-three {

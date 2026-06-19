@@ -1,13 +1,16 @@
 /* Portfolio — sketch501 hero + nauts work grid */
 
 .portfolio-page {
-  --portfolio-gap: 8px;
+  --portfolio-gap: var(--space-2);
+  --portfolio-card-gap: var(--space-16);
+  --portfolio-inner-radius: var(--space-4);
   --portfolio-work-col-count: 5;
-  --portfolio-font: var(--font-family-code);
-  background: #ececec;
-  color: #111;
+  --portfolio-font: var(--font-family-mono);
+  --portfolio-page-bg: var(--portfolio-surface);
+  background: var(--portfolio-surface);
+  color: var(--portfolio-ink);
   font-family: var(--portfolio-font);
-  font-size: 13px;
+  font-size: var(--font-size-portfolio);
   text-transform: uppercase;
   -webkit-font-smoothing: none;
   -moz-osx-font-smoothing: unset;
@@ -36,9 +39,6 @@ body.portfolio-page .portfolio-sketch501 .l-item rt {
 }
 
 .portfolio-page .chapter-header {
-  padding: 0 22px;
-  height: 60px;
-  box-sizing: border-box;
   position: relative;
   z-index: 2;
 }
@@ -113,6 +113,16 @@ body.portfolio-page--work-hover .mal-logo ellipse {
   stroke: #fff;
 }
 
+.portfolio-sketch501 .l-item {
+  transition: opacity 0.45s ease, visibility 0.45s;
+}
+
+body.portfolio-page--work-hover .portfolio-sketch501 .l-item {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
   opacity: 0.001 !important;
 }
@@ -124,21 +134,27 @@ body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
   flex-direction: row;
   align-items: flex-start;
   justify-content: center;
-  gap: 0;
+  gap: var(--portfolio-card-gap);
   width: 100%;
-  padding-top: clamp(0.75rem, 2vw, 1.5rem);
-  padding-bottom: 4rem;
+  padding-top: clamp(var(--space-3), 2vw, var(--space-6));
+  padding-bottom: var(--space-16);
 }
 
 .portfolio-work-list__col {
-  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--portfolio-card-gap);
+  flex: 0 1 auto;
+  width: max-content;
+  max-width: 100%;
   min-width: 0;
 }
 
 .portfolio-work {
   position: relative;
   display: block;
-  padding: 2rem 1.25rem 3rem;
+  padding: 0;
   overflow: hidden;
   color: inherit;
 }
@@ -155,7 +171,7 @@ body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
 }
 
 .portfolio-work__title {
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--space-3);
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.2;
@@ -182,8 +198,8 @@ body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
-  margin: 0 0 3rem;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-12);
   font-family: var(--portfolio-font);
   font-size: 0.82rem;
   font-weight: 500;
@@ -203,9 +219,9 @@ body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
 .portfolio-work__thumb {
   position: relative;
   width: 120px;
-  height: 150px;
+  height: 152px;
   overflow: hidden;
-  border-radius: 4px;
+  border-radius: var(--space-1);
   background: #fff;
   border: 1px solid transparent;
   box-sizing: border-box;
@@ -228,11 +244,11 @@ body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
 
 .portfolio-work__thumb.is-hovered img {
   flex: 1 1 auto;
-  width: calc(100% - 4px);
-  height: calc(100% - 32px);
+  width: calc(100% - var(--space-1));
+  height: calc(100% - var(--space-8));
   min-height: 0;
-  margin: 2px 2px 0;
-  border-radius: 3px;
+  margin: var(--space-1) var(--space-1) 0;
+  border-radius: var(--space-1);
 }
 
 .portfolio-work__detail {
@@ -240,12 +256,12 @@ body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 28px;
+  height: var(--space-9);
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  padding: 0 var(--space-3);
   background: #fff;
-  color: #111;
+  color: var(--portfolio-ink);
   transform: translateY(100%);
   transition: transform 0.42s cubic-bezier(0.19, 1, 0.22, 1);
   pointer-events: none;
@@ -253,7 +269,7 @@ body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
 
 .portfolio-work__thumb.is-hovered .portfolio-work__detail {
   position: relative;
-  flex: 0 0 28px;
+  flex: 0 0 var(--space-9);
   transform: translateY(0);
 }
 
@@ -263,7 +279,7 @@ body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
   height: 100%;
   object-fit: cover;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: var(--space-1);
   transition: opacity 0.3s ease;
 }
 
@@ -277,7 +293,7 @@ body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-right: 12px;
+  padding-right: var(--space-3);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='%23111' d='M1.5 1.5 6 4 1.5 6.5z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right center;
@@ -285,17 +301,13 @@ body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
 }
 
 .portfolio-work__thumb img:focus-visible {
-  outline: 2px solid #603553;
+  outline: 2px solid var(--brand-mark);
   outline-offset: 2px;
 }
 
 @media (max-width: 1023px) {
   .portfolio-page {
     --portfolio-work-col-count: 3;
-  }
-
-  .portfolio-work {
-    padding-inline: 1rem;
   }
 }
 
@@ -305,21 +317,17 @@ body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
   }
 
   .portfolio-work-list {
-    padding-top: 0.75rem;
-  }
-
-  .portfolio-work {
-    padding: 1.5rem 0.75rem 2rem;
+    padding-top: var(--space-3);
   }
 
   .portfolio-work__keywords {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-6);
   }
 }
 
 @media (hover: none), (pointer: coarse) {
   body.portfolio-page--work-hover .portfolio-shell {
-    background: #ececec;
+    background: var(--portfolio-surface);
   }
 
   body.portfolio-page--work-hover .chapter-header,
@@ -330,7 +338,7 @@ body.portfolio-page.portfolio-detail-open .portfolio-hover-bg__picture {
 
   body.portfolio-page--work-hover .mal-logo path,
   body.portfolio-page--work-hover .mal-logo ellipse {
-    stroke: #603553;
+    stroke: var(--brand-mark);
   }
 
   .portfolio-work.is-dimmed .portfolio-work__thumb,

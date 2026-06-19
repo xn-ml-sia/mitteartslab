@@ -521,7 +521,7 @@
   text-align: left;
   font: inherit;
   font-family: var(--portfolio-font);
-  color: #111;
+  color: var(--portfolio-ink);
 }
 
 .portfolio-phone__flat-thumb {
@@ -582,7 +582,7 @@
 }
 
 .portfolio-phone__effect-btn:focus-visible {
-  outline: 2px solid #ececec;
+  outline: 2px solid var(--portfolio-surface);
   outline-offset: 2px;
   border-radius: 12px;
 }

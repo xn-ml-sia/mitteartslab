@@ -743,5 +743,5 @@ const server = http.createServer(async (req, res) => {
 
 hydrateState();
 server.listen(PORT, () => {
-  console.log(`Generative Rock Phase 1.3 server running on http://localhost:${PORT}`);
+  console.log(`MITTE ARTS LAB server running on http://localhost:${PORT}`);
 });

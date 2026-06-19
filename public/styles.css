@@ -1,20 +1,24 @@
-/* MAL shared styles
-   Load first on every page. Page-specific CSS: home, services, second-life, stoneface, type-lab, phase1. */
+/* MAL shared styles — load first on every page. Page CSS: home, about, portfolio, second-life. */
 
 :root {
-  /* surface */
-  /* home-rock-shader.js defaultBg vec3(0.9, 0.86, 0.8) after sqrt + saturation */
+  /* --- surfaces --- */
   --rubin-ivory: #f5ecde;
   --background-color: var(--rubin-ivory);
-  --text-color: rgba(0, 0, 0, 0.85);
+  --portfolio-surface: #ececec;
 
-  /* rubin palette */
+  /* --- ink --- */
+  --text-color: rgba(0, 0, 0, 0.85);
+  --ink-strong: #111111;
+  --portfolio-ink: var(--ink-strong);
+
+  /* --- rubin palette --- */
   --rubin-gray: #87867f;
   --rubin-slate: #1f1e1d;
   --rubin-dark-gray: #5e5d59;
   --rubin-riso: #5e7edf;
+  --brand-mark: #603553;
 
-  /* artwork (app.js) */
+  /* --- artwork modules (about tree, etc.) --- */
   --module-ink-rgb: 56, 31, 32;
   --module-ink-drift-rgb: 111, 37, 39;
   --module-accent-rgb: 200, 72, 71;
@@ -22,7 +26,7 @@
   --rum-500: #6d5f70;
   --rum-800: #532a40;
 
-  /* mono utility */
+  /* --- mono utility --- */
   --mono-0: #ffffff;
   --mono-50: #f5f5f5;
   --mono-100: #ebebeb;
@@ -35,17 +39,54 @@
   --mono-800: #1a1a1a;
   --mono-900: #0f0f0f;
 
-  /* type */
-  --font-family-base: "IBM Plex Mono", monospace;
-  --font-family-code: "IBM Plex Mono", monospace;
+  /* --- typography --- */
+  --font-family-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-family-base: var(--font-family-mono);
+  --font-family-code: var(--font-family-mono);
+  --font-size-ui: 12px;
+  --font-size-body: 15px;
+  --font-size-portfolio: 13px;
+  --font-size-section: 14px;
   --line-height-base: 1.5;
   --letter-spacing-base: 0.02em;
+  --letter-spacing-ui: 0.08em;
+  --font-weight-body: 300;
+  --font-weight-regular: 400;
 
-  /* motion */
+  /* --- motion --- */
   --motion-fast: 140ms;
   --motion-base: 240ms;
   --motion-slow: 420ms;
   --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* --- focus --- */
+  --focus-ring: var(--ink-strong);
+  --focus-ring-offset: 2px;
+
+  /* --- spacing (4px grid) — padding, margin, gap, width, height only */
+  --space-unit: 4px;
+  --space-1: 4px;   /* 1× */
+  --space-2: 8px;   /* 2× */
+  --space-3: 12px;  /* 3× */
+  --space-4: 16px;  /* 4× */
+  --space-5: 20px;  /* 5× */
+  --space-6: 24px;  /* 6× */
+  --space-8: 32px;  /* 8× */
+  --space-9: 36px;  /* 9× */
+  --space-10: 40px; /* 10× */
+  --space-12: 48px; /* 12× */
+  --space-14: 56px; /* 14× */
+  --space-15: 60px; /* 15× */
+  --space-16: 64px; /* 16× */
+  --space-18: 72px; /* 18× */
+
+  /* --- layout --- */
+  --header-height: var(--space-15);
+  --header-padding-x: var(--space-6);
+  --page-max-width: 1400px;
+  --content-max-width: 1120px;
+  --page-gutter-mobile: var(--space-4);
+  --page-gutter-desktop: var(--space-18);
 }
 
 html {
@@ -58,7 +99,7 @@ html, body {
   min-height: 100%;
   background-color: var(--rubin-ivory);
   color: var(--text-color);
-  font-family: var(--font-family-base);
+  font-family: var(--font-family-mono);
 }
 
 /* Shared page surface — link styles.css on every page for this token */
@@ -98,7 +139,7 @@ body,
 .chapter-link,
 .mal-header-left,
 .mal-header-right {
-  font-family: var(--font-family-code) !important;
+  font-family: var(--font-family-mono) !important;
 }
 
 .chapter-page-shell,
@@ -107,7 +148,7 @@ body,
 }
 
 .chapter-page {
-  max-width: 1400px;
+  max-width: var(--page-max-width);
   margin: 0 auto;
 }
 
@@ -115,25 +156,27 @@ body,
   border-bottom: none;
   box-shadow: none;
   background-color: transparent !important;
-  font-family: var(--font-family-code);
-  letter-spacing: 0.08em;
-  font-size: 12px;
+  font-family: var(--font-family-mono);
+  letter-spacing: var(--letter-spacing-ui);
+  font-size: var(--font-size-ui);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
+  height: var(--header-height);
+  padding: 0 var(--header-padding-x);
+  box-sizing: border-box;
 }
 
 .sl-page .chapter-header {
-  padding: 0 22px;
-  height: 60px;
-  box-sizing: border-box;
+  padding: 0 var(--header-padding-x);
+  height: var(--header-height);
 }
 
 .mal-header-left {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
 }
 
 .mal-header-right {
@@ -143,7 +186,7 @@ body,
 
 .mal-header-sep {
   display: inline-block;
-  margin: 0 10px;
+  margin: 0 var(--space-3);
   opacity: 0.65;
 }
 
@@ -192,7 +235,7 @@ body,
 
 .chapter-main {
   background-color: var(--rubin-ivory);
-  height: calc(100vh - 60px);
+  height: calc(100vh - var(--header-height));
   overflow-y: auto;
   overflow-x: hidden;
   scroll-snap-type: y proximity;
@@ -291,8 +334,8 @@ body,
   }
 
   .chapter-main {
-    height: calc(100dvh - 60px);
-    min-height: calc(100dvh - 60px);
+    height: calc(100dvh - var(--header-height));
+    min-height: calc(100dvh - var(--header-height));
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -301,17 +344,17 @@ body,
   }
 
   .chapter-artwork {
-    width: min(86vw, calc((100dvh - 60px) * 0.72));
+    width: min(86vw, calc((100dvh - var(--header-height)) * 0.72));
     max-width: 86vw;
-    height: min(86vw, calc((100dvh - 60px) * 0.72));
+    height: min(86vw, calc((100dvh - var(--header-height)) * 0.72));
     aspect-ratio: 1;
     padding: 0;
     border-radius: 0;
   }
 
   #chapter-1-artwork {
-    width: min(80vw, calc((100dvh - 60px) * 0.8));
-    height: min(80vw, calc((100dvh - 60px) * 0.8));
+    width: min(80vw, calc((100dvh - var(--header-height)) * 0.8));
+    height: min(80vw, calc((100dvh - var(--header-height)) * 0.8));
   }
 
   .chapter-hero-source {
@@ -331,7 +374,7 @@ body,
 .archive-page .chapter-main,
 .archive-page .archive-main {
   height: auto;
-  min-height: calc(100dvh - 60px);
+  min-height: calc(100dvh - var(--header-height));
   overflow-y: auto;
   overflow-x: hidden;
   scroll-snap-type: none;
@@ -363,11 +406,11 @@ body,
 
 .archive-section-head h2 {
   margin: 0 0 6px;
-  font-family: var(--font-family-code) !important;
-  font-size: 14px;
-  letter-spacing: 0.08em;
+  font-family: var(--font-family-mono) !important;
+  font-size: var(--font-size-section);
+  letter-spacing: var(--letter-spacing-ui);
   text-transform: lowercase;
-  font-weight: 400;
+  font-weight: var(--font-weight-regular);
 }
 
 .archive-section-head p {

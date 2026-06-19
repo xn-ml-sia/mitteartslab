@@ -5,7 +5,7 @@
 }
 
 body.typeLabPage {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: var(--font-family-mono);
   background: var(--rubin-ivory);
   color: #d3d3d3;
   overflow: hidden;
