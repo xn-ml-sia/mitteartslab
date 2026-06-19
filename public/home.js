@@ -9,8 +9,6 @@ import { initHomeSmaugTooltip } from './home-smaug-tooltip.js';
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 document.documentElement.classList.add('home-mode-root');
 
-const PORTFOLIO_PASSWORD = 'AX';
-
 const initPasswordGate = (selector, options = {}) => {
   const { allowHashHref = true } = options;
   const link = document.querySelector(selector);
@@ -18,9 +16,9 @@ const initPasswordGate = (selector, options = {}) => {
 
   link.addEventListener('click', (event) => {
     event.preventDefault();
-    const value = window.prompt('Enter portfolio password');
+    const value = window.prompt('Enter password');
     if (value === null) return;
-    if (value !== PORTFOLIO_PASSWORD) {
+    if (value !== 'AX') {
       window.alert('Unverified access');
       return;
     }
@@ -32,10 +30,6 @@ const initPasswordGate = (selector, options = {}) => {
   });
 };
 
-const initPortfolioGate = () => {
-  initPasswordGate('[data-portfolio-link]');
-};
-
 const initBaseSystemGate = () => {
   initPasswordGate('[data-base-system-link]', { allowHashHref: false });
 };
@@ -43,7 +37,6 @@ const initBaseSystemGate = () => {
 initHomeMenus();
 initHomeAscii();
 initHomeSmaugTooltip();
-initPortfolioGate();
 initBaseSystemGate();
 
 const canvas = document.getElementById('home-rock-canvas');
