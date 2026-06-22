@@ -307,21 +307,71 @@ body.portfolio-detail-open .portfolio-sketch501 {
   line-height: 1.15;
 }
 
-.portfolio-detail__subtitle {
+/* Body copy — same tokens and smoothing as about .about-copy */
+.portfolio-detail__subtitle,
+.portfolio-detail__description,
+.portfolio-detail__section-text {
   margin: 0;
-  font-size: clamp(0.88rem, 1.5vw, 1rem);
-  font-weight: 400;
-  line-height: 1.2;
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-base);
+  letter-spacing: var(--letter-spacing-base);
+  text-transform: none;
+  text-wrap: pretty;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.portfolio-detail__subtitle {
   opacity: 0.75;
 }
 
 .portfolio-detail__description {
-  margin: 0;
   max-width: 100%;
-  font-size: clamp(0.82rem, 1.4vw, 0.95rem);
-  font-weight: 400;
-  line-height: 1.45;
-  text-wrap: pretty;
+}
+
+.portfolio-detail__sections {
+  grid-area: detail-sections;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-8), 6vw, var(--space-16));
+  width: 100%;
+  padding-top: clamp(var(--space-6), 4vw, var(--space-12));
+  text-transform: none;
+}
+
+.portfolio-detail__section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--portfolio-detail-split-gap);
+}
+
+.portfolio-detail__section-copy {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.portfolio-detail__section-media {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: min(72dvh, 40rem);
+}
+
+.portfolio-detail__section-media img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: min(72dvh, 40rem);
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--portfolio-inner-radius, var(--space-4));
 }
 
 .portfolio-detail__back {
@@ -381,10 +431,11 @@ body.portfolio-detail-open .portfolio-sketch501 {
 
   .portfolio-detail.is-gallery-three {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-rows: auto auto;
+    grid-template-rows: auto auto auto;
     grid-template-areas:
       'detail-image detail-content'
-      'detail-image detail-thumbs';
+      'detail-image detail-thumbs'
+      'detail-sections detail-sections';
     align-items: start;
     width: min(100%, 72rem);
     margin-inline: auto;
@@ -523,7 +574,8 @@ body.portfolio-detail-open .portfolio-sketch501 {
 
   .portfolio-detail.is-gallery-three .portfolio-detail__content,
   .portfolio-detail.is-gallery-three .portfolio-detail__thumb-row,
-  .portfolio-detail.is-gallery-three .portfolio-detail__gallery {
+  .portfolio-detail.is-gallery-three .portfolio-detail__gallery,
+  .portfolio-detail.is-gallery-three .portfolio-detail__sections {
     width: 100%;
     max-width: none;
     flex: 0 0 auto;
@@ -569,5 +621,18 @@ body.portfolio-detail-open .portfolio-sketch501 {
   .portfolio-detail.is-gallery-three .portfolio-detail__thumb-row .portfolio-detail__img:nth-child(n) {
     grid-column: auto;
     grid-row: auto;
+  }
+
+  .portfolio-detail__section {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .portfolio-detail__section-copy {
+    align-items: flex-start;
+  }
+
+  .portfolio-detail__sections {
+    padding-top: var(--space-8);
   }
 }

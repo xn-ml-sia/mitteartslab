@@ -82,6 +82,7 @@ const buildPhoneScreensFromPool = (detailImages = [], slides = []) => {
  *   title?: string,
  *   subtitle: string,
  *   description: string,
+ *   sections?: Array<{ text: string, image: string | { src: string, alt?: string }, imageAlt?: string }>,
  * }} config
  */
 export const definePortfolioCard = ({
@@ -96,6 +97,7 @@ export const definePortfolioCard = ({
   title,
   subtitle,
   description,
+  sections = [],
 }) => {
   const cardId = id || slugify(company);
   const heroImage = image(hero, `${company} hero`);
@@ -114,6 +116,11 @@ export const definePortfolioCard = ({
       ? screens.map((entry, index) => phoneScreen(entry, index, company))
       : buildPhoneScreensFromPool(detailImages, slides);
 
+  const detailSections = sections.map((entry) => ({
+    text: entry.text,
+    image: image(entry.image, entry.imageAlt || `${company} case study detail`),
+  }));
+
   return {
     id: cardId,
     company,
@@ -123,6 +130,7 @@ export const definePortfolioCard = ({
     title: title || company,
     subtitle,
     description,
+    sections: detailSections,
     slides,
     detailImages,
     detailImageCount: detailImages.length,

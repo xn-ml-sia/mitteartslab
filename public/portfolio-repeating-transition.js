@@ -141,6 +141,44 @@ export const initPortfolioRepeatingTransition = ({
   const panelClose = panel.querySelector('.portfolio-detail__back');
   const page = document.body;
 
+  let sectionsRoot = panel.querySelector('[data-detail-sections]');
+  if (!sectionsRoot) {
+    sectionsRoot = document.createElement('div');
+    sectionsRoot.className = 'portfolio-detail__sections';
+    sectionsRoot.setAttribute('data-detail-sections', '');
+    panel.appendChild(sectionsRoot);
+  }
+
+  const renderDetailSections = (portfolioCase) => {
+    const sections = portfolioCase.sections || [];
+    sectionsRoot.replaceChildren();
+    sectionsRoot.hidden = sections.length === 0;
+
+    sections.forEach((section) => {
+      const block = document.createElement('section');
+      block.className = 'portfolio-detail__section';
+
+      const copy = document.createElement('div');
+      copy.className = 'portfolio-detail__section-copy';
+      const paragraph = document.createElement('p');
+      paragraph.className = 'portfolio-detail__section-text';
+      paragraph.textContent = section.text;
+      copy.appendChild(paragraph);
+
+      const figure = document.createElement('figure');
+      figure.className = 'portfolio-detail__section-media';
+      const img = document.createElement('img');
+      img.src = section.image.src;
+      img.alt = section.image.alt;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      figure.appendChild(img);
+
+      block.append(copy, figure);
+      sectionsRoot.appendChild(block);
+    });
+  };
+
   let thumbRow = panel.querySelector('[data-detail-thumb-row]');
   if (!thumbRow) {
     thumbRow = document.createElement('div');
@@ -322,6 +360,8 @@ export const initPortfolioRepeatingTransition = ({
     });
     thumbRow.hidden = thumbRow.childElementCount === 0;
     thumbRow.classList.toggle('is-single', thumbCount === 1);
+
+    renderDetailSections(portfolioCase);
   };
 
   const runDetailTitleTransition = () => {

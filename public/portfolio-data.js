@@ -13,9 +13,17 @@ export const PORTFOLIO_CASES = [
     thumbs: [{ src: 'defi.png', alt: 'Mezo DeFi product detail' }],
     screens: ['mez-1.png', 'mez-2.png', 'mez-3.png', 'mez-4.png'],
     title: 'powered by blockchain',
-    subtitle: 'make web3 accessible and safe',
+    subtitle: '',
     description:
-      'Product design for Mezo — a bitcoin-native economic layer that helps developers build, grow, and ship DeFi with clearer money flows, onboarding, and trust patterns.',
+      'Mezo — a bitcoin-native economic layer that helps developers build, grow, and ship DeFi with clearer money flows, onboarding, and trusted patterns.',
+    sections: [
+      {
+        text:
+          'Architected and implemented a unified transaction orchestration system to standardize complex, multi-step wallet interactions across diverse product modules (Vaults, Pools, Lock, and Withdrawals). By replacing fragmented signing workflows with a centralized, state-aware progress engine, I reduced user cognitive load and eliminated "transaction anxiety." This standardization ensured a consistent mental model across the entire ecosystem, significantly increasing successful transaction completion rates during high-stakes multi-signature processes.',
+        image: 'defi.png',
+        imageAlt: 'Mezo transaction stepper — progressive signing and fee states',
+      },
+    ],
   }),
 
   definePortfolioCard({
@@ -29,7 +37,7 @@ export const PORTFOLIO_CASES = [
     ],
     screens: ['cs-1.png', 'cs-2.png', 'cs-3.png'],
     title: 'self-sovereign identity',
-    subtitle: '100% private agreements',
+    subtitle: '',
     description:
       'Agreements are signed with SSI Verifiable Credential and then certified on the blockchain.',
   }),
@@ -48,9 +56,17 @@ export const PORTFOLIO_CASES = [
     ],
     screens: ['bf-1.png', 'bf-2.png', 'bf-3.png', 'bf-4.png'],
     title: 'blockfi visa',
-    subtitle: 'Industry First Crypto Reward Credit Card',
+    subtitle: '',
     description:
       'Launched the first crypto card means compliances, regulations and many edge cases need to be design for that first mover advantage.',
+    sections: [
+      {
+        text:
+          'Designed the user experience for a pioneering Bitcoin-backed credit product, focusing on bridging the gap between complex regulatory requirements and seamless consumer UX. Developed a robust framework for progressive disclosure to manage legal compliance without compromising usability. Implemented a transparent status-tracking system that provided real-time feedback throughout the application and card activation journey, directly contributing to higher user retention and reduced friction in the post-approval lifecycle.',
+        image: 'bf-thumb-1.png',
+        imageAlt: 'BlockFi rewards credit card — app earn and redeem flows',
+      },
+    ],
   }),
 ];
 
