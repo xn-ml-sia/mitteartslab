@@ -18,6 +18,7 @@ body.portfolio-detail-open {
 }
 
 body.portfolio-detail-open .chapter-header,
+body.portfolio-detail-open .portfolio-intro,
 body.portfolio-detail-open .portfolio-sketch501 {
   opacity: 0;
   visibility: hidden;
@@ -25,6 +26,7 @@ body.portfolio-detail-open .portfolio-sketch501 {
 }
 
 .portfolio-page .chapter-header,
+.portfolio-page .portfolio-intro,
 .portfolio-page .portfolio-sketch501 {
   transition: opacity 0.45s ease, visibility 0.45s;
 }
