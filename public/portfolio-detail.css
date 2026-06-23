@@ -3,6 +3,7 @@
 .portfolio-page {
   --portfolio-detail-padding: clamp(var(--space-4), 3vw, var(--space-6));
   --portfolio-detail-gap: var(--space-4);
+  --portfolio-detail-sections-gap: 10rem;
   --portfolio-detail-split-gap: clamp(var(--space-10), 6vw, var(--space-16));
   --portfolio-detail-cell-gap: var(--space-2);
   --portfolio-detail-back-target: var(--space-10);
@@ -338,7 +339,7 @@ body.portfolio-detail-open .portfolio-sketch501 {
   flex-direction: column;
   gap: clamp(var(--space-8), 6vw, var(--space-16));
   width: 100%;
-  padding-top: clamp(var(--space-6), 4vw, var(--space-12));
+  padding-top: var(--portfolio-detail-sections-gap);
   text-transform: none;
 }
 
@@ -633,6 +634,6 @@ body.portfolio-detail-open .portfolio-sketch501 {
   }
 
   .portfolio-detail__sections {
-    padding-top: var(--space-8);
+    padding-top: var(--portfolio-detail-sections-gap);
   }
 }

@@ -20,7 +20,7 @@ export const PORTFOLIO_CASES = [
       {
         text:
           'Architected and implemented a unified transaction orchestration system to standardize complex, multi-step wallet interactions across diverse product modules (Vaults, Pools, Lock, and Withdrawals). By replacing fragmented signing workflows with a centralized, state-aware progress engine, I reduced user cognitive load and eliminated "transaction anxiety." This standardization ensured a consistent mental model across the entire ecosystem, significantly increasing successful transaction completion rates during high-stakes multi-signature processes.',
-        image: 'defi.png',
+        image: 'mezo-thumb-1.png',
         imageAlt: 'Mezo transaction stepper — progressive signing and fee states',
       },
     ],
@@ -40,6 +40,14 @@ export const PORTFOLIO_CASES = [
     subtitle: '',
     description:
       'Agreements are signed with SSI Verifiable Credential and then certified on the blockchain.',
+    sections: [
+      {
+        text:
+          'Most identity systems rely on centralized authorities that create single points of failure and massive privacy risks. The challenge was to architect a contract-signing protocol that achieves verifiable legal identity while adhering to the principle of Self-Sovereign Identity (SSI)—where users maintain absolute control over their own credentials and data.',
+        image: 'cs-mock-3.png',
+        imageAlt: 'Csign identity verification — private agreement signing flow',
+      },
+    ],
   }),
 
   definePortfolioCard({
@@ -63,7 +71,7 @@ export const PORTFOLIO_CASES = [
       {
         text:
           'Designed the user experience for a pioneering Bitcoin-backed credit product, focusing on bridging the gap between complex regulatory requirements and seamless consumer UX. Developed a robust framework for progressive disclosure to manage legal compliance without compromising usability. Implemented a transparent status-tracking system that provided real-time feedback throughout the application and card activation journey, directly contributing to higher user retention and reduced friction in the post-approval lifecycle.',
-        image: 'bf-thumb-1.png',
+        image: 'bf-thumb-3.png',
         imageAlt: 'BlockFi rewards credit card — app earn and redeem flows',
       },
     ],
