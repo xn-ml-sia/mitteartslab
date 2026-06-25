@@ -66,7 +66,7 @@ export const PORTFOLIO_CASES = [
     title: 'blockfi visa',
     subtitle: '',
     description:
-      'Launched the first crypto card means compliances, regulations and many edge cases need to be design for that first mover advantage.',
+      'Launching the first crypto card means compliances, regulations and many edge cases need to be design for that first mover advantage.',
     sections: [
       {
         text:

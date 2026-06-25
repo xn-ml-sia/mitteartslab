@@ -35,6 +35,35 @@
   display: block;
 }
 
+.home-tagline {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: clamp(var(--space-4), 5vw, var(--space-10));
+  pointer-events: none;
+  max-width: none;
+  font-family: var(--font-family-mono);
+  font-size: clamp(2.25rem, 9vw, 6.5rem);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-align: center;
+  text-transform: uppercase;
+  text-wrap: balance;
+  max-width: min(92vw, 16em);
+  color: var(--ink-strong);
+  transition: opacity 180ms ease;
+}
+
+.home-mode.home-menu-open .home-tagline {
+  opacity: 0;
+}
+
 .home-ascii-layer {
   position: absolute;
   inset: 0;
@@ -147,12 +176,12 @@
 }
 
 .home-brand {
+  display: none;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 3;
-  display: flex;
   align-items: center;
   gap: 8px;
   pointer-events: none;
@@ -387,6 +416,12 @@
 }
 
 @media (max-width: 768px) {
+  .home-tagline {
+    font-size: clamp(1.85rem, 10.5vw, 3.25rem);
+    letter-spacing: -0.02em;
+    max-width: min(88vw, 14em);
+  }
+
   .home-brand-name {
     display: none;
   }

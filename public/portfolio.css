@@ -59,7 +59,9 @@ body.portfolio-page .portfolio-sketch501 .l-item rt {
   line-height: 1.1;
   letter-spacing: -0.02em;
   text-align: center;
-  transition: color 0.45s ease;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.45s ease, visibility 0.45s ease;
 }
 
 .portfolio-intro__lead {
@@ -76,11 +78,9 @@ body.portfolio-page .portfolio-sketch501 .l-item rt {
 }
 
 body.portfolio-page--work-hover .portfolio-intro {
-  color: #fff;
-}
-
-body.portfolio-page--work-hover .portfolio-intro__domains {
-  opacity: 0.88;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .portfolio-main {
@@ -135,6 +135,10 @@ body.portfolio-page--work-hover .portfolio-intro__domains {
   .portfolio-work__thumb img,
   .portfolio-work__detail {
     transition: none;
+  }
+
+  .portfolio-intro {
+    transition: opacity 0.2s ease, visibility 0.2s ease;
   }
 }
 

@@ -2,9 +2,9 @@
 
 :root {
   /* --- surfaces --- */
-  --rubin-ivory: #f5ecde;
+  --rubin-ivory: #faf8f5;
   --background-color: var(--rubin-ivory);
-  --portfolio-surface: #ececec;
+  --portfolio-surface: #f5f5f5;
 
   /* --- ink --- */
   --text-color: rgba(0, 0, 0, 0.85);
