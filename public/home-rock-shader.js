@@ -63,27 +63,62 @@ float voxelMLength(vec2 uv) {
     return max(abs(uv.x), abs(uv.y));
 }
 
+float spinPhase() {
+    const float SPIN_CYCLE = 0.0446215; // 0.28 / (2*pi), ~22s per full morph loop
+    return fract(iTime * SPIN_CYCLE);
+}
+
+float spinSegment() {
+    return spinPhase() * 3.0;
+}
+
+vec2 morphWeights() {
+    float seg = floor(spinSegment());
+    float local = fract(spinSegment());
+    const float blendStart = 0.68;
+
+    float voxelMix = 0.0;
+    float fractalMix = 0.0;
+
+    if (seg < 0.5) {
+        // Voxel -> stone
+        voxelMix = 1.0 - smoothstep(blendStart, 1.0, local);
+    } else if (seg < 1.5) {
+        // Stone -> smooth
+        fractalMix = smoothstep(blendStart, 1.0, local);
+    } else {
+        // Smooth -> voxel (wraps seamlessly back to segment 0)
+        fractalMix = 1.0 - smoothstep(blendStart, 1.0, local);
+        voxelMix = smoothstep(blendStart, 1.0, local);
+    }
+
+    return vec2(voxelMix, fractalMix);
+}
+
 float voxelEffectStrength() {
-    float effectActive = step(0.5, iMouse.w);
-    float effectElapsed = max(0.0, iMouse.w - 1.0);
-    float fadeIn = smoothstep(0.0, 0.22, effectElapsed);
-    float fadeOut = 1.0 - smoothstep(1.35, 2.0, effectElapsed);
-    return effectActive * clamp(fadeIn * fadeOut, 0.0, 1.0);
+    return morphWeights().x;
 }
 
 float voxelEffectElapsed() {
-    return max(0.0, iMouse.w - 1.0);
+    return iTime * 0.35;
 }
 
+// Bell spread within each voxel segment: tight at both ends, widest mid-phase.
+// Ends at spread=0 so seg2 completion matches seg0 start without a loop pop.
+float voxelSpreadProgress() {
+    float seg = floor(spinSegment());
+    float local = fract(spinSegment());
 
-float voxelDissolveProgress() {
-    float e = voxelEffectElapsed();
-    return clamp((e - 0.12) / 1.68, 0.0, 1.0);
+    if (seg < 0.5 || seg > 1.5) {
+        float bell = sin(local * 3.14159265);
+        return bell * bell;
+    }
+    return 0.0;
 }
 
 float voxelCompressionAmount() {
-    float p = voxelDissolveProgress();
-    return smoothstep(0.0, 0.85, p);
+    float spread = voxelSpreadProgress();
+    return smoothstep(0.0, 0.85, spread);
 }
 
 float voxelCellNoise(vec3 p) {
@@ -406,9 +441,7 @@ float rock(vec3 p) {
 }
 
 float morphAmount() {
-    // Start from original stone at rotation/time zero, then morph.
-    float cycle = 0.5 + 0.5 * sin(iTime * 0.28 - 1.5707963);
-    return smoothstep(0.0, 0.9, cycle);
+    return morphWeights().y;
 }
 
 float fractalShape(vec3 p, float time) {
@@ -417,17 +450,17 @@ float fractalShape(vec3 p, float time) {
 
 float map(vec3 p) {
     float voxelize = voxelEffectStrength();
-    float dissolveP = voxelDissolveProgress();
+    float spreadP = voxelSpreadProgress();
     float compress = voxelCompressionAmount();
     float elapsed = voxelEffectElapsed();
     vec3 pCell = floor(p * 14.0 + 0.5) / 14.0;
-    vec3 pVoxel = (pCell + voxelBreakOffset(pCell, dissolveP, elapsed)) * mix(1.0, 0.82, compress);
+    vec3 pVoxel = (pCell + voxelBreakOffset(pCell, spreadP, elapsed)) * mix(1.0, 0.82, compress);
     p = mix(p, pVoxel, voxelize);
     float stoneD = rock(p) + fbm3(p*4.0,0.4,2.96) * DISPLACEMENT;
     float fractalD = fractalShape(p, iTime);
     float d = mix(stoneD, fractalD, morphAmount());
     float cell = voxelCellNoise(pCell);
-    float dissolveMask = smoothstep(cell - 0.18, cell + 0.18, dissolveP);
+    float dissolveMask = smoothstep(cell - 0.18, cell + 0.18, spreadP);
     d += voxelize * dissolveMask * 0.65;
     d = boolUnion(d,plane(p,vec4(0.0,1.0,0.0,1.0)));
     return d;
@@ -435,17 +468,17 @@ float map(vec3 p) {
 
 float map_detailed(vec3 p) {
     float voxelize = voxelEffectStrength();
-    float dissolveP = voxelDissolveProgress();
+    float spreadP = voxelSpreadProgress();
     float compress = voxelCompressionAmount();
     float elapsed = voxelEffectElapsed();
     vec3 pCell = floor(p * 16.0 + 0.5) / 16.0;
-    vec3 pVoxel = (pCell + voxelBreakOffset(pCell, dissolveP, elapsed)) * mix(1.0, 0.82, compress);
+    vec3 pVoxel = (pCell + voxelBreakOffset(pCell, spreadP, elapsed)) * mix(1.0, 0.82, compress);
     p = mix(p, pVoxel, voxelize);
     float stoneD = rock(p) + fbm3_high(p*4.0,0.4,2.96) * DISPLACEMENT;
     float fractalD = fractalShape(p * 1.03, iTime);
     float d = mix(stoneD, fractalD, morphAmount());
     float cell = voxelCellNoise(pCell);
-    float dissolveMask = smoothstep(cell - 0.18, cell + 0.18, dissolveP);
+    float dissolveMask = smoothstep(cell - 0.18, cell + 0.18, spreadP);
     d += voxelize * dissolveMask * 0.75;
     d = boolUnion(d,plane(p,vec4(0.0,1.0,0.0,1.0)));
     return d;
@@ -541,7 +574,7 @@ vec3 getPixel(in vec2 coord, float time) {
     vec2 occ = getOcclusion(p,n);
     vec3 light = normalize(vec3(0.0,1.0,0.0)); 
          
-    float effectElapsed = max(0.0, iMouse.w - 1.0);
+    float effectElapsed = voxelEffectElapsed();
     vec3 defaultBg = vec3(0.9, 0.86, 0.8); // CSS: --rubin-ivory (#f5ecde)
     vec3 color = defaultBg;
 
