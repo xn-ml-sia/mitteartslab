@@ -2,6 +2,7 @@ import { HOME_ROCK_SHADER } from './home-rock-shader.js';
 import { HOME_CONFIG } from './home-config.js';
 import { HomeState } from './home-state.js';
 import { HomeRenderer } from './home-renderer.js';
+import { HeroOrchestrator } from './home-orchestrator.js';
 import { initHomeMenus } from './home-menu.js';
 import { initHomeAscii } from './home-ascii.js';
 import { initHomeSmaugTooltip } from './home-smaug-tooltip.js';
@@ -64,16 +65,14 @@ if (canParallax && hero) {
 
 const tagline = initHomeTagline({
   root: document,
-  getTSec: () => taglineTimeSec,
+  morphCycleSec: HOME_CONFIG.morphCycleSec,
+  taglineConfig: HOME_CONFIG.tagline,
   getParallax: () => ({
-    x: pointer.x * HOME_CONFIG.taglineParallaxX,
-    y: pointer.y * HOME_CONFIG.taglineParallaxY,
+    x: pointer.x * HOME_CONFIG.parallax.taglineX,
+    y: pointer.y * HOME_CONFIG.parallax.taglineY,
   }),
   reducedMotion: prefersReducedMotion,
 });
-
-let renderTimeSec = 0;
-let taglineTimeSec = 0;
 
 const isParallaxEnabled = () =>
   canParallax && !document.body.classList.contains('home-menu-open');
@@ -94,19 +93,20 @@ const smoothPointer = () => {
 if (canvas) {
   const state = new HomeState(HOME_CONFIG);
   const renderer = new HomeRenderer(canvas, HOME_ROCK_SHADER, (nowMs) => {
-    renderTimeSec = state.getRenderTimeSec(nowMs, prefersReducedMotion);
-    taglineTimeSec = state.getTaglineTimeSec(nowMs, prefersReducedMotion);
     smoothPointer();
     tagline?.update();
 
     return {
-      tSec: renderTimeSec,
+      tSec: state.getRenderTimeSec(nowMs, prefersReducedMotion),
+      morphPhase: state.getMorphPhase(nowMs, prefersReducedMotion),
       mouse: [pointer.x, pointer.y, isParallaxEnabled() ? 1 : 0, 0],
       continuous: !prefersReducedMotion || state.isEffectActive(nowMs, prefersReducedMotion),
     };
   });
 
   if (renderer.isReady()) {
+    const orchestrator = new HeroOrchestrator({ state, renderer, tagline });
+
     const onResize = () => {
       state.syncScroll();
       renderer.resize();
@@ -126,19 +126,11 @@ if (canvas) {
       if (visible) renderer.requestFrame();
     };
 
-    const restartShader = () => {
-      state.restart();
-      renderer.restart();
-      tagline?.reset();
-    };
-
-    renderer.restart();
-    state.restart();
-    tagline?.reset();
+    orchestrator.restart();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize, { passive: true });
     document.addEventListener('visibilitychange', onVisibility);
-    window.addEventListener('load', restartShader);
-    window.addEventListener('pageshow', restartShader);
+    window.addEventListener('load', () => orchestrator.restart());
+    window.addEventListener('pageshow', () => orchestrator.restart());
   }
 }

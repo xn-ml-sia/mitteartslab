@@ -27,7 +27,13 @@ export class HomeRenderer {
     const dtSec = Math.min(0.1, Math.max(0, (nowMs - this.lastMs) / 1000));
     this.lastMs = nowMs;
     const frameState = this.getFrameState(nowMs);
-    this.runner.render(frameState.tSec, dtSec, this.frame, frameState.mouse);
+    this.runner.render(
+      frameState.tSec,
+      dtSec,
+      this.frame,
+      frameState.mouse,
+      frameState.morphPhase ?? 0,
+    );
     this.frame += 1;
     if (frameState.continuous) {
       this.renderQueued = true;

@@ -1,8 +1,11 @@
+import { HeroClock } from './home-clock.js';
+import { getSpinPhase } from './home-morph-sync.js';
+
 export class HomeState {
   constructor(config) {
     this.config = config;
-    this.scrollRot = window.scrollY * this.config.scrollRotationScale;
-    this.autoStartMs = performance.now();
+    this.clock = new HeroClock(config);
+    this.clock.scrollRot = window.scrollY * config.scrollRotationScale;
     this.lastScrollY = window.scrollY;
     this.isScrollLooping = false;
     this.effectStartMs = 0;
@@ -11,7 +14,9 @@ export class HomeState {
   }
 
   getTriggerIndex() {
-    const turns = Math.abs(this.scrollRot) / (this.config.fullRotation * this.config.rotationTriggerMultiplier);
+    const turns =
+      Math.abs(this.clock.scrollRot) /
+      (this.config.fullRotation * this.config.rotationTriggerMultiplier);
     return Math.floor(turns);
   }
 
@@ -20,7 +25,7 @@ export class HomeState {
     const nextY = window.scrollY;
     const deltaY = nextY - this.lastScrollY;
     this.lastScrollY = nextY;
-    this.scrollRot += deltaY * this.config.scrollRotationScale;
+    this.clock.addScrollDelta(deltaY);
   }
 
   loopScrollIfNeeded() {
@@ -37,7 +42,10 @@ export class HomeState {
       targetY = maxScroll - this.config.scrollEdgeBuffer - this.config.scrollLoopPadding - underflow;
     }
     if (targetY === null) return;
-    targetY = Math.max(this.config.scrollLoopPadding, Math.min(maxScroll - this.config.scrollLoopPadding, targetY));
+    targetY = Math.max(
+      this.config.scrollLoopPadding,
+      Math.min(maxScroll - this.config.scrollLoopPadding, targetY),
+    );
     this.isScrollLooping = true;
     window.scrollTo(0, targetY);
     this.lastScrollY = targetY;
@@ -69,21 +77,22 @@ export class HomeState {
 
   getRenderTimeSec(nowMs, prefersReducedMotion) {
     if (prefersReducedMotion) return 0;
-    const autoElapsedSec = Math.max(0, (nowMs - this.autoStartMs) / 1000);
-    return this.scrollRot + autoElapsedSec * this.config.autoRotationSpeed;
+    return this.clock.morphSec(nowMs);
   }
 
-  /** Wall-clock morph time — excludes scroll so reload hold is not skipped */
   getTaglineTimeSec(nowMs, prefersReducedMotion) {
     if (prefersReducedMotion) return 0;
-    const autoElapsedSec = Math.max(0, (nowMs - this.autoStartMs) / 1000);
-    return autoElapsedSec * this.config.autoRotationSpeed;
+    return this.clock.wallSec(nowMs);
+  }
+
+  getMorphPhase(nowMs, prefersReducedMotion) {
+    if (prefersReducedMotion) return 0;
+    return getSpinPhase(this.clock.morphSec(nowMs));
   }
 
   restart() {
     this.lastScrollY = window.scrollY;
-    this.scrollRot = 0;
-    this.autoStartMs = performance.now();
+    this.clock.restart();
     this.effectStartMs = 0;
     this.effectUntilMs = 0;
     this.lastTriggerIndex = 0;

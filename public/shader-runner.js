@@ -5,6 +5,7 @@ uniform float iTime;
 uniform float iTimeDelta;
 uniform int iFrame;
 uniform vec4 iMouse;
+uniform float iMorphPhase;
 uniform sampler2D iChannel0;
 uniform sampler2D iChannel1;
 uniform sampler2D iChannel2;
@@ -76,6 +77,7 @@ void main() {
       uTimeDelta: gl.getUniformLocation(program, 'iTimeDelta'),
       uFrame: gl.getUniformLocation(program, 'iFrame'),
       uMouse: gl.getUniformLocation(program, 'iMouse'),
+      uMorphPhase: gl.getUniformLocation(program, 'iMorphPhase'),
       uChan0: gl.getUniformLocation(program, 'iChannel0'),
       uChan1: gl.getUniformLocation(program, 'iChannel1'),
       uChan2: gl.getUniformLocation(program, 'iChannel2'),
@@ -231,7 +233,7 @@ void main() {
     }
   };
 
-  const bindAndUniform = (pass, tSec, dtSec, frame, mouse, chan0Override = null) => {
+  const bindAndUniform = (pass, tSec, dtSec, frame, mouse, morphPhase = 0, chan0Override = null) => {
     gl.useProgram(pass.program);
     gl.bindVertexArray(vao);
     gl.activeTexture(gl.TEXTURE0);
@@ -262,6 +264,7 @@ void main() {
     if (pass.uFractureAmount) gl.uniform1f(pass.uFractureAmount, 0.2);
     if (pass.uGlossiness) gl.uniform1f(pass.uGlossiness, 0.4);
     if (pass.uScatter) gl.uniform1f(pass.uScatter, 0.1);
+    if (pass.uMorphPhase) gl.uniform1f(pass.uMorphPhase, morphPhase);
     if (pass.uMouse) {
       const mx = mouse[0];
       const my = mouse[1];
@@ -271,21 +274,21 @@ void main() {
     }
   };
 
-  const render = (tSec, dtSec, frame, mouse) => {
+  const render = (tSec, dtSec, frame, mouse, morphPhase = 0) => {
     if (!isMultipass) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      bindAndUniform(passA, tSec, dtSec, frame, mouse);
+      bindAndUniform(passA, tSec, dtSec, frame, mouse, morphPhase);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       return;
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, rtA.fbo);
-    bindAndUniform(passA, tSec, dtSec, frame, mouse);
+    bindAndUniform(passA, tSec, dtSec, frame, mouse, morphPhase);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.bindFramebuffer(gl.FRAMEBUFFER, rtB.fbo);
-    bindAndUniform(passB, tSec, dtSec, frame, mouse, rtA.tex);
+    bindAndUniform(passB, tSec, dtSec, frame, mouse, morphPhase, rtA.tex);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    bindAndUniform(passImage, tSec, dtSec, frame, mouse, rtB.tex);
+    bindAndUniform(passImage, tSec, dtSec, frame, mouse, morphPhase, rtB.tex);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   };
 

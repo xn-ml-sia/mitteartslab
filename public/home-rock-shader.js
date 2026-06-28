@@ -64,8 +64,7 @@ float voxelMLength(vec2 uv) {
 }
 
 float spinPhase() {
-    const float SPIN_CYCLE = 0.1111111; // autoRotationSpeed/morphCycleSec — sync: public/home-morph-sync.js
-    return fract(iTime * SPIN_CYCLE);
+    return iMorphPhase;
 }
 
 vec2 segmentLocal(float phase) {

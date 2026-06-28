@@ -1,9 +1,16 @@
-import { getMorphState, getTaglineRevealIndex } from './home-morph-sync.js';
+import { getTaglineWordStartTimes } from './home-morph-sync.js';
 import { HOME_CONFIG } from './home-config.js';
+
+const measureLineHeight = (words) => {
+  const sample = words[0];
+  if (!sample) return 0;
+  return sample.getBoundingClientRect().height;
+};
 
 export const initHomeTagline = ({
   root,
-  getTSec,
+  morphCycleSec = HOME_CONFIG.morphCycleSec,
+  taglineConfig = HOME_CONFIG.tagline,
   getParallax,
   reducedMotion = false,
 } = {}) => {
@@ -13,33 +20,22 @@ export const initHomeTagline = ({
 
   const words = Array.from(track.querySelectorAll('.home-tagline__word'));
   const gsap = typeof window !== 'undefined' ? window.gsap : undefined;
-  const duration = HOME_CONFIG.taglineWordDuration;
-  const trackStartY = HOME_CONFIG.taglineTrackStartYPercent ?? 95;
-  const trackShiftY = HOME_CONFIG.taglineTrackShiftYPercent ?? 25;
+  const { duration, enter, track: trackAnim } = taglineConfig.animation;
 
-  let lastRevealIndex = -1;
-  let lastPhase = null;
+  let lineHeight = 0;
+  let cycleTimeline = null;
 
-  const resetTrack = () => {
-    if (gsap) {
-      gsap.set(track, { yPercent: trackStartY });
-    } else {
-      track.style.transform = '';
-    }
+  const measureLayout = () => {
+    lineHeight = measureLineHeight(words);
   };
 
-  if (gsap) {
-    resetTrack();
-    gsap.set(words, { opacity: 0, yPercent: 0, scale: 1, force3D: true });
-  }
-
-  const resetStack = () => {
+  const resetVisuals = () => {
     if (gsap) {
       gsap.killTweensOf([track, ...words]);
-      resetTrack();
-      gsap.set(words, { opacity: 0, yPercent: 0, scale: 1 });
+      gsap.set(track, { y: 0 });
+      gsap.set(words, { opacity: 0, yPercent: 0, scale: 1, force3D: true });
     } else {
-      resetTrack();
+      track.style.transform = '';
       words.forEach((word) => {
         word.style.opacity = '0';
         word.style.transform = '';
@@ -47,43 +43,76 @@ export const initHomeTagline = ({
     }
     words.forEach((word) => word.classList.remove('is-revealed'));
     clip.classList.add('is-idle');
-    lastRevealIndex = -1;
   };
 
   const revealWord = (index) => {
     const word = words[index];
-    if (!word) return;
+    if (!word || !gsap) return;
 
     word.classList.add('is-revealed');
-
-    if (!gsap) {
-      word.style.opacity = '1';
-      return;
-    }
 
     const tl = gsap.timeline({ defaults: { duration, overwrite: 'auto' } });
 
     tl.set(word, { opacity: 1, force3D: true }).from(
       word,
       {
-        yPercent: 120,
-        scale: 0.6,
-        ease: 'power3.out',
+        yPercent: enter.yPercent,
+        scale: enter.scale,
+        ease: enter.ease,
       },
       0,
     );
 
-    if (index > 0) {
+    if (index > 0 && lineHeight > 0) {
       tl.to(
         track,
         {
-          yPercent: `-=${trackShiftY}`,
-          ease: 'power2.out',
+          y: -index * lineHeight,
+          ease: trackAnim.ease,
         },
         0,
       );
     }
   };
+
+  const buildCycleTimeline = () => {
+    const starts = getTaglineWordStartTimes(taglineConfig);
+    const tl = gsap.timeline({
+      repeat: -1,
+      onRepeat: resetVisuals,
+    });
+
+    tl.call(() => clip.classList.remove('is-idle'), null, taglineConfig.holdSec);
+
+    starts.forEach((at, index) => {
+      tl.call(() => revealWord(index), null, at);
+    });
+
+    const pad = morphCycleSec - tl.duration();
+    if (pad > 0) {
+      tl.to({}, { duration: pad });
+    }
+
+    return tl;
+  };
+
+  const startCycle = () => {
+    if (!gsap) return;
+    cycleTimeline?.kill();
+    resetVisuals();
+    measureLayout();
+    cycleTimeline = buildCycleTimeline();
+    cycleTimeline.play(0);
+  };
+
+  measureLayout();
+  if (document.fonts?.ready) {
+    document.fonts.ready.then(measureLayout);
+  }
+  window.addEventListener('resize', () => {
+    measureLayout();
+    if (cycleTimeline) startCycle();
+  }, { passive: true });
 
   if (reducedMotion) {
     clip.classList.add('is-reduced-static');
@@ -95,27 +124,14 @@ export const initHomeTagline = ({
   }
 
   const update = () => {
-    const tSec = getTSec();
-    const state = getMorphState(tSec);
-    const revealIndex = getTaglineRevealIndex(tSec);
     const parallax = getParallax?.() ?? { x: 0, y: 0 };
-
-    clip.classList.toggle('is-idle', revealIndex < 0);
-
-    if (lastPhase !== null && state.phase < lastPhase - 0.5) {
-      resetStack();
-    }
-    lastPhase = state.phase;
-
-    if (revealIndex > lastRevealIndex) {
-      const nextIndex = lastRevealIndex + 1;
-      revealWord(nextIndex);
-      lastRevealIndex = nextIndex;
-    }
-
     clip.style.setProperty('--tagline-parallax-x', `${parallax.x}px`);
     clip.style.setProperty('--tagline-parallax-y', `${parallax.y}px`);
   };
 
-  return { update, reset: resetStack };
+  const reset = () => {
+    startCycle();
+  };
+
+  return { update, reset };
 };

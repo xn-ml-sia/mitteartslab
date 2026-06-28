@@ -48,7 +48,7 @@
   transform: translate(var(--tagline-parallax-x, 0px), var(--tagline-parallax-y, 0px));
   --tagline-parallax-x: 0px;
   --tagline-parallax-y: 0px;
-  padding-top: clamp(0.75rem, 5vh, 3rem);
+  --tagline-offset-y: clamp(16rem, 42vh, 32rem);
 }
 
 .home-tagline {
@@ -57,6 +57,7 @@
   width: 100%;
   max-width: min(92vw, 36em);
   margin: 0;
+  margin-top: var(--tagline-offset-y);
   padding: 0 clamp(var(--space-4), 5vw, var(--space-10));
   box-sizing: border-box;
   font-family: var(--font-family-mono);
@@ -82,6 +83,7 @@
 .home-tagline__word {
   display: block;
   width: fit-content;
+  min-height: 1lh;
   margin: 0;
   opacity: 0;
   user-select: none;
@@ -463,8 +465,12 @@
 }
 
 @media (max-width: 768px) {
+  .home-tagline-clip {
+    --tagline-offset-y: clamp(14rem, 38vh, 28rem);
+  }
+
   .home-tagline {
-    font-size: clamp(1rem, 5vw, 1.85rem);
+    font-size: clamp(1.25rem, 6.5vw, 2.35rem);
     letter-spacing: -0.02em;
   }
 

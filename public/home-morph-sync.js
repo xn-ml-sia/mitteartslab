@@ -1,6 +1,6 @@
 import { HOME_CONFIG } from './home-config.js';
 
-/** Morph phase math — keep SPIN_CYCLE + SEGMENT_BREAKS in sync with home-rock-shader.js */
+/** Morph phase math — segment breaks shared with home-rock-shader.js via iMorphPhase uniform */
 
 export const SPIN_CYCLE = 1 / (HOME_CONFIG.morphCycleSec * HOME_CONFIG.autoRotationSpeed);
 export const SEGMENT_BREAKS = Object.freeze([0, 0.42, 0.65, 1]);
@@ -13,8 +13,8 @@ const smoothstep = (edge0, edge1, t) => {
   return x * x * (3 - 2 * x);
 };
 
-export const getSpinPhase = (tSec) => {
-  const phase = tSec * SPIN_CYCLE;
+export const getSpinPhase = (morphSec) => {
+  const phase = morphSec * SPIN_CYCLE;
   return phase - Math.floor(phase);
 };
 
@@ -45,8 +45,8 @@ export const getMorphWeights = (segment, local) => {
   return { voxelMix, fractalMix };
 };
 
-export const getMorphState = (tSec) => {
-  const phase = getSpinPhase(tSec);
+export const getMorphState = (morphSec) => {
+  const phase = getSpinPhase(morphSec);
   const { segment, local } = getSegmentLocal(phase);
   const { voxelMix, fractalMix } = getMorphWeights(segment, local);
 
@@ -70,16 +70,17 @@ export const getMorphState = (tSec) => {
   };
 };
 
-export const getTaglineWordStartTimes = () => {
-  const hold = HOME_CONFIG.taglineHoldSec ?? 0;
-  return HOME_CONFIG.taglineWordStarts.map((start) => start + hold);
+export const getTaglineWordStartTimes = (taglineConfig = HOME_CONFIG.tagline) => {
+  const { holdSec, wordStarts } = taglineConfig;
+  return wordStarts.map((start) => start + holdSec);
 };
 
-export const getTaglineCycleTimeSec = (tSec) => getSpinPhase(tSec) * HOME_CONFIG.morphCycleSec;
+export const getTaglineCycleTimeSec = (wallSec) =>
+  getSpinPhase(wallSec) * HOME_CONFIG.morphCycleSec;
 
-export const getTaglineRevealIndex = (tSec) => {
-  const cycleT = getTaglineCycleTimeSec(tSec);
-  const starts = getTaglineWordStartTimes();
+export const getTaglineRevealIndex = (wallSec, taglineConfig = HOME_CONFIG.tagline) => {
+  const cycleT = getTaglineCycleTimeSec(wallSec);
+  const starts = getTaglineWordStartTimes(taglineConfig);
   if (cycleT + 1e-3 < starts[0]) return -1;
   for (let i = starts.length - 1; i >= 0; i -= 1) {
     if (cycleT + 1e-3 >= starts[i]) return i;
