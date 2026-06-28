@@ -64,30 +64,32 @@ float voxelMLength(vec2 uv) {
 }
 
 float spinPhase() {
-    const float SPIN_CYCLE = 0.0446215; // 0.28 / (2*pi), ~22s per full morph loop
+    const float SPIN_CYCLE = 0.1111111; // autoRotationSpeed/morphCycleSec — sync: public/home-morph-sync.js
     return fract(iTime * SPIN_CYCLE);
 }
 
-float spinSegment() {
-    return spinPhase() * 3.0;
+vec2 segmentLocal(float phase) {
+    const float B1 = 0.42;
+    const float B2 = 0.65;
+    if (phase < B1) return vec2(0.0, phase / B1);
+    if (phase < B2) return vec2(1.0, (phase - B1) / (B2 - B1));
+    return vec2(2.0, (phase - B2) / (1.0 - B2));
 }
 
 vec2 morphWeights() {
-    float seg = floor(spinSegment());
-    float local = fract(spinSegment());
+    vec2 segLocal = segmentLocal(spinPhase());
+    float seg = segLocal.x;
+    float local = segLocal.y;
     const float blendStart = 0.68;
 
     float voxelMix = 0.0;
     float fractalMix = 0.0;
 
     if (seg < 0.5) {
-        // Voxel -> stone
         voxelMix = 1.0 - smoothstep(blendStart, 1.0, local);
     } else if (seg < 1.5) {
-        // Stone -> smooth
         fractalMix = smoothstep(blendStart, 1.0, local);
     } else {
-        // Smooth -> voxel (wraps seamlessly back to segment 0)
         fractalMix = 1.0 - smoothstep(blendStart, 1.0, local);
         voxelMix = smoothstep(blendStart, 1.0, local);
     }
@@ -103,15 +105,18 @@ float voxelEffectElapsed() {
     return iTime * 0.35;
 }
 
-// Bell spread within each voxel segment: tight at both ends, widest mid-phase.
-// Ends at spread=0 so seg2 completion matches seg0 start without a loop pop.
+// Wide at phase start, tightens into the next form (sync: home-morph-sync.js)
 float voxelSpreadProgress() {
-    float seg = floor(spinSegment());
-    float local = fract(spinSegment());
+    vec2 segLocal = segmentLocal(spinPhase());
+    float seg = segLocal.x;
+    float local = segLocal.y;
+    float eased = smoothstep(0.0, 1.0, local);
 
-    if (seg < 0.5 || seg > 1.5) {
-        float bell = sin(local * 3.14159265);
-        return bell * bell;
+    if (seg < 0.5) {
+        return pow(1.0 - eased, 1.4);
+    }
+    if (seg > 1.5) {
+        return eased;
     }
     return 0.0;
 }
@@ -130,8 +135,10 @@ vec3 voxelBreakOffset(vec3 cellPos, float progress, float elapsed) {
     float seed = fract(sin(dot(cellPos, vec3(91.3, 17.7, 43.1))) * 43758.5453);
     float ang = seed * 6.28318 + elapsed * (0.65 + seed * 0.85);
     vec3 dir = normalize(vec3(cos(ang), 0.35 + seed * 0.75, sin(ang * 1.13)));
-    float spread = (0.04 + 0.2 * seed) * progress * progress;
-    return dir * spread;
+    float spreadAmt = (0.06 + 0.28 * seed) * progress * progress;
+    vec2 mouseBias = iMouse.xy * 0.085 * progress;
+    dir.xy += mouseBias;
+    return dir * spreadAmt;
 }
 
 vec3 voxelizeStoneColor(vec3 pos, float elapsed) {
@@ -445,7 +452,10 @@ float morphAmount() {
 }
 
 float fractalShape(vec3 p, float time) {
-    return fxField(p * 1.12, time * 0.45) - 0.075;
+    vec2 mw = morphWeights();
+    vec3 q = p;
+    q.xy += iMouse.xy * 0.05 * mw.y * step(0.5, iMouse.z);
+    return fxField(q * 1.12, time * 0.45) - 0.075;
 }
 
 float map(vec3 p) {
@@ -558,8 +568,11 @@ vec3 getPixel(in vec2 coord, float time) {
     uv.x *= iResolution.x / iResolution.y;
         
     // ray
-    vec3 ang = vec3(0.0,0.2,time);
-    if(iMouse.z > 0.0) ang = vec3(0.0,clamp(2.0-iMouse.y*0.01,0.0,3.1415),iMouse.x*0.01);
+    vec3 ang = vec3(0.0, 0.2, time);
+    if (iMouse.z > 0.5) {
+        ang.y += iMouse.y * 0.10;
+        ang.z += iMouse.x * 0.10;
+    }
 	mat3 rot = fromEuler(ang);
     
     vec3 ori = vec3(0.0,0.0,2.8);

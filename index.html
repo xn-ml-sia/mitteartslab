@@ -23,7 +23,17 @@
     <div class="home-page">
       <section class="home-hero" aria-label="Intro">
         <canvas id="home-rock-canvas" class="home-rock-canvas" aria-hidden="true"></canvas>
-        <p class="home-tagline">Deconstructing complexity into simple design.</p>
+        <div class="home-tagline-clip is-idle">
+          <p class="home-tagline" aria-label="decoding complexity into simple design">
+            <span class="home-tagline__track">
+              <span class="home-tagline__word" data-tagline="decoding">decoding</span>
+              <span class="home-tagline__word" data-tagline="complexity">complexity</span>
+              <span class="home-tagline__word" data-tagline="into">into</span>
+              <span class="home-tagline__word" data-tagline="simple">simple</span>
+              <span class="home-tagline__word" data-tagline="design">design</span>
+            </span>
+          </p>
+        </div>
         <div class="home-ascii-layer" data-home-ascii aria-hidden="true"></div>
         <div class="home-tooltip-smaug tooltip tooltip--smaug" data-home-smaug-tooltip aria-hidden="true">
           <div class="home-tooltip-smaug-base tooltip__base">
@@ -65,6 +75,7 @@
       initMalLogos();
       setPageFavicon("bottom");
     </script>
+    <script src="./public/vendor/gsap.min.js"></script>
     <script type="module" src="./public/home.js"></script>
   </body>
 </html>

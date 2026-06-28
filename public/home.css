@@ -35,33 +35,80 @@
   display: block;
 }
 
-.home-tagline {
+.home-tagline-clip {
   position: absolute;
   inset: 0;
   z-index: 2;
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 0;
-  padding: clamp(var(--space-4), 5vw, var(--space-10));
+  justify-content: flex-start;
+  overflow: hidden;
   pointer-events: none;
-  max-width: none;
-  font-family: var(--font-family-mono);
-  font-size: clamp(2.25rem, 9vw, 6.5rem);
-  font-style: italic;
-  font-weight: 400;
-  line-height: 1.02;
-  letter-spacing: -0.03em;
-  text-align: center;
-  text-transform: uppercase;
-  text-wrap: balance;
-  max-width: min(92vw, 16em);
-  color: var(--ink-strong);
   transition: opacity 180ms ease;
+  transform: translate(var(--tagline-parallax-x, 0px), var(--tagline-parallax-y, 0px));
+  --tagline-parallax-x: 0px;
+  --tagline-parallax-y: 0px;
+  padding-top: clamp(0.75rem, 5vh, 3rem);
 }
 
-.home-mode.home-menu-open .home-tagline {
+.home-tagline {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: min(92vw, 36em);
+  margin: 0;
+  padding: 0 clamp(var(--space-4), 5vw, var(--space-10));
+  box-sizing: border-box;
+  font-family: var(--font-family-mono);
+  font-size: clamp(0.95rem, 3.2vw, 1.85rem);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--ink-strong);
+}
+
+.home-tagline__track {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  height: fit-content;
+  will-change: transform;
+}
+
+.home-tagline__word {
+  display: block;
+  width: fit-content;
+  margin: 0;
   opacity: 0;
+  user-select: none;
+  text-align: left;
+  white-space: nowrap;
+  transform-origin: 0% 50%;
+  backface-visibility: hidden;
+  pointer-events: none;
+}
+
+.home-tagline__word.is-revealed {
+  pointer-events: auto;
+}
+
+.home-tagline-clip.is-idle {
+  visibility: hidden;
+}
+
+.home-mode.home-menu-open .home-tagline-clip {
+  opacity: 0;
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-tagline-clip.is-reduced-static .home-tagline__word {
+    opacity: 1;
+  }
 }
 
 .home-ascii-layer {
@@ -417,9 +464,8 @@
 
 @media (max-width: 768px) {
   .home-tagline {
-    font-size: clamp(1.85rem, 10.5vw, 3.25rem);
+    font-size: clamp(1rem, 5vw, 1.85rem);
     letter-spacing: -0.02em;
-    max-width: min(88vw, 14em);
   }
 
   .home-brand-name {

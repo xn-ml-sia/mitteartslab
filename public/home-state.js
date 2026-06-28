@@ -73,6 +73,13 @@ export class HomeState {
     return this.scrollRot + autoElapsedSec * this.config.autoRotationSpeed;
   }
 
+  /** Wall-clock morph time — excludes scroll so reload hold is not skipped */
+  getTaglineTimeSec(nowMs, prefersReducedMotion) {
+    if (prefersReducedMotion) return 0;
+    const autoElapsedSec = Math.max(0, (nowMs - this.autoStartMs) / 1000);
+    return autoElapsedSec * this.config.autoRotationSpeed;
+  }
+
   restart() {
     this.lastScrollY = window.scrollY;
     this.scrollRot = 0;
