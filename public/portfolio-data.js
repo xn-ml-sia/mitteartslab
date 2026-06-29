@@ -19,11 +19,11 @@ export const PORTFOLIO_CASES = [
     screens: ['z-1.png', 'z-2.png', 'z-3.png'],
     subtitle: '',
     description:
-      'I worked on the rebrand for Zalando resulting in a components library called ZDS. Once the brand visual matured, it was time to build a motion design system to replace a fragmented, Lottie-dependent setup across platforms.',
+      'Unified the brand’s identity across all digital touchpoints. By moving from "prototype-based handoffs" to "token-based implementation," I significantly reduced engineering overhead and eliminated motion discrepancies, ensuring a seamless, high-performance user experience across web and mobile.',
     sections: [
       {
         text:
-          'Built a platform-agnostic motion design system to replace a fragmented, Lottie-dependent setup that was hurting runtime performance across platforms. Designed a tokenized motion primitive system and implemented it as a React/TypeScript component library using native CSS — bringing micro-interactions directly into the design token layer. Eliminated the bundle overhead and gave the design system a consistent, scalable animation language across the entire product ecosystem.',
+          'Built a platform-agnostic motion design system to replace a fragmented, Lottie-dependent setup that was hurting runtime performance across platforms. Designed a tokenized motion primitive system — bringing micro-interactions directly into the design token layer. Eliminated the bundle overhead and gave the design system a consistent, scalable animation language across the entire product ecosystem.',
         image: 'zalando-bg3.png',
         imageAlt: 'Zalando motion and design system — product interface patterns',
       },
@@ -67,7 +67,7 @@ export const PORTFOLIO_CASES = [
     title: 'self-sovereign identity',
     subtitle: '',
     description:
-      'Agreements are signed with SSI Verifiable Credential and then certified on the blockchain.',
+      'Csign Agreements are signed with SSI Verifiable Credential and then certified on the blockchain.',
     sections: [
       {
         text:
