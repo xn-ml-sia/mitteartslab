@@ -95,6 +95,25 @@ body.portfolio-detail-open .portfolio-sketch501 {
   background-position: center;
   border-radius: var(--portfolio-inner-radius, var(--space-4));
   will-change: clip-path, opacity;
+  overflow: hidden;
+}
+
+.portfolio-detail__thumb-video-wrap {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.portfolio-detail__thumb-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  border-radius: 0;
+  pointer-events: none;
 }
 
 .portfolio-detail__img.is-primary {
@@ -299,6 +318,13 @@ body.portfolio-detail-open .portfolio-sketch501 {
   background-size: contain;
   background-repeat: no-repeat;
   background-position: top center;
+  border-radius: var(--portfolio-inner-radius, var(--space-4));
+  overflow: hidden;
+  transform: translateZ(0);
+}
+
+.portfolio-detail.is-gallery-three .portfolio-detail__thumb-row .portfolio-detail__thumb-video-wrap {
+  border-radius: var(--portfolio-inner-radius, var(--space-4));
 }
 
 .portfolio-detail__title {

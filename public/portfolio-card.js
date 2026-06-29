@@ -13,6 +13,8 @@ const slugify = (value) =>
 
 const isObject = (value) => value !== null && typeof value === 'object';
 
+const isVideoAsset = (src) => /\.(webm|mp4|ogg)(\?|#|$)/i.test(src || '');
+
 const resolveAsset = (src) =>
   src.startsWith('/') ? src : `${SERVICES_ASSETS}/${src.replace(/^\.\//, '')}`;
 
@@ -56,7 +58,7 @@ const buildPhoneScreensFromPool = (detailImages = [], slides = []) => {
   const screens = [];
 
   pool.forEach((item) => {
-    if (!item?.src || seen.has(item.src) || screens.length >= MAX_PHONE_SCREENS) return;
+    if (!item?.src || seen.has(item.src) || isVideoAsset(item.src) || screens.length >= MAX_PHONE_SCREENS) return;
     seen.add(item.src);
     const label = (item.alt || 'Screen').split(/[—–,]/)[0].trim().slice(0, 36);
     screens.push({

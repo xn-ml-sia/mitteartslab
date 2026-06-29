@@ -3,6 +3,34 @@ import { definePortfolioCard } from './portfolio-card.js';
 /** Add cards here — order = grid order (round-robin into columns). See docs/design.md § Portfolio cards. */
 export const PORTFOLIO_CASES = [
   definePortfolioCard({
+    id: 'zalando',
+    company: 'zalando',
+    keywords: ['motion', 'design', 'system'],
+    hero: {
+      src: 'zalando-bg.png',
+      alt: 'Zalando — motion, design, system',
+    },
+    hover: 'zalando-bg.png',
+    thumbnail: 'zalando-bg.png',
+    thumbs: [
+      { src: 'bottomsheet.webm', alt: 'Zalando bottom sheet motion' },
+      { src: 'easing.webm', alt: 'Zalando easing motion tokens' },
+    ],
+    screens: ['z-1.png', 'z-2.png', 'z-3.png'],
+    subtitle: '',
+    description:
+      'I worked on the rebrand for Zalando resulting in a components library called ZDS. Once the brand visual matured, it was time to build a motion design system to replace a fragmented, Lottie-dependent setup across platforms.',
+    sections: [
+      {
+        text:
+          'Built a platform-agnostic motion design system to replace a fragmented, Lottie-dependent setup that was hurting runtime performance across platforms. Designed a tokenized motion primitive system and implemented it as a React/TypeScript component library using native CSS — bringing micro-interactions directly into the design token layer. Eliminated the bundle overhead and gave the design system a consistent, scalable animation language across the entire product ecosystem.',
+        image: 'zalando-bg3.png',
+        imageAlt: 'Zalando motion and design system — product interface patterns',
+      },
+    ],
+  }),
+
+  definePortfolioCard({
     id: 'mezo',
     company: 'Mezo',
     keywords: ['web3', 'defi', 'fintech'],

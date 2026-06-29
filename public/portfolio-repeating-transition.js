@@ -68,7 +68,7 @@ const preloadSlideImages = (cases) => {
 
 const getThumbImage = (card) => card?.querySelector(THUMB_SELECTOR) || null;
 
-const DETAIL_IMAGE_COUNT = 4;
+const DETAIL_IMAGE_COUNT = 5;
 
 const getDetailImageCount = (portfolioCase) =>
   portfolioCase.detailImageCount ?? DETAIL_IMAGE_COUNT;
@@ -116,6 +116,63 @@ const getDetailImageAlts = (portfolioCase) => {
     alts.push(portfolioCase.title);
   }
   return alts.slice(0, count);
+};
+
+const isVideoSrc = (src) => /\.(webm|mp4|ogg)(\?|#|$)/i.test(src || '');
+
+const pauseThumbVideos = (root = document) => {
+  root.querySelectorAll('.portfolio-detail__thumb-video').forEach((video) => {
+    video.pause();
+  });
+};
+
+const clearThumbVideo = (cell) => {
+  cell.querySelector(':scope > .portfolio-detail__thumb-video-wrap')?.remove();
+};
+
+const applyThumbCellRounding = (cell) => {
+  const radius =
+    getComputedStyle(cell).borderTopLeftRadius ||
+    getComputedStyle(document.documentElement).getPropertyValue('--portfolio-inner-radius').trim() ||
+    '16px';
+  cell.style.overflow = 'hidden';
+  cell.style.clipPath = `inset(0 round ${radius})`;
+};
+
+const finalizeThumbMediaRounding = (panel) => {
+  panel
+    ?.querySelectorAll('.portfolio-detail__thumb-row .portfolio-detail__thumb-video-wrap')
+    .forEach((wrap) => {
+      const cell = wrap.closest('.portfolio-detail__img');
+      if (cell) applyThumbCellRounding(cell);
+    });
+};
+
+const setThumbVideo = (cell, src, alt) => {
+  cell.style.backgroundImage = '';
+  let wrap = cell.querySelector(':scope > .portfolio-detail__thumb-video-wrap');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.className = 'portfolio-detail__thumb-video-wrap';
+    cell.appendChild(wrap);
+  }
+
+  let video = wrap.querySelector('video');
+  if (!video) {
+    video = document.createElement('video');
+    video.className = 'portfolio-detail__thumb-video';
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.setAttribute('playsinline', '');
+    video.autoplay = true;
+    wrap.appendChild(video);
+  }
+
+  video.src = src;
+  video.setAttribute('aria-label', alt || '');
+  applyThumbCellRounding(cell);
+  video.play().catch(() => {});
 };
 
 export const initPortfolioRepeatingTransition = ({
@@ -193,7 +250,9 @@ export const initPortfolioRepeatingTransition = ({
   const secondaryCells = panelCells.filter((cell) => !cell.classList.contains('is-primary'));
 
   const restoreThumbLayout = (clearAspectRatio = false) => {
+    pauseThumbVideos(panel);
     secondaryCells.forEach((cell) => {
+      clearThumbVideo(cell);
       if (clearAspectRatio) {
         cell.style.removeProperty('aspect-ratio');
       }
@@ -210,6 +269,10 @@ export const initPortfolioRepeatingTransition = ({
     cell.style.removeProperty('aspect-ratio');
     if (!src) return;
 
+    if (isVideoSrc(src)) {
+      return;
+    }
+
     const probe = new Image();
     probe.onload = () => {
       if (!cell.isConnected) return;
@@ -220,6 +283,31 @@ export const initPortfolioRepeatingTransition = ({
     };
     probe.onerror = () => {};
     probe.src = src;
+  };
+
+  const syncVideoThumbRowAspectRatio = (cells, sources) => {
+    const videoCells = cells.filter((cell) => cell.querySelector('.portfolio-detail__thumb-video-wrap'));
+    if (videoCells.length === 0) return;
+
+    const referenceSrc =
+      sources.find((src) => isVideoSrc(src) && /easing\.webm/i.test(src)) ||
+      sources.find((src) => isVideoSrc(src));
+    if (!referenceSrc) return;
+
+    const probe = document.createElement('video');
+    probe.preload = 'metadata';
+    probe.onloadedmetadata = () => {
+      const { videoWidth, videoHeight } = probe;
+      if (videoWidth <= 0 || videoHeight <= 0) return;
+      const ratio = `${videoWidth} / ${videoHeight}`;
+      videoCells.forEach((cell) => {
+        if (!cell.isConnected) return;
+        cell.style.aspectRatio = ratio;
+        applyThumbCellRounding(cell);
+      });
+    };
+    probe.onerror = () => {};
+    probe.src = referenceSrc;
   };
 
   let isAnimating = false;
@@ -337,6 +425,7 @@ export const initPortfolioRepeatingTransition = ({
 
       cell.hidden = !hasImage || isExtraThumb;
       if (!hasImage) {
+        clearThumbVideo(cell);
         if (!isPrimary) {
           cell.style.backgroundImage = '';
           cell.style.removeProperty('aspect-ratio');
@@ -346,18 +435,37 @@ export const initPortfolioRepeatingTransition = ({
       }
 
       const target = isPrimary && heroFront ? heroFront : cell;
-      target.style.backgroundImage = `url("${sources[index]}")`;
+      const src = sources[index];
+      const alt = alts[index] || portfolioCase.title;
+
+      if (!isPrimary && isVideoSrc(src)) {
+        clearThumbVideo(cell);
+        setThumbVideo(cell, src, alt);
+        cell.setAttribute('aria-label', alt);
+        return;
+      }
+
+      clearThumbVideo(cell);
+      target.style.backgroundImage = `url("${src}")`;
       if (!isPrimary) {
-        cell.setAttribute('aria-label', alts[index] || portfolioCase.title);
-        syncThumbAspectRatio(cell, sources[index]);
+        cell.setAttribute('aria-label', alt);
+        syncThumbAspectRatio(cell, src);
       } else if (heroFront) {
-        heroFront.setAttribute('aria-label', alts[index] || portfolioCase.title);
+        heroFront.setAttribute('aria-label', alt);
       }
     });
 
     secondaryCells.slice(0, thumbCount).forEach((cell) => {
       if (!cell.hidden) thumbRow.appendChild(cell);
     });
+    syncVideoThumbRowAspectRatio(
+      secondaryCells.slice(0, thumbCount).filter((cell) => !cell.hidden),
+      sources,
+    );
+    secondaryCells
+      .slice(0, thumbCount)
+      .filter((cell) => !cell.hidden && cell.querySelector('.portfolio-detail__thumb-video-wrap'))
+      .forEach(applyThumbCellRounding);
     thumbRow.hidden = thumbRow.childElementCount === 0;
     thumbRow.classList.toggle('is-single', thumbCount === 1);
 
@@ -516,6 +624,7 @@ export const initPortfolioRepeatingTransition = ({
           opacity: 1,
           y: 0,
           onComplete: () => {
+            finalizeThumbMediaRounding(panel);
             onComplete?.();
           },
         },
@@ -612,6 +721,7 @@ export const initPortfolioRepeatingTransition = ({
     gsap.set(panel, { opacity: 1, pointerEvents: 'auto' });
     gsap.set(panelCells, { clipPath: clipPaths.reveal, opacity: 1 });
     gsap.set(panelContent, { opacity: 1, y: 0 });
+    finalizeThumbMediaRounding(panel);
     runDetailTitleTransition();
 
     currentCard = card;
